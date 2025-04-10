@@ -47,12 +47,15 @@ export async function POST(req: Request) {
       // Check if it's a youtu.be shortened link
       if (videoUrl.includes('youtu.be/')) {
         const urlParts = videoUrl.split('youtu.be/');
-        videoId = urlParts[1]?.split(/[?&]/)[0] || '';
+        // Handle additional parameters like ?si= parameter
+        videoId = urlParts[1]?.split(/[?#&]/)[0] || '';
+        console.log("Extracted ID from youtu.be link:", videoId);
       } 
       // Handle youtube.com URLs
       else if (videoUrl.includes('youtube.com') || videoUrl.includes('www.youtube.com')) {
         const url = new URL(videoUrl);
         videoId = url.searchParams.get("v") || '';
+        console.log("Extracted ID from youtube.com link:", videoId);
       }
       // Handle other formats by trying to find common patterns
       else {
@@ -60,15 +63,21 @@ export async function POST(req: Request) {
         const idMatch = videoUrl.match(/(?:\/|%3D|v=|vi=)([0-9A-Za-z_-]{11})(?:[%#?&]|$)/);
         if (idMatch) {
           videoId = idMatch[1];
+          console.log("Extracted ID using regex:", videoId);
         }
       }
     } catch (urlError) {
       console.error("URL parsing error:", urlError);
     }
     
-    if (!videoId) {
+    // Validate the video ID format (YouTube IDs are typically 11 characters)
+    if (!videoId || !/^[0-9A-Za-z_-]{11}$/.test(videoId)) {
+      console.error("Invalid video ID extracted:", videoId, "from URL:", videoUrl);
       return new Response(
-        JSON.stringify({ error: "Invalid YouTube URL. Could not extract video ID." }),
+        JSON.stringify({ 
+          error: "Invalid YouTube URL. Could not extract valid video ID.",
+          receivedUrl: videoUrl
+        }),
         { 
           status: 400, 
           headers: { 'Content-Type': 'application/json' } 
