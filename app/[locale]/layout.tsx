@@ -14,13 +14,13 @@ export function generateStaticParams() {
 
 export default async function LocaleLayout({
   children,
-  params: paramsPromise, // Rename to avoid direct destructuring
+  params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>; // Type params as a Promise
+  params: Promise<{ locale: string }>;
 }) {
-  // Await the params Promise to resolve
-  const { locale = 'ko' } = await paramsPromise;
+  const resolvedParams = await params;
+  const { locale = 'ko' } = resolvedParams;
 
   let messages;
   try {
