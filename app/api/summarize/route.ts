@@ -36,12 +36,9 @@ const errorMessages = {
   }
 };
 
-// Expanded list of transcript services to try
+// More reliable transcript services - removed unreliable ones
 const transcriptServices = [
-  "https://yt-get-transcript.vercel.app/api/transcript",
-  "https://ytsubsapi.com/api/transcript",
-  "https://yt-transcript-api.vercel.app/api/transcript",
-  "https://yt-extract.vercel.app/api/transcript"
+  "https://yt-get-transcript.vercel.app/api/transcript"
 ];
 
 // Common browser user agent to avoid detection
@@ -65,6 +62,16 @@ async function fetchWithRetry(url: string, options: any, retries = 3, delay = 10
   throw lastError;
 }
 
+// Safe JSON parse with fallback
+function safeJsonParse(text: string, fallback: any = null) {
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("JSON parsing error:", e);
+    return fallback;
+  }
+}
+
 // Language preference priority based on locale
 const getLangPreference = (locale: string) => {
   return locale === 'ko' 
@@ -85,6 +92,8 @@ export async function POST(req: Request) {
     try {
       let transcriptText = '';
       const languagePreference = getLangPreference(locale);
+      let videoTitle = '';
+      let videoDescription = '';
       
       // Step 1: Try Official YouTube API first - PRIORITIZED as requested
       if (process.env.YOUTUBE_API_KEY) {
@@ -109,79 +118,82 @@ export async function POST(req: Request) {
             }, { status: 400 });
           }
           
-          // Get caption tracks using the YouTube API
-          const captionsResponse = await fetchWithRetry(
-            `https://www.googleapis.com/youtube/v3/captions`, {
-              params: {
-                videoId: videoId,
-                part: 'snippet',
-                key: process.env.YOUTUBE_API_KEY
-              },
-              headers: {
-                'Accept-Language': locale === 'ko' ? 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7' : 'en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7'
-              },
-              timeout: 5000
-            }
-          );
+          // Store video info for later use
+          if (videoInfoResponse.data.items[0]?.snippet) {
+            videoTitle = videoInfoResponse.data.items[0].snippet.title || '';
+            videoDescription = videoInfoResponse.data.items[0].snippet.description || '';
+          }
           
-          // If we have caption tracks, extract them
-          if (captionsResponse.data.items && captionsResponse.data.items.length > 0) {
-            console.log("Caption tracks found:", captionsResponse.data.items.length);
-            
-            // Extract video title and details from first API call
-            const videoTitle = videoInfoResponse.data.items[0]?.snippet?.title || 'Unknown';
-            const videoDescription = videoInfoResponse.data.items[0]?.snippet?.description || '';
-            
-            // Sort caption tracks by language preference
-            const captionTracks = captionsResponse.data.items;
-            
-            // Log available languages for debugging
-            console.log("Available caption languages:", captionTracks.map((track: any) => 
-              `${track.snippet.language} (${track.snippet.trackKind})`
-            ));
-            
-            // Try to find the best caption track based on language preference
-            let bestTrack = null;
-            for (const lang of languagePreference) {
-              const matchingTrack = captionTracks.find((track: any) => 
-                track.snippet.language === lang && track.snippet.trackKind !== 'ASR'
-              );
-              if (matchingTrack) {
-                bestTrack = matchingTrack;
-                console.log(`Selected caption track: ${lang} (manual)`);
-                break;
+          // Get caption tracks using the YouTube API
+          try {
+            const captionsResponse = await fetchWithRetry(
+              `https://www.googleapis.com/youtube/v3/captions`, {
+                params: {
+                  videoId: videoId,
+                  part: 'snippet',
+                  key: process.env.YOUTUBE_API_KEY
+                },
+                headers: {
+                  'Accept-Language': locale === 'ko' ? 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7' : 'en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7'
+                },
+                timeout: 5000
               }
-            }
+            );
             
-            // If no manual track, try auto-generated
-            if (!bestTrack) {
+            // If we have caption tracks, extract them
+            if (captionsResponse.data.items && captionsResponse.data.items.length > 0) {
+              console.log("Caption tracks found:", captionsResponse.data.items.length);
+              
+              // Sort caption tracks by language preference
+              const captionTracks = captionsResponse.data.items;
+              
+              // Log available languages for debugging
+              console.log("Available caption languages:", captionTracks.map((track: any) => 
+                `${track.snippet.language}${track.snippet.trackKind === 'asr' ? ' (asr)' : ''}`
+              ));
+              
+              // Try to find the best caption track based on language preference
+              let bestTrack = null;
+              // First prefer manual captions in preferred language
               for (const lang of languagePreference) {
                 const matchingTrack = captionTracks.find((track: any) => 
-                  track.snippet.language === lang
+                  track.snippet.language === lang && track.snippet.trackKind !== 'asr'
                 );
                 if (matchingTrack) {
                   bestTrack = matchingTrack;
-                  console.log(`Selected caption track: ${lang} (auto)`);
+                  console.log(`Selected caption track: ${lang} (manual)`);
                   break;
                 }
               }
+              
+              // If no manual track, try auto-generated
+              if (!bestTrack) {
+                for (const lang of languagePreference) {
+                  const matchingTrack = captionTracks.find((track: any) => 
+                    track.snippet.language === lang
+                  );
+                  if (matchingTrack) {
+                    bestTrack = matchingTrack;
+                    console.log(`Selected caption track: ${lang} (${matchingTrack.snippet.trackKind})`);
+                    break;
+                  }
+                }
+              }
+              
+              // If we found a caption track, note it for later (we can't download it directly from API)
+              if (bestTrack) {
+                console.log(`Found caption track: ${bestTrack.snippet.language}, trackId: ${bestTrack.id}`);
+              }
             }
-            
-            // If we found a caption track, use it
-            if (bestTrack) {
-              // Unfortunately, we can't directly download captions from the API
-              // We got the track info but now need to get the content via direct methods
-              console.log("Found optimal caption track, trying direct extraction");
-            } else {
-              console.log("No matching caption track found");
-            }
-            
-            // Since we found captions exist but can't directly access them through the API,
-            // we'll use the title and description as metadata to enhance our next attempt
-            if (videoTitle && videoDescription) {
-              console.log("Using video metadata for enhanced extraction");
-            }
+          } catch (captionError) {
+            console.error("Caption API error:", (captionError as Error).message);
           }
+          
+          // Use video description as fallback if necessary
+          if (videoDescription && videoDescription.length > 500) {
+            console.log("Storing description for potential use as fallback");
+          }
+          
         } catch (apiError) {
           console.error("YouTube API error:", (apiError as Error).message);
         }
@@ -215,34 +227,35 @@ export async function POST(req: Request) {
           
           // Find all caption tracks
           let captionTracks: any[] = [];
-          for (const pattern of patterns) {
-            // Use a more compatible approach without the 's' flag
-            const entireSectionMatch = html.match(/"captionTracks":\[([\s\S]+?)\]/);
-            if (entireSectionMatch && entireSectionMatch[1]) {
-              try {
-                // Try to parse the JSON by reconstructing it
-                const tracksJSON = JSON.parse(`[${entireSectionMatch[1]}]`);
+          
+          // First try to find the caption tracks section
+          const entireSectionMatch = html.match(/"captionTracks":\[([\s\S]+?)\]/);
+          if (entireSectionMatch && entireSectionMatch[1]) {
+            console.log("Found caption tracks section");
+            try {
+              // Try to parse the JSON by reconstructing it
+              const tracksJSON = safeJsonParse(`[${entireSectionMatch[1]}]`, []);
+              if (Array.isArray(tracksJSON) && tracksJSON.length > 0) {
                 captionTracks = tracksJSON;
-                break;
-              } catch (e) {
-                // If not valid JSON, use regex for each track
-                const trackMatches = html.match(/"captionTracks":\[([\s\S]+?)\]/);
-                if (trackMatches && trackMatches[1]) {
-                  const trackData = trackMatches[1];
-                  const urlMatches = trackData.match(/"baseUrl":"(.*?)"/g);
-                  const langMatches = trackData.match(/"languageCode":"(.*?)"/g);
-                  
-                  if (urlMatches && langMatches && urlMatches.length === langMatches.length) {
-                    for (let i = 0; i < urlMatches.length; i++) {
-                      const urlMatch = urlMatches[i].match(/"baseUrl":"(.*?)"/);
-                      const langMatch = langMatches[i].match(/"languageCode":"(.*?)"/);
-                      if (urlMatch && langMatch) {
-                        captionTracks.push({
-                          baseUrl: urlMatch[1].replace(/\\u0026/g, '&'),
-                          languageCode: langMatch[1]
-                        });
-                      }
-                    }
+                console.log(`Parsed ${captionTracks.length} caption tracks from JSON`);
+              }
+            } catch (e) {
+              console.error("JSON parse error:", e);
+              // If not valid JSON, use regex for each track
+              const trackData = entireSectionMatch[1];
+              const urlMatches = trackData.match(/"baseUrl":"(.*?)"/g) || [];
+              const langMatches = trackData.match(/"languageCode":"(.*?)"/g) || [];
+              
+              if (urlMatches.length > 0 && langMatches.length > 0) {
+                console.log(`Found ${urlMatches.length} tracks using regex`);
+                for (let i = 0; i < Math.min(urlMatches.length, langMatches.length); i++) {
+                  const urlMatch = urlMatches[i].match(/"baseUrl":"(.*?)"/);
+                  const langMatch = langMatches[i].match(/"languageCode":"(.*?)"/);
+                  if (urlMatch && langMatch) {
+                    captionTracks.push({
+                      baseUrl: urlMatch[1].replace(/\\u0026/g, '&'),
+                      languageCode: langMatch[1]
+                    });
                   }
                 }
               }
@@ -277,6 +290,7 @@ export async function POST(req: Request) {
             }
           } else {
             // Fallback to old method if we couldn't parse tracks correctly
+            console.log("Trying fallback regex method for caption URL");
             for (const pattern of patterns) {
               const match = html.match(pattern);
               if (match && match[1]) {
@@ -289,146 +303,179 @@ export async function POST(req: Request) {
           
           if (captionUrl) {
             console.log("Requesting caption content from URL");
-            const captionResponse = await fetchWithRetry(captionUrl, {
-              headers: {
-                'User-Agent': USER_AGENT,
-                'Origin': 'https://www.youtube.com',
-                'Referer': `https://www.youtube.com/watch?v=${videoId}`
-              },
-              timeout: 5000
-            });
-            
-            const captionData = captionResponse.data;
-            
-            if (typeof captionData === 'string') {
-              if (captionData.includes('<transcript>')) {
-                // Parse XML format
-                const textSegments = captionData.match(/<text[^>]*>(.*?)<\/text>/g) || [];
-                transcriptText = textSegments
-                  .map(segment => {
-                    const textMatch = segment.match(/<text[^>]*>(.*?)<\/text>/);
-                    return textMatch ? textMatch[1].replace(/&amp;/g, '&')
-                      .replace(/&lt;/g, '<')
-                      .replace(/&gt;/g, '>')
-                      .replace(/&quot;/g, '"')
-                      .replace(/&#39;/g, "'") : '';
-                  })
-                  .join(' ');
-                console.log("Successfully parsed XML caption format");
-              } else if (captionData.includes('"events":')) {
-                // Parse JSON format
-                try {
-                  const jsonData = JSON.parse(captionData);
-                  if (jsonData.events) {
-                    transcriptText = jsonData.events
-                      .filter((event: any) => event.segs)
-                      .map((event: any) => 
-                        event.segs.map((seg: any) => seg.utf8).join(' ')
-                      )
-                      .join(' ');
-                    console.log("Successfully parsed JSON caption format");
+            try {
+              const captionResponse = await fetchWithRetry(captionUrl, {
+                headers: {
+                  'User-Agent': USER_AGENT,
+                  'Origin': 'https://www.youtube.com',
+                  'Referer': `https://www.youtube.com/watch?v=${videoId}`
+                },
+                timeout: 8000,
+                responseType: 'text'
+              });
+              
+              if (captionResponse.status === 200) {
+                const captionData = captionResponse.data;
+                
+                if (typeof captionData === 'string') {
+                  if (captionData.includes('<transcript>')) {
+                    // Parse XML format
+                    console.log("Parsing XML caption format");
+                    const textSegments = captionData.match(/<text[^>]*>(.*?)<\/text>/g) || [];
+                    if (textSegments.length > 0) {
+                      transcriptText = textSegments
+                        .map(segment => {
+                          const textMatch = segment.match(/<text[^>]*>(.*?)<\/text>/);
+                          return textMatch ? textMatch[1].replace(/&amp;/g, '&')
+                            .replace(/&lt;/g, '<')
+                            .replace(/&gt;/g, '>')
+                            .replace(/&quot;/g, '"')
+                            .replace(/&#39;/g, "'") : '';
+                        })
+                        .join(' ');
+                      console.log(`Successfully parsed XML caption format with ${textSegments.length} segments`);
+                    } else {
+                      console.log("No text segments found in XML caption");
+                    }
+                  } else if (captionData.includes('"events":')) {
+                    // Parse JSON format
+                    console.log("Parsing JSON caption format");
+                    try {
+                      const jsonData = safeJsonParse(captionData, null);
+                      if (jsonData && jsonData.events) {
+                        const filteredEvents = jsonData.events.filter((event: any) => event.segs);
+                        if (filteredEvents.length > 0) {
+                          transcriptText = filteredEvents
+                            .map((event: any) => 
+                              event.segs.map((seg: any) => seg.utf8).join(' ')
+                            )
+                            .join(' ');
+                          console.log(`Successfully parsed JSON caption format with ${filteredEvents.length} events`);
+                        } else {
+                          console.log("No valid events with segments found in JSON caption");
+                        }
+                      } else {
+                        console.log("Invalid JSON caption format or missing events");
+                      }
+                    } catch (e) {
+                      console.error("JSON parsing error:", e);
+                    }
+                  } else {
+                    console.log("Caption data format not recognized");
+                    console.log("Caption data starts with:", captionData.substring(0, 100));
                   }
-                } catch (e) {
-                  console.error("JSON parsing error", e);
+                } else {
+                  console.log("Caption data is not a string:", typeof captionData);
                 }
+              } else {
+                console.log("Caption request returned status:", captionResponse.status);
               }
+            } catch (captionError) {
+              console.error("Error fetching caption:", (captionError as Error).message);
             }
+          } else {
+            console.log("No caption URL found");
           }
         } catch (directError) {
           console.error("Direct extract error:", (directError as Error).message);
         }
       }
       
-      // Step 3: Try the YouTube Data API for alternative info (video description)
-      if (!transcriptText && process.env.YOUTUBE_API_KEY) {
-        try {
-          console.log("3. Using YouTube API for video description");
-          const videoInfoResponse = await fetchWithRetry(
-            `https://www.googleapis.com/youtube/v3/videos`, {
-              params: {
-                id: videoId,
-                part: 'snippet,contentDetails',
-                key: process.env.YOUTUBE_API_KEY,
-              },
-              timeout: 5000
-            }
-          );
-          
-          // Some videos have captions in description
-          if (videoInfoResponse.data.items && videoInfoResponse.data.items[0]) {
-            const snippet = videoInfoResponse.data.items[0].snippet;
-            // Sometimes descriptions contain partial transcripts
-            if (snippet.description && snippet.description.length > 500) {
-              console.log("Using description as fallback text");
-              transcriptText = `[Video title: ${snippet.title}]\n\n${snippet.description}`;
-            }
-          }
-        } catch (apiError) {
-          console.error("YouTube API error:", (apiError as Error).message);
-        }
+      // Step 3: If extraction failed but we have video info, use description as transcript
+      if (!transcriptText && videoTitle && videoDescription && videoDescription.length > 300) {
+        console.log("3. Using video description as transcript");
+        transcriptText = `[Video title: ${videoTitle}]\n\n${videoDescription}`;
       }
       
-      // Step 4: Try external services with language parameter
-      if (!transcriptText) {
-        console.log("4. Trying external transcript services");
-        for (const serviceUrl of transcriptServices) {
-          try {
-            // Add language parameter if supported by the service
-            const langParam = locale === 'ko' ? '&lang=ko' : '&lang=en';
-            console.log(`Trying transcript service: ${serviceUrl}`);
-            const transcriptResponse = await fetchWithRetry(`${serviceUrl}?id=${videoId}${langParam}`, {
-              headers: {
-                'User-Agent': USER_AGENT,
-                'Accept': 'application/json',
-                'Accept-Language': locale === 'ko' ? 'ko-KR,ko;q=0.9' : 'en-US,en;q=0.9'
-              },
-              timeout: 8000
-            });
-            
-            if (transcriptResponse.data && transcriptResponse.data.transcript) {
-              transcriptText = transcriptResponse.data.transcript;
-              console.log(`Transcript fetched successfully from ${serviceUrl}`);
-              break;
-            }
-          } catch (error: unknown) {
-            const serviceError = error as Error;
-            console.error(`Service ${serviceUrl} error:`, serviceError.message);
-          }
-        }
-      }
-      
-      // Step 5: Try embedded player as last resort
+      // Step 4: Try invidious API as alternative (more reliable than custom API services)
       if (!transcriptText) {
         try {
-          console.log("5. Trying embedded player approach");
-          const embedResponse = await fetchWithRetry(`https://www.youtube.com/embed/${videoId}?hl=${locale === 'ko' ? 'ko' : 'en'}`, {
+          console.log("4. Trying Invidious API");
+          const langCode = locale === 'ko' ? 'ko' : 'en';
+          const response = await fetchWithRetry(`https://invidious.snopyta.org/api/v1/videos/${videoId}?fields=title,description`, {
+            timeout: 8000,
             headers: {
-              'User-Agent': USER_AGENT,
-              'Accept': 'text/html',
-              'Accept-Language': locale === 'ko' ? 'ko-KR,ko;q=0.9' : 'en-US,en;q=0.9',
-              'Referer': 'https://www.google.com/'
-            },
-            timeout: 5000
+              'User-Agent': USER_AGENT
+            }
           });
           
-          const embedHtml = embedResponse.data;
-          const titleMatch = embedHtml.match(/<title>(.*?)<\/title>/);
-          const title = titleMatch ? titleMatch[1] : 'Unknown Title';
-          
-          // Try to extract some meaningful content from the embed page
-          const metaDescriptionMatch = embedHtml.match(/<meta name="description" content="([^"]+)"/);
-          if (metaDescriptionMatch && metaDescriptionMatch[1] && metaDescriptionMatch[1].length > 100) {
-            transcriptText = `[Video title: ${title}]\n\n${metaDescriptionMatch[1]}`;
-            console.log("Using meta description as fallback");
+          if (response.data && response.data.title) {
+            if (!videoTitle) videoTitle = response.data.title;
+            if (!videoDescription && response.data.description) {
+              videoDescription = response.data.description;
+              if (videoDescription.length > 300) {
+                console.log("Using Invidious description as transcript");
+                transcriptText = `[Video title: ${videoTitle}]\n\n${videoDescription}`;
+              }
+            }
           }
-        } catch (embedError) {
-          console.error("Embed approach error:", (embedError as Error).message);
+          
+          // Try to get captions from Invidious if we still don't have a transcript
+          if (!transcriptText) {
+            const captionsResponse = await fetchWithRetry(`https://invidious.snopyta.org/api/v1/captions/${videoId}?&hl=${langCode}`, {
+              timeout: 8000,
+              headers: {
+                'User-Agent': USER_AGENT
+              }
+            });
+            
+            if (captionsResponse.data && Array.isArray(captionsResponse.data.captions)) {
+              console.log(`Found ${captionsResponse.data.captions.length} captions via Invidious`);
+              // Find best language match
+              let bestCaptionUrl = null;
+              for (const lang of languagePreference) {
+                const caption = captionsResponse.data.captions.find((c: any) => c.languageCode === lang);
+                if (caption) {
+                  bestCaptionUrl = `https://invidious.snopyta.org/api/v1/captions/${videoId}?label=${caption.label}`;
+                  console.log(`Selected caption: ${caption.label}`);
+                  break;
+                }
+              }
+              
+              if (bestCaptionUrl) {
+                const captionContent = await fetchWithRetry(bestCaptionUrl, {
+                  timeout: 8000,
+                  headers: {
+                    'User-Agent': USER_AGENT
+                  }
+                });
+                
+                if (captionContent.data && typeof captionContent.data === 'string') {
+                  // Usually in WebVTT format
+                  const lines = captionContent.data.split('\n');
+                  const textLines = lines.filter(line => 
+                    !line.includes('-->') && 
+                    !line.match(/^\d+$/) && 
+                    line.trim().length > 0 &&
+                    !line.startsWith('WEBVTT')
+                  );
+                  
+                  if (textLines.length > 0) {
+                    transcriptText = textLines.join(' ');
+                    console.log(`Extracted ${textLines.length} lines from Invidious captions`);
+                  }
+                }
+              }
+            }
+          }
+        } catch (invidiousError) {
+          console.error("Invidious API error:", (invidiousError as Error).message);
         }
       }
       
-      // Final check - if we still don't have transcript
+      // Final check - if all methods failed but we have title/description, use that
+      if (!transcriptText && videoTitle) {
+        console.log("All transcript extraction methods failed, using video metadata as fallback");
+        let fallbackText = `[Video title: ${videoTitle}]`;
+        if (videoDescription) {
+          fallbackText += `\n\n${videoDescription}`;
+        }
+        transcriptText = fallbackText;
+      }
+      
+      // If we still have nothing, return error
       if (!transcriptText) {
-        console.error("All transcript extraction methods failed");
+        console.error("All transcript extraction methods failed with no fallback");
         return NextResponse.json(
           { error: errorMessages[locale as keyof typeof errorMessages].noTranscript },
           { status: 400 }
@@ -439,16 +486,24 @@ export async function POST(req: Request) {
       console.log("Transcript sample:", transcriptText.substring(0, 150) + "...");
 
       // Summarize with OpenAI
-      const completion = await openai.chat.completions.create({
-        messages: [
-          { role: "system", content: systemPrompts[locale as keyof typeof systemPrompts] },
-          { role: "user", content: `${userPrompts[locale as keyof typeof userPrompts]}${transcriptText}` }
-        ],
-        model: "gpt-4o",
-      });
-      
-      const summary = completion.choices[0].message.content;
-      return NextResponse.json({ summary });
+      try {
+        const completion = await openai.chat.completions.create({
+          messages: [
+            { role: "system", content: systemPrompts[locale as keyof typeof systemPrompts] },
+            { role: "user", content: `${userPrompts[locale as keyof typeof userPrompts]}${transcriptText}` }
+          ],
+          model: "gpt-4o",
+        });
+        
+        const summary = completion.choices[0].message.content;
+        return NextResponse.json({ summary });
+      } catch (openaiError) {
+        console.error("OpenAI API error:", (openaiError as Error).message);
+        return NextResponse.json(
+          { error: "Failed to generate summary. Please try again later." },
+          { status: 500 }
+        );
+      }
       
     } catch (error: any) {
       console.error("Error:", error.message);
@@ -468,8 +523,9 @@ export async function POST(req: Request) {
     
   } catch (error: any) {
     console.error("General error:", error.message);
+    // Ensure we always return valid JSON
     return NextResponse.json(
-      { error: error.message || "Failed to generate summary" },
+      { error: error.message || "An unexpected error occurred" },
       { status: 500 }
     );
   }
