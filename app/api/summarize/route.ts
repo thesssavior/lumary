@@ -39,9 +39,41 @@ const errorMessages = {
 export async function POST(req: Request) {
   try {
     const { videoUrl, locale = 'ko' } = await req.json();
-    const videoId = new URL(videoUrl).searchParams.get("v");
+    
+    // Extract YouTube video ID from various URL formats
+    let videoId = '';
+    
+    try {
+      // Check if it's a youtu.be shortened link
+      if (videoUrl.includes('youtu.be/')) {
+        const urlParts = videoUrl.split('youtu.be/');
+        videoId = urlParts[1]?.split(/[?&]/)[0] || '';
+      } 
+      // Handle youtube.com URLs
+      else if (videoUrl.includes('youtube.com') || videoUrl.includes('www.youtube.com')) {
+        const url = new URL(videoUrl);
+        videoId = url.searchParams.get("v") || '';
+      }
+      // Handle other formats by trying to find common patterns
+      else {
+        // Try to extract video ID using regex matching common YouTube ID patterns
+        const idMatch = videoUrl.match(/(?:\/|%3D|v=|vi=)([0-9A-Za-z_-]{11})(?:[%#?&]|$)/);
+        if (idMatch) {
+          videoId = idMatch[1];
+        }
+      }
+    } catch (urlError) {
+      console.error("URL parsing error:", urlError);
+    }
+    
     if (!videoId) {
-      return NextResponse.json({ error: "Invalid YouTube URL" }, { status: 400 });
+      return new Response(
+        JSON.stringify({ error: "Invalid YouTube URL. Could not extract video ID." }),
+        { 
+          status: 400, 
+          headers: { 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     console.log("Processing video ID:", videoId, "Locale:", locale);
