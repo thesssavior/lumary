@@ -1,0 +1,11 @@
+{
+  "title": "YouTube Summary AI",
+  "subtitle": "Get instant AI-powered summaries of any YouTube video",
+  "videoUrl": "Video URL",
+  "getSummary": "Get Summary",
+  "loading": "Generating summary...",
+  "error": "An error occurred. Please try again.",
+  "language": "Language",
+  "korean": "Korean",
+  "english": "English"
+} 
