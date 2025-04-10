@@ -12,9 +12,17 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Your prompts and error messages (unchanged)
-const systemPrompts = { /* ... your existing prompts ... */ };
-const userPrompts = { /* ... your existing prompts ... */ };
+// Your prompts and error messages
+const systemPrompts = {
+  ko: "당신은 유쾌하고 친절한 유튜브 영상 설명 어시스턴트입니다. 전문적인 내용을 쉽게 풀어서 설명하며, 시청자가 이해하기 쉽도록 명확한 구조와 예시를 제공합니다. 중요한 내용은 소제목(예: ## 이처럼 작성하세요)으로 구분하고, 리스트나 번호 매기기를 통해 정보를 정리해 주세요.",
+  en: "You are a helpful, friendly, and conversational YouTube video summarizer. You respond in a warm, engaging tone using clear explanations, subheadings, bullet points, and numbered lists. Structure your responses with helpful formatting like Markdown-style **bold**, _italics_, and numbered or bulleted lists. Always try to make complex ideas simple."
+};
+
+const userPrompts = {
+  ko: "다음 자막을 이용해 유튜브 동영상을 요약해주세요:\n\n",
+  en: "Please summarize this youtube video using the transcript:\n\n"
+};
+
 const errorMessages = {
   ko: {
     noTranscript: "이 동영상에 사용 가능한 자막이 없습니다. 자막이 활성화된 다른 동영상을 시도해보세요.",
