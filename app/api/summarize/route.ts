@@ -80,11 +80,32 @@ const getLangPreference = (locale: string) => {
 };
 
 export async function POST(req: Request) {
+  // Add content type validation
+  let reqBody;
   try {
-    const { videoUrl, locale = 'ko' } = await req.json();
-    const videoId = new URL(videoUrl).searchParams.get("v");
+    reqBody = await req.json();
+  } catch (error) {
+    console.error("Failed to parse request body as JSON:", error);
+    return NextResponse.json({ error: "Invalid request: body must be valid JSON" }, { status: 400 });
+  }
+
+  try {
+    const { videoUrl, locale = 'ko' } = reqBody;
+    if (!videoUrl) {
+      return NextResponse.json({ error: "Missing videoUrl parameter" }, { status: 400 });
+    }
+    
+    // Extract videoId safely
+    let videoId;
+    try {
+      videoId = new URL(videoUrl).searchParams.get("v");
+    } catch (urlError) {
+      console.error("URL parsing error:", urlError);
+      return NextResponse.json({ error: "Invalid YouTube URL format" }, { status: 400 });
+    }
+    
     if (!videoId) {
-      return NextResponse.json({ error: "Invalid YouTube URL" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid YouTube URL: missing video ID" }, { status: 400 });
     }
 
     console.log("Processing video ID:", videoId, "Locale:", locale);
@@ -317,55 +338,58 @@ export async function POST(req: Request) {
               if (captionResponse.status === 200) {
                 const captionData = captionResponse.data;
                 
-                if (typeof captionData === 'string') {
-                  if (captionData.includes('<transcript>')) {
-                    // Parse XML format
-                    console.log("Parsing XML caption format");
-                    const textSegments = captionData.match(/<text[^>]*>(.*?)<\/text>/g) || [];
-                    if (textSegments.length > 0) {
-                      transcriptText = textSegments
-                        .map(segment => {
-                          const textMatch = segment.match(/<text[^>]*>(.*?)<\/text>/);
-                          return textMatch ? textMatch[1].replace(/&amp;/g, '&')
-                            .replace(/&lt;/g, '<')
-                            .replace(/&gt;/g, '>')
-                            .replace(/&quot;/g, '"')
-                            .replace(/&#39;/g, "'") : '';
-                        })
-                        .join(' ');
-                      console.log(`Successfully parsed XML caption format with ${textSegments.length} segments`);
-                    } else {
-                      console.log("No text segments found in XML caption");
-                    }
-                  } else if (captionData.includes('"events":')) {
-                    // Parse JSON format
-                    console.log("Parsing JSON caption format");
-                    try {
-                      const jsonData = safeJsonParse(captionData, null);
-                      if (jsonData && jsonData.events) {
-                        const filteredEvents = jsonData.events.filter((event: any) => event.segs);
-                        if (filteredEvents.length > 0) {
-                          transcriptText = filteredEvents
-                            .map((event: any) => 
-                              event.segs.map((seg: any) => seg.utf8).join(' ')
-                            )
-                            .join(' ');
-                          console.log(`Successfully parsed JSON caption format with ${filteredEvents.length} events`);
-                        } else {
-                          console.log("No valid events with segments found in JSON caption");
-                        }
-                      } else {
-                        console.log("Invalid JSON caption format or missing events");
-                      }
-                    } catch (e) {
-                      console.error("JSON parsing error:", e);
-                    }
+                // Validate that we have string data
+                if (typeof captionData !== 'string') {
+                  console.log("Caption data is not a string:", typeof captionData);
+                } 
+                else if (!captionData || captionData.length < 10) {
+                  console.log("Caption data too short or empty");
+                }
+                else if (captionData.includes('<transcript>')) {
+                  // Parse XML format
+                  console.log("Parsing XML caption format");
+                  const textSegments = captionData.match(/<text[^>]*>(.*?)<\/text>/g) || [];
+                  if (textSegments.length > 0) {
+                    transcriptText = textSegments
+                      .map((segment: string) => {
+                        const textMatch = segment.match(/<text[^>]*>(.*?)<\/text>/);
+                        return textMatch ? textMatch[1].replace(/&amp;/g, '&')
+                          .replace(/&lt;/g, '<')
+                          .replace(/&gt;/g, '>')
+                          .replace(/&quot;/g, '"')
+                          .replace(/&#39;/g, "'") : '';
+                      })
+                      .join(' ');
+                    console.log(`Successfully parsed XML caption format with ${textSegments.length} segments`);
                   } else {
-                    console.log("Caption data format not recognized");
-                    console.log("Caption data starts with:", captionData.substring(0, 100));
+                    console.log("No text segments found in XML caption");
+                  }
+                } else if (captionData.includes('"events":')) {
+                  // Parse JSON format
+                  console.log("Parsing JSON caption format");
+                  try {
+                    const jsonData = safeJsonParse(captionData, null);
+                    if (jsonData && jsonData.events) {
+                      const filteredEvents = jsonData.events.filter((event: any) => event.segs);
+                      if (filteredEvents.length > 0) {
+                        transcriptText = filteredEvents
+                          .map((event: any) => 
+                            event.segs.map((seg: any) => seg.utf8).join(' ')
+                          )
+                          .join(' ');
+                        console.log(`Successfully parsed JSON caption format with ${filteredEvents.length} events`);
+                      } else {
+                        console.log("No valid events with segments found in JSON caption");
+                      }
+                    } else {
+                      console.log("Invalid JSON caption format or missing events");
+                    }
+                  } catch (e) {
+                    console.error("JSON parsing error:", e);
                   }
                 } else {
-                  console.log("Caption data is not a string:", typeof captionData);
+                  console.log("Caption data format not recognized");
+                  console.log("Caption data starts with:", captionData.substring(0, 100));
                 }
               } else {
                 console.log("Caption request returned status:", captionResponse.status);
@@ -482,6 +506,12 @@ export async function POST(req: Request) {
         );
       }
       
+      // Sanitize transcript text to ensure it's not too long for OpenAI
+      if (transcriptText.length > 60000) {
+        console.log("Trimming long transcript from", transcriptText.length, "to 60000 characters");
+        transcriptText = transcriptText.substring(0, 60000);
+      }
+      
       console.log("Transcript length:", transcriptText.length);
       console.log("Transcript sample:", transcriptText.substring(0, 150) + "...");
 
@@ -493,16 +523,48 @@ export async function POST(req: Request) {
             { role: "user", content: `${userPrompts[locale as keyof typeof userPrompts]}${transcriptText}` }
           ],
           model: "gpt-4o",
+          max_tokens: 2000,
+          temperature: 0.7,
         });
         
+        if (!completion.choices || !completion.choices[0] || !completion.choices[0].message) {
+          console.error("Invalid OpenAI API response structure:", JSON.stringify(completion));
+          return NextResponse.json({ 
+            error: "Failed to generate summary due to invalid API response" 
+          }, { status: 500 });
+        }
+        
         const summary = completion.choices[0].message.content;
-        return NextResponse.json({ summary });
-      } catch (openaiError) {
-        console.error("OpenAI API error:", (openaiError as Error).message);
-        return NextResponse.json(
-          { error: "Failed to generate summary. Please try again later." },
-          { status: 500 }
-        );
+        if (!summary) {
+          console.error("Empty summary returned from OpenAI");
+          return NextResponse.json({ 
+            error: "The generated summary was empty. Please try again." 
+          }, { status: 500 });
+        }
+        
+        console.log("Successfully generated summary of length:", summary.length);
+        
+        // Extra validations to ensure we're returning valid JSON
+        try {
+          const response = { summary };
+          // Test that we can stringify this object
+          JSON.stringify(response);
+          return NextResponse.json(response);
+        } catch (jsonError) {
+          console.error("Failed to create valid JSON response:", jsonError);
+          // Fall back to a safe response with the summary as a string
+          return NextResponse.json({ 
+            summary: String(summary).substring(0, 10000),
+            note: "Response was truncated due to serialization issues"
+          });
+        }
+      } catch (openaiError: any) {
+        console.error("OpenAI API error:", openaiError.message);
+        // Ensure we always return a valid JSON response
+        return NextResponse.json({
+          error: `Failed to generate summary: ${openaiError.message}`,
+          details: openaiError.response?.data || "No additional details available"
+        }, { status: 500 });
       }
       
     } catch (error: any) {
