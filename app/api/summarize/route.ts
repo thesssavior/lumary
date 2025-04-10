@@ -53,6 +53,11 @@ export async function POST(req: Request) {
     
     try {
       // Step 1: Try to get video info (but skip if no API key to save time)
+      if (!process.env.YOUTUBE_API_KEY) {
+        console.error("YouTube API key not configured");
+        return NextResponse.json({ error: "YouTube API key not configured" }, { status: 500 });
+      }
+  
       if (process.env.YOUTUBE_API_KEY) {
         const videoInfoResponse = await axios.get(
           `https://www.googleapis.com/youtube/v3/videos`, {
@@ -61,7 +66,7 @@ export async function POST(req: Request) {
               part: 'snippet',
               key: process.env.YOUTUBE_API_KEY,
             },
-            timeout: 3000 // 3-second timeout
+            timeout: 10000 // 10-second timeout
           }
         );
 
