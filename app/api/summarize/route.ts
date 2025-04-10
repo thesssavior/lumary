@@ -47,61 +47,9 @@ export async function POST(req: Request) {
     console.log("Processing video ID:", videoId, "Locale:", locale);
     let transcriptText = '';
 
-    // Step 1: Use YouTube Data API to fetch transcript
+    // Get video details from YouTube API
     try {
-      console.log("1. Trying Official YouTube API");
-
-      // Get caption tracks
-      const captionsResponse = await axios.get(
-        `https://www.googleapis.com/youtube/v3/captions`, {
-          params: {
-            videoId,
-            part: 'snippet',
-            key: process.env.YOUTUBE_API_KEY,
-          },
-        }
-      );
-
-      const captionTracks = captionsResponse.data.items;
-      if (!captionTracks || captionTracks.length === 0) {
-        console.log("No caption tracks available");
-        throw new Error("No captions found");
-      }
-
-      console.log("Available caption languages:", captionTracks.map((t: any) => t.snippet.language));
-
-      // Pick the best track (prefer manual over auto-generated)
-      let bestTrack = captionTracks.find((t: any) => t.snippet.trackKind !== 'asr') || captionTracks[0];
-      console.log(`Selected caption track: ${bestTrack.snippet.language} (${bestTrack.snippet.trackKind})`);
-
-      // Fetch the transcript using the track ID
-      const transcriptResponse = await axios.get(
-        `https://www.googleapis.com/youtube/v3/captions/${bestTrack.id}`, {
-          params: {
-            key: process.env.YOUTUBE_API_KEY,
-            tfmt: 'sbv', // Simple subtitle format
-          },
-        }
-      );
-
-      // Parse SBV format
-      const sbvContent = transcriptResponse.data;
-      const lines = sbvContent.split('\n');
-      let fullTranscript = '';
-      for (let i = 0; i < lines.length; i++) {
-        if (i % 2 === 1 && lines[i].trim()) { // Text lines are odd-numbered
-          fullTranscript += lines[i].trim() + " ";
-        }
-      }
-      transcriptText = fullTranscript.trim();
-      console.log("Parsed transcript length:", transcriptText.length);
-    } catch (apiError: any) {
-      console.error("YouTube API error:", apiError.message);
-    }
-
-    // Step 2: Fallback to description if no transcript
-    if (!transcriptText) {
-      console.log("2. Falling back to video description");
+      console.log("Getting video information from YouTube API");
       const videoResponse = await axios.get(
         `https://www.googleapis.com/youtube/v3/videos`, {
           params: {
@@ -115,13 +63,17 @@ export async function POST(req: Request) {
       const videoData = videoResponse.data.items[0]?.snippet;
       if (videoData && videoData.description) {
         transcriptText = `[Video title: ${videoData.title}]\n\n${videoData.description}`;
-        console.log("Using description as transcript, length:", transcriptText.length);
+        console.log("Using video description as transcript, length:", transcriptText.length);
+      } else {
+        console.log("No description available");
       }
+    } catch (apiError: any) {
+      console.error("YouTube API error:", apiError.message);
     }
 
-    // Step 3: Check if we have a transcript
+    // Check if we have content to summarize
     if (!transcriptText.trim()) {
-      console.error("No transcript available");
+      console.error("No transcript or description available");
       return NextResponse.json(
         { error: errorMessages[locale as keyof typeof errorMessages].noTranscript },
         { status: 400 }
@@ -130,40 +82,73 @@ export async function POST(req: Request) {
 
     // Trim if too long for OpenAI
     if (transcriptText.length > 60000) {
-      console.log("Trimming transcript from", transcriptText.length, "to 60000 chars");
+      console.log("Trimming content from", transcriptText.length, "to 60000 chars");
       transcriptText = transcriptText.substring(0, 60000);
     }
 
-    // Step 4: Summarize with OpenAI
+    // Summarize with OpenAI
     try {
+      console.log("Sending request to OpenAI...");
+      
+      // Prepare request with proper validation
+      const messages = [
+        { 
+          role: "system" as const, 
+          content: systemPrompts[locale as keyof typeof systemPrompts] || "You are a helpful video summarizer."
+        },
+        { 
+          role: "user" as const, 
+          content: `${userPrompts[locale as keyof typeof userPrompts] || "Please summarize this content: "}${transcriptText}` 
+        },
+      ];
+      
       const completion = await openai.chat.completions.create({
-        messages: [
-          { role: "system", content: systemPrompts[locale as keyof typeof systemPrompts] },
-          { role: "user", content: `${userPrompts[locale as keyof typeof userPrompts]}${transcriptText}` },
-        ],
+        messages,
         model: "gpt-4o",
         max_tokens: 2000,
         temperature: 0.7,
       });
 
-      const summary = completion.choices[0]?.message.content;
-      if (!summary) {
-        console.error("OpenAI returned no summary");
+      // Validate response
+      if (!completion?.choices?.[0]?.message?.content) {
+        console.error("Invalid response from OpenAI");
         return NextResponse.json({ error: "Failed to generate summary" }, { status: 500 });
       }
 
+      const summary = completion.choices[0].message.content;
       console.log("Summary generated, length:", summary.length);
-      return NextResponse.json({ summary });
+      
+      // Return as JSON with explicit serialization
+      return new Response(
+        JSON.stringify({ summary }), 
+        { 
+          status: 200, 
+          headers: { 'Content-Type': 'application/json' } 
+        }
+      );
     } catch (openaiError: any) {
       console.error("OpenAI error:", openaiError.message);
-      return NextResponse.json({ error: `OpenAI failed: ${openaiError.message}` }, { status: 500 });
+      
+      // Explicit JSON serialization for error responses
+      return new Response(
+        JSON.stringify({ error: `OpenAI failed: ${openaiError.message}` }),
+        { 
+          status: 500, 
+          headers: { 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
   } catch (error: any) {
     console.error("General error:", error.message);
-    return NextResponse.json(
-      { error: error.message || "An unexpected error occurred" },
-      { status: 500 }
+    
+    // Explicit JSON serialization for general errors
+    return new Response(
+      JSON.stringify({ error: error.message || "An unexpected error occurred" }),
+      { 
+        status: 500, 
+        headers: { 'Content-Type': 'application/json' } 
+      }
     );
   }
 }
