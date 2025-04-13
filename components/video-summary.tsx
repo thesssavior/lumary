@@ -12,6 +12,9 @@ import { LanguageSwitcher } from './language-switcher';
 import { useParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 
+// Firebase Function URL - replace with your actual URL
+const FIREBASE_FUNCTION_URL = process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_URL || "http://127.0.0.1:5001/your-project/us-central1/summarize";
+
 export function VideoSummary() {
   const t = useTranslations();
   const params = useParams();
@@ -21,6 +24,19 @@ export function VideoSummary() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const extractVideoId = (url: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/|m\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+      /^([a-zA-Z0-9_-]{11})$/
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -28,20 +44,29 @@ export function VideoSummary() {
     setSummary("");
 
     try {
-      const response = await fetch("/api/summarize", {
+      const videoId = extractVideoId(url);
+      if (!videoId) {
+        throw new Error(t('error'));
+      }
+
+      // Send request to Firebase Function
+      const response = await fetch(FIREBASE_FUNCTION_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ videoUrl: url, locale }),
+        body: JSON.stringify({ 
+          videoId,
+          locale 
+        }),
       });
 
-      const data = await response.json();
-      
       if (!response.ok) {
-        throw new Error(data.error || "Failed to get summary");
+        const errorData = await response.json();
+        throw new Error(errorData.error || t('error'));
       }
 
+      const data = await response.json();
       setSummary(data.summary);
     } catch (err: any) {
       setError(err.message);
@@ -64,8 +89,8 @@ export function VideoSummary() {
             onChange={(e) => setUrl(e.target.value)}
             className="bg-zinc-800 border-zinc-700 text-white"
             required
-            pattern="^https?:\/\/(www\.)?youtube\.com\/watch\?v=.+"
-            title="Please enter a valid YouTube URL (e.g., https://www.youtube.com/watch?v=...)"
+            pattern="^https?:\/\/(www\.|m\.)?(youtube\.com\/(watch\?v=|embed\/|v\/)|youtu\.be\/).+"
+            title="Please enter a valid YouTube URL (e.g., https://www.youtube.com/watch?v=..., https://youtu.be/..., https://www.youtube.com/embed/..., or https://m.youtube.com/watch?v=...)"
           />
           <Button 
             type="submit" 
@@ -98,7 +123,7 @@ export function VideoSummary() {
       {summary && (
         <Card className="p-6 bg-zinc-800/50 border-zinc-700">
           <div className="prose prose-invert max-w-none">
-            <div className="text-white [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h2]:mb-5 [&>h3]:mb-4 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-white">
+            <div className="text-white [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1]:mt-10 [&>h2]:mb-5 [&>h2]:mt-8 [&>h3]:mb-4 [&>h3]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-white">
               <ReactMarkdown>{summary}</ReactMarkdown>
             </div>
           </div>
