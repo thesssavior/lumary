@@ -10,76 +10,55 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Helper function to format seconds into HH:MM:SS
+// Format seconds into HH:MM:SS
 function formatTime(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = Math.floor(seconds % 60);
-  
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-// Configure proxy
-const proxyUrl = process.env.PROXY_URL || 'http://hl_414d8129:bx2ls7v6a169@brd.superproxy.io:33335';
+// Bright Data proxy setup
+const proxyUrl = 'http://brd-customer-hl_414d8129-zone-residential_proxy1:yd55dtlsq03w@brd.superproxy.io:33335';
 const agent = new HttpsProxyAgent(proxyUrl);
-
 
 export async function POST(req: Request) {
   try {
     const { videoId, locale = 'ko' } = await req.json();
     const messages = locale === 'ko' ? koMessages : enMessages;
-    
+
     if (!videoId) {
-      return NextResponse.json(
-        { error: messages.error },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: messages.error }, { status: 400 });
     }
 
     let transcriptText = '';
     try {
       const transcript = await YoutubeTranscript.fetchTranscript(videoId, {
-        fetchOptions: {
-          agent
-        }
+        fetchOptions: { agent },
       } as any);
-      
-      transcriptText = transcript.map(item => 
+
+      transcriptText = transcript.map(item =>
         `[${formatTime(item.offset)}] ${item.text}`
       ).join('\n');
     } catch (error) {
       console.error('Error fetching transcript:', error);
-      return NextResponse.json(
-        { error: messages.error },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: messages.error }, { status: 400 });
     }
 
     if (!transcriptText) {
-      return NextResponse.json(
-        { error: messages.error },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: messages.error }, { status: 400 });
     }
 
-    // Trim if too long for OpenAI
-    const trimmedTranscript = transcriptText.length > 60000 
+    const trimmedTranscript = transcriptText.length > 60000
       ? transcriptText.substring(0, 60000)
       : transcriptText;
 
-    // Summarize with OpenAI
     try {
       const openaiMessages = [
-        { 
-          role: "system" as const, 
-          content: messages.systemPrompts
-        },
-        { 
-          role: "user" as const, 
-          content: `${messages.userPrompts}\n\n${trimmedTranscript}` 
-        },
+        { role: "system" as const, content: messages.systemPrompts },
+        { role: "user" as const, content: `${messages.userPrompts}\n\n${trimmedTranscript}` },
       ];
-      
+
       const completion = await openai.chat.completions.create({
         messages: openaiMessages,
         model: "gpt-4o",
@@ -89,17 +68,13 @@ export async function POST(req: Request) {
 
       if (!completion?.choices?.[0]?.message?.content) {
         console.error("Invalid response from OpenAI");
-        return NextResponse.json({ 
-          error: messages.error 
-        }, { status: 500 });
+        return NextResponse.json({ error: messages.error }, { status: 500 });
       }
 
       const summary = completion.choices[0].message.content;
-      
       return NextResponse.json({ summary });
     } catch (openaiError: any) {
       console.error("OpenAI error:", openaiError.message);
-      
       return NextResponse.json(
         { error: `${messages.error} ${openaiError.message}` },
         { status: 500 }
@@ -108,10 +83,6 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("General error:", error.message);
-    
-    return NextResponse.json(
-      { error: `${error.message}` },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: `${error.message}` }, { status: 500 });
   }
 }
