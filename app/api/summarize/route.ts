@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 import enMessages from '@/messages/en.json';
 import koMessages from '@/messages/ko.json';
 import { YoutubeTranscript } from 'youtube-transcript';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 // Initialize OpenAI
 const openai = new OpenAI({
@@ -18,6 +19,11 @@ function formatTime(seconds: number): string {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
+// Configure proxy
+const proxyUrl = process.env.PROXY_URL || 'http://hl_414d8129:bx2ls7v6a169@brd.superproxy.io:33335';
+const agent = new HttpsProxyAgent(proxyUrl);
+
+
 export async function POST(req: Request) {
   try {
     const { videoId, locale = 'ko' } = await req.json();
@@ -31,12 +37,23 @@ export async function POST(req: Request) {
     }
 
     let transcriptText = '';
-    const transcript = await YoutubeTranscript.fetchTranscript(videoId);
-
-    // Format each transcript item with timestamp
-    transcriptText = transcript.map(item => 
-      `[${formatTime(item.offset)}] ${item.text}`
-    ).join('\n');
+    try {
+      const transcript = await YoutubeTranscript.fetchTranscript(videoId, {
+        fetchOptions: {
+          agent
+        }
+      } as any);
+      
+      transcriptText = transcript.map(item => 
+        `[${formatTime(item.offset)}] ${item.text}`
+      ).join('\n');
+    } catch (error) {
+      console.error('Error fetching transcript:', error);
+      return NextResponse.json(
+        { error: messages.error },
+        { status: 400 }
+      );
+    }
 
     if (!transcriptText) {
       return NextResponse.json(

@@ -12,9 +12,6 @@ import { LanguageSwitcher } from './language-switcher';
 import { useParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 
-// Firebase Function URL - replace with your actual URL
-const FIREBASE_FUNCTION_URL = process.env.NEXT_PUBLIC_FIREBASE_FUNCTION_URL || "http://127.0.0.1:5001/your-project/us-central1/summarize";
-
 export function VideoSummary() {
   const t = useTranslations();
   const params = useParams();
@@ -49,16 +46,12 @@ export function VideoSummary() {
         throw new Error(t('error'));
       }
 
-      // Send request to Firebase Function
-      const response = await fetch(FIREBASE_FUNCTION_URL, {
-        method: "POST",
+      const response = await fetch('/api/summarize', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          videoId,
-          locale 
-        }),
+        body: JSON.stringify({ videoId, locale }),
       });
 
       if (!response.ok) {
