@@ -12,7 +12,7 @@ export default async function Home({ params }: PageProps) {
   const { locale } = resolvedParams;
   
   return (
-    <main className="min-h-screen bg-gradient-to-b from-zinc-900 to-zinc-950 text-white">
+    <main className="min-h-screen bg-white text-black">
       <div className="container mx-auto px-4 py-16 max-w-3xl">
         <HomeHeader locale={locale} />
         <VideoSummary />

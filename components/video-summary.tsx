@@ -80,7 +80,7 @@ export function VideoSummary() {
             placeholder={t('videoUrl')}
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className="bg-zinc-800 border-zinc-700 text-white"
+            className="border-zinc-200 bg-white text-black placeholder:text-zinc-400 ring-1 ring-ring ring-offset-2 focus-visible:ring-red-600 focus-visible:ring-offset-white transition-colors"
             required
             pattern="^https?:\/\/(www\.|m\.)?(youtube\.com\/(watch\?v=|embed\/|v\/)|youtu\.be\/).+"
             title="Please enter a valid YouTube URL (e.g., https://www.youtube.com/watch?v=..., https://youtu.be/..., https://www.youtube.com/embed/..., or https://m.youtube.com/watch?v=...)"
@@ -97,26 +97,26 @@ export function VideoSummary() {
       </form>
 
       {error && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-600">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {loading && (
-        <Card className="p-6 bg-zinc-800/50 border-zinc-700">
+        <Card className="p-6 bg-white border-zinc-200">
           <div className="space-y-3">
-            <Skeleton className="h-4 w-[250px] bg-zinc-700" />
-            <Skeleton className="h-4 w-[400px] bg-zinc-700" />
-            <Skeleton className="h-4 w-[350px] bg-zinc-700" />
+            <Skeleton className="h-4 w-[250px] bg-zinc-100" />
+            <Skeleton className="h-4 w-[400px] bg-zinc-100" />
+            <Skeleton className="h-4 w-[350px] bg-zinc-100" />
           </div>
         </Card>
       )}
 
       {summary && (
-        <Card className="p-6 bg-zinc-800/50 border-zinc-700">
-          <div className="prose prose-invert max-w-none">
-            <div className="text-white [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1]:mt-10 [&>h2]:mb-5 [&>h2]:mt-8 [&>h3]:mb-4 [&>h3]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-white">
+        <Card className="p-6 bg-white border-zinc-200">
+          <div className="prose prose-zinc max-w-none">
+            <div className="text-black [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1]:mt-10 [&>h2]:mb-5 [&>h2]:mt-8 [&>h3]:mb-4 [&>h3]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-black">
               <ReactMarkdown>{summary}</ReactMarkdown>
             </div>
           </div>

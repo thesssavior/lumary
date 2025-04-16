@@ -2,6 +2,7 @@ import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Check } from 'lucide-react';
+import { Button } from './ui/button';
 
 export function LanguageSwitcher() {
   const router = useRouter();
@@ -15,29 +16,21 @@ export function LanguageSwitcher() {
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <button
+    <div className="flex items-center space-x-2">
+      <Button
+        variant={currentLocale === 'ko' ? 'default' : 'outline'}
         onClick={() => switchLanguage('ko')}
-        className={`px-3 py-1 rounded-md hover:bg-zinc-800 transition-colors flex items-center gap-2 border ${
-          currentLocale === 'ko' 
-            ? 'border-red-500 bg-zinc-800' 
-            : 'border-zinc-700'
-        }`}
+        className={currentLocale === 'ko' ? 'bg-black text-white hover:bg-zinc-800' : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50'}
       >
         {t('korean')}
-        {currentLocale === 'ko' && <Check className="h-4 w-4 text-red-500" />}
-      </button>
-      <button
+      </Button>
+      <Button
+        variant={currentLocale === 'en' ? 'default' : 'outline'}
         onClick={() => switchLanguage('en')}
-        className={`px-3 py-1 rounded-md hover:bg-zinc-800 transition-colors flex items-center gap-2 border ${
-          currentLocale === 'en' 
-            ? 'border-red-500 bg-zinc-800' 
-            : 'border-zinc-700'
-        }`}
+        className={currentLocale === 'en' ? 'bg-black text-white hover:bg-zinc-800' : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50'}
       >
         {t('english')}
-        {currentLocale === 'en' && <Check className="h-4 w-4 text-red-500" />}
-      </button>
+      </Button>
     </div>
   );
 } 
