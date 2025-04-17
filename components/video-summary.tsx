@@ -45,22 +45,24 @@ export function VideoSummary() {
       if (!videoId) {
         throw new Error(t('error'));
       }
-
-      const response = await fetch('/api/summarize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ videoId, locale }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || t('error'));
+      const response = await fetch('/api/summarize',  {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ videoId, locale }),
+        }
+      );
+      if (!response.body) throw new Error(t('error'));
+      const reader = response.body.getReader();
+      let result = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = new TextDecoder().decode(value);
+        result += chunk;
+        setSummary(result);
       }
-
-      const data = await response.json();
-      setSummary(data.summary);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -101,16 +103,6 @@ export function VideoSummary() {
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-      )}
-
-      {loading && (
-        <Card className="p-6 bg-white border-zinc-200">
-          <div className="space-y-3">
-            <Skeleton className="h-4 w-[250px] bg-zinc-100" />
-            <Skeleton className="h-4 w-[400px] bg-zinc-100" />
-            <Skeleton className="h-4 w-[350px] bg-zinc-100" />
-          </div>
-        </Card>
       )}
 
       {summary && (

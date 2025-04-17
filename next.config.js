@@ -6,6 +6,16 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: { unoptimized: true },
+  webpack: (config, { isServer }) => {
+    if (isServer && config.optimization?.splitChunks) {
+      // Disable server-side vendor chunk splitting
+      config.optimization.splitChunks.cacheGroups = {
+        default: false,
+        vendors: false,
+      };
+    }
+    return config;
+  },
 };
 
 module.exports = withNextIntl(nextConfig);

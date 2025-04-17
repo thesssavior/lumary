@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { Providers } from '@/components/providers';
+import { Analytics } from "@vercel/analytics/react"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,6 +20,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
+        <Analytics />
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-C64P1CEGZR"
           strategy="afterInteractive"
