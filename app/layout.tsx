@@ -8,8 +8,8 @@ import { Analytics } from "@vercel/analytics/react"
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "YouTube Summary AI",
-  description: "Get instant AI-powered summaries of any YouTube video",
+  title: "AI 영상 요약",
+  description: "영상 요약을 원하는 영상의 URL을 입력하면 영상 요약을 쉽게 얻을 수 있습니다.",
 };
 
 export default function RootLayout({
