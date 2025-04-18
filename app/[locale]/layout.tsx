@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { Inter } from 'next/font/google';
 import '../globals.css';
 import { Navbar } from '@/components/navbar';
+import SidebarLayout from '@/components/SidebarLayout';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -33,9 +34,11 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       <Navbar />
-      <main className="container mx-auto px-4 py-8 bg-white">
-        {children}
-      </main>
+      <SidebarLayout>
+        <div className="container mx-auto px-4 py-8 bg-white h-full">
+          {children}
+        </div>
+      </SidebarLayout>
     </NextIntlClientProvider>
   );
 }

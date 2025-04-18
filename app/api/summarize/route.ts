@@ -10,6 +10,27 @@ import { formatTime } from '@/lib/utils';
 const proxyUrl = 'http://brd-customer-hl_414d8129-zone-residential_proxy1:yd55dtlsq03w@brd.superproxy.io:33335';
 const agent = new HttpsProxyAgent(proxyUrl);
 
+// Fetch YouTube video title using YouTube Data API v3
+async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) {
+    console.error('YOUTUBE_API_KEY is not set');
+    return null;
+  }
+  const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    console.error('YouTube API response not ok:', res.status, await res.text());
+    return null;
+  }
+  const data = await res.json();
+  if (!data.items || !data.items[0]) {
+    console.error('YouTube API returned no items:', JSON.stringify(data));
+    return null;
+  }
+  return data.items[0].snippet.title ?? null;
+}
+
 export async function POST(req: Request) {
   try {
     // Get videoId and locale from request
