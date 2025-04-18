@@ -1,8 +1,8 @@
 import { supabase } from '@/lib/supabaseClient';
 import { notFound } from 'next/navigation';
 
-export default async function SummaryDetailPage({ params }: { params: { summaryId: string } }) {
-  const { summaryId } = params;
+export default async function SummaryDetailPage({ params }: { params: Promise<{ summaryId: string }> }) {
+  const { summaryId } = await params;
   const { data: summary, error } = await supabase
     .from('summaries')
     .select('id, name, summary, video_id, created_at')
