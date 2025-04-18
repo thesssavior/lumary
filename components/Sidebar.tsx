@@ -7,6 +7,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
+import { signIn } from 'next-auth/react';
 
 interface FolderType { id: string; name: string; }
 interface SummaryType { id: string; video_id: string; summary: string; name: string; }
@@ -93,17 +94,26 @@ export default function Sidebar() {
     // You can add summary drag-and-drop logic here
   };
 
-  // UI
+  // UI: show login prompt if not signed in
   if (isSignedIn === false) {
     return (
-      <aside className="h-full w-64 bg-[#f8fafc] border-r flex flex-col justify-between">
-        <div className="p-4 text-center text-gray-500">로그인이 필요합니다</div>
-      </aside>
+      <div className="flex flex-col items-center justify-center h-full bg-[#f8fafc] p-6 text-center space-y-4">
+        <User className="w-12 h-12 text-gray-400" />
+        <p className="text-gray-700 text-lg font-medium">
+          {t('signInDescription') || '로그인 후 이용 가능합니다'}
+        </p>
+        <button
+          onClick={() => signIn('google')}
+          className="px-4 py-2 bg-black hover:bg-zinc-800 text-white rounded-md"
+        >
+          {t('signIn') || '로그인하기'}
+        </button>
+      </div>
     );
   }
 
   return (
-    <aside className="h-full w-64 bg-[#f8fafc] border-r flex flex-col">
+    <div className="flex flex-col h-full bg-[#f8fafc]">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b">
         <span className="font-bold text-lg flex items-center gap-2">
@@ -222,6 +232,6 @@ export default function Sidebar() {
         </div>
         <button className="w-full bg-yellow-300 text-yellow-900 font-bold py-1 rounded mt-2 hover:bg-yellow-400">업그레이드</button>
       </div>
-    </aside>
+    </div>
   );
 } 

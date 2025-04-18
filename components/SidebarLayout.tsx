@@ -7,10 +7,10 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] flex items-center justify-center mr-2 text-gray-700 bg-gray-100 rounded focus:outline-none shadow-md z-20 mt-2 md:mt-4 md:hidden"
+        className="absolute top-4 left-4 z-20 flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded focus:outline-none shadow-md md:hidden"
         aria-label="Toggle sidebar"
       >
         {open ? '×' : '☰'}
@@ -18,16 +18,15 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
 
       {/* Sidebar: open on desktop, toggled on mobile */}
       <aside
-        className={`overflow-auto border-r transition-transform duration-200 bg-white z-10
+        className={`fixed inset-y-0 left-0 w-64 bg-white border-r z-10 transform transition-transform duration-200
           ${open ? 'translate-x-0' : '-translate-x-full'}
-          fixed top-0 left-0 h-full w-64 md:static md:translate-x-0 md:w-64`}
-        style={{ maxWidth: 256 }}
+          md:static md:translate-x-0`}
       >
         <Sidebar />
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto ml-0 md:ml-0">
+      <main className="flex-1 overflow-auto">
         {children}
       </main>
     </div>
