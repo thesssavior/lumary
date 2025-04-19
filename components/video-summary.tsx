@@ -105,7 +105,6 @@ export function VideoSummary() {
       }
 
       const videoTitle = await fetchYoutubeTitle(videoId);
-      console.log('Fetched video title:', videoTitle);
       
       // Save to first folder if available
       if (folders.length > 0) {
@@ -126,7 +125,6 @@ export function VideoSummary() {
           }
 
           const savedData = await saveResponse.json();
-          console.log('Summary saved successfully:', savedData);
           if (refreshSidebar) refreshSidebar();
         } catch (saveError) {
           console.error('Error saving summary:', saveError);
