@@ -12,7 +12,7 @@ import { signIn } from 'next-auth/react';
 interface FolderType { id: string; name: string; }
 interface SummaryType { id: string; video_id: string; summary: string; name: string; }
 
-export default function Sidebar() {
+export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const t = useTranslations();
   const [folders, setFolders] = useState<FolderType[]>([]);
   const [activeFolder, setActiveFolder] = useState<FolderType | null>(null);
@@ -57,7 +57,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     if (isSignedIn) fetchFolders();
-  }, [isSignedIn]);
+  }, [isSignedIn, refreshKey]);
   useEffect(() => { if (activeFolder) fetchSummaries(activeFolder.id); }, [activeFolder]);
 
   // Folder operations
@@ -93,6 +93,14 @@ export default function Sidebar() {
     }
     // You can add summary drag-and-drop logic here
   };
+
+  // Example: Detect in-app browsers
+  const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
+  if (
+    /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line|Daum|Whale|SamsungBrowser/i.test(ua)
+  ) {
+    alert('Google 로그인이 차단되었습니다. 크롬, 사파리 등 기본 브라우저로 열어주세요.');
+  }
 
   // UI: show login prompt if not signed in
   if (isSignedIn === false) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { LanguageSwitcher } from './language-switcher';
 import { useParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { signIn, useSession } from "next-auth/react";
+import { SidebarRefreshContext } from './SidebarLayout';
 
 export function VideoSummary() {
   const t = useTranslations();
@@ -24,6 +25,7 @@ export function VideoSummary() {
   const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
   const { data: session, status } = useSession();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const refreshSidebar = useContext(SidebarRefreshContext);
 
   // Fetch folders on mount
   useEffect(() => {
@@ -114,7 +116,6 @@ export function VideoSummary() {
             body: JSON.stringify({
               videoId,
               summary: result,
-              name: videoTitle,
             }),
           });
 
@@ -126,6 +127,7 @@ export function VideoSummary() {
 
           const savedData = await saveResponse.json();
           console.log('Summary saved successfully:', savedData);
+          if (refreshSidebar) refreshSidebar();
         } catch (saveError) {
           console.error('Error saving summary:', saveError);
           setError('Failed to save summary');
