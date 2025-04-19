@@ -26,6 +26,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
+  const [inAppBrowser, setInAppBrowser] = useState(false);
 
   // Check session
   useEffect(() => {
@@ -94,13 +95,15 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
     // You can add summary drag-and-drop logic here
   };
 
-  // Example: Detect in-app browsers
-  const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
-  if (
-    /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line|Daum|Whale|SamsungBrowser/i.test(ua)
-  ) {
-    alert('Google 로그인이 차단되었습니다. 크롬, 사파리 등 기본 브라우저로 열어주세요.');
-  }
+  // Example: Detect in-app browsers (client only)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const ua = navigator.userAgent || navigator.vendor;
+      if (/KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line|Daum|Whale|SamsungBrowser/i.test(ua)) {
+        setInAppBrowser(true);
+      }
+    }
+  }, []);
 
   // UI: show login prompt if not signed in
   if (isSignedIn === false) {
@@ -110,12 +113,18 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
         <p className="text-gray-700 text-lg font-medium">
           {t('signInDescription') || '로그인 후 이용 가능합니다'}
         </p>
-        <button
-          onClick={() => signIn('google')}
-          className="px-4 py-2 bg-black hover:bg-zinc-800 text-white rounded-md"
-        >
-          {t('signIn') || '로그인하기'}
-        </button>
+        {inAppBrowser ? (
+          <div className="bg-red-100 text-red-700 p-4 rounded-md text-base font-semibold">
+            Google 로그인이 차단되었습니다. 크롬, 사파리 등 기본 브라우저로 열어주세요.
+          </div>
+        ) : (
+          <button
+            onClick={() => signIn('google')}
+            className="px-4 py-2 bg-black hover:bg-zinc-800 text-white rounded-md"
+          >
+            {t('signIn') || '로그인하기'}
+          </button>
+        )}
       </div>
     );
   }
