@@ -5,6 +5,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import Image from 'next/image';
 
 export function Navbar() {
   const t = useTranslations();
@@ -16,7 +17,7 @@ export function Navbar() {
     <nav className="border-b border-zinc-200 bg-white">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center space-x-2">
-          <span className="text-xl font-bold text-black">Lumary</span>
+          <Image src="/lumary-logo.png" alt="Lumary Logo" width={100} height={100} />
         </Link>
 
         <div className="flex items-center space-x-4">

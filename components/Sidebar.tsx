@@ -6,8 +6,9 @@ import { Book, Search, Clock, Folder, ChevronDown, ChevronRight, User, Plus, Log
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
-import ReactMarkdown from 'react-markdown';
 import { signIn } from 'next-auth/react';
+import Image from 'next/image';
+import { useSession } from "next-auth/react";
 
 interface FolderType { id: string; name: string; }
 interface SummaryType { id: string; video_id: string; summary: string; name: string; }
@@ -27,6 +28,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const params = useParams();
   const locale = params.locale as string;
   const [inAppBrowser, setInAppBrowser] = useState(false);
+  const { data: session } = useSession();
 
   // Check session
   useEffect(() => {
@@ -134,7 +136,9 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b">
         <span className="font-bold text-lg flex items-center gap-2">
-          <Book className="w-6 h-6 text-green-600" /> Lumary
+          <Link href="/" className="flex items-center space-x-2">
+            <Image src="/lumary-logo.png" alt="Lumary Logo" width={100} height={100} />
+          </Link>
         </span>
         <button
           className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium hover:bg-green-200"
@@ -245,7 +249,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
       {/* Footer */}
       <div className="border-t px-4 py-3 text-xs text-gray-500 flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <User className="w-4 h-4" /> SsavIor Messiah <span className="ml-auto text-green-600">무료</span>
+          <User className="w-4 h-4" /> {session?.user?.name} <span className="ml-auto text-green-600">무료</span>
         </div>
         <button className="w-full bg-yellow-300 text-yellow-900 font-bold py-1 rounded mt-2 hover:bg-yellow-400">업그레이드</button>
       </div>
