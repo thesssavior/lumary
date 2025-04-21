@@ -6,6 +6,7 @@ import { Providers } from '@/components/providers';
 import { Analytics } from "@vercel/analytics/react"
 import 'nprogress/nprogress.css';
 import { PageProgressBar } from '@/components/PageProgressBar';
+import { Suspense } from 'react';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,7 +40,9 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <Providers>
-          <PageProgressBar />
+          <Suspense fallback={null}>
+            <PageProgressBar />
+          </Suspense>
           {children}
         </Providers>
       </body>
