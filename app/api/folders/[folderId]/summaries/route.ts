@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { supabase } from '@/lib/supabaseClient';
+import { cookies } from 'next/headers';
 
 // Fetch YouTube video title using YouTube Data API v3
 async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
@@ -56,6 +57,27 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
     const session = await auth();
     console.log('Session in summaries API:', session);
 
+    // Anonymous trial logic
+    let anonId = null;
+    if (!session?.user) {
+      // Get cookie from request headers
+      const cookieHeader = req.headers.get('cookie') || '';
+      const match = cookieHeader.match(/lumary_anon_id=([^;]+)/);
+      anonId = match ? match[1] : null;
+      if (!anonId) {
+        return NextResponse.json({ error: 'No anonymous ID found.' }, { status: 400 });
+      }
+      // Check if this anonId has already used the trial
+      const { data: trialRow } = await supabase
+        .from('anon_trials')
+        .select('id, used')
+        .eq('anon_id', anonId)
+        .single();
+      if (trialRow?.used) {
+        return NextResponse.json({ error: 'Anonymous trial already used.' }, { status: 403 });
+      }
+    }
+
     if (!session?.user) {
       console.log('No session found in summaries API');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -107,6 +129,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
     if (summaryError) {
       console.error('Summary creation error:', summaryError);
       return NextResponse.json({ error: summaryError.message }, { status: 500 });
+    }
+
+    // Mark trial as used for anonymous user
+    if (!session?.user && anonId) {
+      await supabase.from('anon_trials').upsert({ anon_id: anonId, used: true });
     }
 
     console.log('Summary created successfully:', summaryData);

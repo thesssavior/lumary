@@ -13,6 +13,7 @@ import { useParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { signIn, useSession } from "next-auth/react";
 import { SidebarRefreshContext } from './SidebarLayout';
+import { v4 as uuidv4 } from 'uuid';
 
 export function VideoSummary() {
   const t = useTranslations();
@@ -25,17 +26,30 @@ export function VideoSummary() {
   const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
   const { data: session, status } = useSession();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [trialUsed, setTrialUsed] = useState(false);
   const refreshSidebar = useContext(SidebarRefreshContext);
 
-  // Fetch folders on mount
+  // Fetch folders on mount - only if logged in
   useEffect(() => {
-    fetch('/api/folders').then(async (res) => {
-      if (res.ok) {
-        const data = await res.json();
-        setFolders(data);
+    if (session) {
+      fetch('/api/folders').then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          setFolders(data);
+        }
+      });
+    }
+  }, [session]);
+
+  // Check localStorage for trial status on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') { // Ensure localStorage is available
+      const storedTrialUsed = localStorage.getItem('trialUsed');
+      if (storedTrialUsed === 'true') {
+        setTrialUsed(true);
       }
-    });
-  }, []);
+    }
+  }, []); // Run only once on mount
 
   const extractVideoId = (url: string): string | null => {
     const patterns = [
@@ -54,10 +68,16 @@ export function VideoSummary() {
     e.preventDefault();
     setError("");
     setSummary("");
+    
+    // Check if user needs to log in
     if (!session) {
-      setShowLoginPrompt(true);
-      return;
+      if (trialUsed) {
+        setShowLoginPrompt(true);
+        return;
+      }
+      console.log("Proceeding with anonymous trial summary generation.");
     }
+    
     setLoading(true);
 
     try {
@@ -94,44 +114,68 @@ export function VideoSummary() {
         setSummary(result);
       }
       
-      const fetchYoutubeTitle = async (videoId: string): Promise<string | null> => {
-        const apiKey = process.env.YOUTUBE_API_KEY;
-        if (!apiKey) return null;
-        const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`;
-        const res = await fetch(url);
-        if (!res.ok) return null;
-        const data = await res.json();
-        return data.items?.[0]?.snippet?.title ?? null;
-      }
-
-      const videoTitle = await fetchYoutubeTitle(videoId);
-      
-      // Save to first folder if available
-      if (folders.length > 0) {
-        try {
-          const saveResponse = await fetch(`/api/folders/${folders[0].id}/summaries`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              videoId,
-              summary: result,
-            }),
-          });
-
-          if (!saveResponse.ok) {
-            const errorData = await saveResponse.json();
-            console.error('Failed to save summary:', errorData);
-            throw new Error('Failed to save summary');
-          }
-
-          const savedData = await saveResponse.json();
-          if (refreshSidebar) refreshSidebar();
-        } catch (saveError) {
-          console.error('Error saving summary:', saveError);
-          setError('Failed to save summary');
+      // If the user is anonymous, mark the trial as used after successful summary
+      if (!session) {
+        setTrialUsed(true);
+        if (typeof window !== 'undefined') { // Ensure localStorage is available
+            localStorage.setItem('trialUsed', 'true'); // Persist trial usage
         }
+        console.log("Anonymous trial used and persisted.");
       } else {
-        console.log('No folders available to save summary');
+        // Only attempt to save if the user is logged in
+        
+        // Fetch YouTube title only for logged-in users when saving
+        const fetchYoutubeTitle = async (videoId: string): Promise<string | null> => {
+          const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY; // Use NEXT_PUBLIC_ prefix for client-side env vars
+          if (!apiKey) {
+             console.warn("YouTube API Key not configured for fetching title.");
+             return null;
+          }
+          const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`;
+          try {
+            const res = await fetch(url);
+            if (!res.ok) {
+              console.error("Failed to fetch YouTube title:", res.status, await res.text());
+              return null;
+            }
+            const data = await res.json();
+            return data.items?.[0]?.snippet?.title ?? null;
+          } catch (error) {
+            console.error("Error fetching YouTube title:", error);
+            return null;
+          }
+        }
+
+        const videoTitle = await fetchYoutubeTitle(videoId); 
+
+        // Save to first folder if available and user is logged in
+        if (folders.length > 0) {
+          try {
+            const saveResponse = await fetch(`/api/folders/${folders[0].id}/summaries`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                videoId,
+                title: videoTitle || 'Untitled Summary',
+                summary: result,
+              }),
+            });
+
+            if (!saveResponse.ok) {
+              const errorData = await saveResponse.json();
+              console.error('Failed to save summary:', errorData);
+              throw new Error('Failed to save summary');
+            }
+
+            const savedData = await saveResponse.json();
+            console.log('Summary saved successfully:', savedData);
+            if (refreshSidebar) refreshSidebar();
+          } catch (saveError) {
+            console.error('Error saving summary:', saveError);
+          }
+        } else {
+          console.log('No folders available to save summary');
+        }
       }
     } catch (err: any) {
       setError(err.message);
@@ -147,7 +191,7 @@ export function VideoSummary() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
             <h2 className="text-xl font-bold mb-4">{t('signIn')}</h2>
-            <p className="mb-6">로그인 후 요약을 사용할 수 있습니다.</p>
+            <p className="mb-6">{t('trialUsedPrompt')}</p>
             <Button
               className="w-full bg-black hover:bg-zinc-800 text-white mb-2"
               onClick={() => { setShowLoginPrompt(false); signIn("google"); }}
@@ -189,6 +233,11 @@ export function VideoSummary() {
           </Button>
         </div>
       </form>
+
+      {/* Add trial info message here */}      
+      {!session && (
+          <p className="text-sm text-zinc-500 text-center mt-2">{t('trialInfo')}</p>
+      )}
 
       {error && (
         <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-600">

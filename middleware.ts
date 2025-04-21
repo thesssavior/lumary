@@ -1,22 +1,30 @@
-import createMiddleware from 'next-intl/middleware';
+import { NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import createIntlMiddleware from 'next-intl/middleware'
 
-export { auth as middleware } from "@/auth"
-
-export default createMiddleware({
-  // A list of all locales that are supported
+// i18n middleware
+const intlMiddleware = createIntlMiddleware({
   locales: ['ko', 'en'],
-  
-  // Used when no locale matches
   defaultLocale: 'ko',
-  
-  // Domains are not supported in this example
-  domains: undefined,
-  
   localePrefix: 'as-needed',
   localeDetection: true
-});
+})
 
+export async function middleware(request: NextRequest) {
+  const host = request.headers.get('host') || ''
+
+  // 🔁 Redirect old domain to new domain
+  if (host.includes('ytsummarize-production.up.railway.app')) {
+    const url = request.nextUrl.clone()
+    url.host = 'lumary.me'
+    return NextResponse.redirect(url)
+  }
+
+  // 🌐 Run i18n handling
+  return intlMiddleware(request)
+}
+
+// 👇 Match routes for i18n (and auth if needed)
 export const config = {
-  // Match only internationalized pathnames
   matcher: ['/', '/(ko|en)/:path*']
-}; 
+}

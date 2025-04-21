@@ -5,6 +5,9 @@ import koMessages from '@/messages/ko.json';
 import { YoutubeTranscript } from 'youtube-transcript';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { formatTime } from '@/lib/utils';
+import { cookies } from 'next/headers';
+import { supabase } from '@/lib/supabaseClient';
+import { auth } from '@/auth';
 
 // Bright Data proxy setup
 const proxyUrl = 'http://brd-customer-hl_414d8129-zone-residential_proxy1:yd55dtlsq03w@brd.superproxy.io:33335';
@@ -40,6 +43,14 @@ export async function POST(req: Request) {
     if (!videoId) {
       return NextResponse.json({ error: messages.error }, { status: 400 });
     }
+
+    /* // Remove authentication check for trial usage
+    // Get session
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    */
 
     // Fetch transcript
     let transcriptText = '';
@@ -87,7 +98,7 @@ export async function POST(req: Request) {
         controller.close();
       }
     });
-  
+
     return new Response(stream, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
