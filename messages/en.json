@@ -22,6 +22,9 @@
     "newFolder": "New Folder",
     "renameFolder": "Rename Folder",
     "confirmDeleteFolder": "Are you sure you want to delete this folder?",
-    "noFolder": "No folder selected"
+    "noFolder": "No folder selected",
+    "loadingSummaries": "Loading summaries...",
+    "loadingFolders": "Loading folders...",
+    "noSummaries": "No summaries"
   }
 } 

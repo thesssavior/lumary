@@ -4,6 +4,8 @@ import "./globals.css";
 import Script from "next/script";
 import { Providers } from '@/components/providers';
 import { Analytics } from "@vercel/analytics/react"
+import 'nprogress/nprogress.css';
+import { PageProgressBar } from '@/components/PageProgressBar';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,6 +39,7 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <Providers>
+          <PageProgressBar />
           {children}
         </Providers>
       </body>

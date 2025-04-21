@@ -6,7 +6,7 @@ import createIntlMiddleware from 'next-intl/middleware'
 const intlMiddleware = createIntlMiddleware({
   locales: ['ko', 'en'],
   defaultLocale: 'ko',
-  localePrefix: 'as-needed',
+  localePrefix: 'always',
   localeDetection: true
 })
 

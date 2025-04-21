@@ -16,8 +16,10 @@ interface SummaryType { id: string; video_id: string; summary: string; name: str
 export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const t = useTranslations();
   const [folders, setFolders] = useState<FolderType[]>([]);
+  const [isLoadingFolders, setIsLoadingFolders] = useState(false);
   const [activeFolder, setActiveFolder] = useState<FolderType | null>(null);
   const [summaries, setSummaries] = useState<SummaryType[]>([]);
+  const [isLoadingSummaries, setIsLoadingSummaries] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState<boolean | null>(null);
@@ -44,22 +46,59 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
 
   // Fetch folders
   const fetchFolders = async () => {
-    const res = await fetch('/api/folders');
-    if (res.ok) {
-      const data: FolderType[] = await res.json();
-      setFolders(data);
-      if (!activeFolder && data.length) setActiveFolder(data[0]);
+    setIsLoadingFolders(true);
+    try {
+      const res = await fetch('/api/folders');
+      if (res.ok) {
+        const data: FolderType[] = await res.json();
+        setFolders(data);
+        if (!activeFolder && data.length) {
+          setActiveFolder(data[0]);
+        } else if (data.length === 0) {
+          setActiveFolder(null);
+        }
+      } else {
+        console.error("Failed to fetch folders");
+        setFolders([]);
+        setActiveFolder(null);
+      }
+    } catch (error) {
+      console.error("Error fetching folders:", error);
+      setFolders([]);
+      setActiveFolder(null);
+    } finally {
+      setIsLoadingFolders(false);
     }
   };
 
   // Fetch summaries for active folder
   const fetchSummaries = async (folderId: string) => {
-    const res = await fetch(`/api/folders/${folderId}/summaries`);
-    if (res.ok) setSummaries(await res.json());
+    setIsLoadingSummaries(true);
+    try {
+      const res = await fetch(`/api/folders/${folderId}/summaries`);
+      if (res.ok) {
+        setSummaries(await res.json());
+      } else {
+        console.error("Failed to fetch summaries for folder:", folderId);
+        setSummaries([]);
+      }
+    } catch (error) {
+      console.error("Error fetching summaries:", error);
+      setSummaries([]);
+    } finally {
+      setIsLoadingSummaries(false);
+    }
   };
 
   useEffect(() => {
-    if (isSignedIn) fetchFolders();
+    if (isSignedIn) {
+      setIsLoadingFolders(true);
+      fetchFolders();
+    } else {
+      setFolders([]);
+      setActiveFolder(null);
+      setSummaries([]);
+    }
   }, [isSignedIn, refreshKey]);
   useEffect(() => { if (activeFolder) fetchSummaries(activeFolder.id); }, [activeFolder]);
 
@@ -200,7 +239,11 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                           {(dragProvided) => (
                             <li ref={dragProvided.innerRef} {...dragProvided.draggableProps} {...dragProvided.dragHandleProps}>
                               <div className={`flex items-center gap-1 font-semibold text-gray-800 ${activeFolder?.id===f.id ? 'bg-gray-200 rounded px-1' : ''}`}
-                                onClick={() => setActiveFolder(f)}
+                                onClick={() => {
+                                  if (activeFolder?.id !== f.id) {
+                                    setActiveFolder(f);
+                                  }
+                                }}
                               >
                                 <Folder className="w-4 h-4" /> {f.name}
                                 <button onClick={e => { e.stopPropagation(); handleRenameFolder(f.id); }} className="ml-1 text-xs text-gray-400 hover:text-gray-700">✏️</button>
@@ -209,12 +252,17 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                               {/* Summaries in folder */}
                               {activeFolder?.id === f.id && (
                                 <ul className="ml-5 mt-1 space-y-1">
-                                  {summaries.length === 0 && <li className="text-xs text-gray-400">요약 없음</li>}
-                                  {summaries.map(s => (
-                                    <li key={s.id} className="truncate text-sm text-gray-700 hover:underline cursor-pointer">
-                                      <Link href={`/${locale}/summaries/${s.id}`}>{s.name}</Link>
-                                    </li>
-                                  ))}
+                                  {isLoadingSummaries ? (
+                                    <li className="text-xs text-gray-400">{t('Sidebar.loadingSummaries') || '로딩중...'}</li>
+                                  ) : summaries.length === 0 ? (
+                                    <li className="text-xs text-gray-400">요약 없음</li>
+                                  ) : (
+                                    summaries.map(s => (
+                                      <li key={s.id} className="truncate text-sm text-gray-700 hover:underline cursor-pointer">
+                                        <Link href={`/${locale}/summaries/${s.id}`}>{s.name}</Link>
+                                      </li>
+                                    ))
+                                  )}
                                 </ul>
                               )}
                             </li>
@@ -222,6 +270,9 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                         </Draggable>
                       ))}
                       {provided.placeholder}
+                      {isLoadingFolders && (
+                        <li className="ml-6 mt-1 space-y-1 text-xs text-gray-400">{t('Sidebar.loadingFolders') || '로딩중...'}</li>
+                      )}
                       {/* Add folder */}
                       {showNewFolderInput && (
                         <li className="mt-2 flex items-center gap-1">
