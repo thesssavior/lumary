@@ -1,30 +1,31 @@
-import { NextResponse } from 'next/server'
-import { NextRequest } from 'next/server'
+// middleware.ts
+import type { NextRequest } from 'next/server'
 import createIntlMiddleware from 'next-intl/middleware'
 
-// i18n middleware
+// 1️⃣ Setup next-intl middleware
 const intlMiddleware = createIntlMiddleware({
   locales: ['ko', 'en'],
   defaultLocale: 'ko',
   localePrefix: 'always',
-  localeDetection: true
+  localeDetection: true,
 })
 
+// Only using next-intl middleware now
 export async function middleware(request: NextRequest) {
-  const host = request.headers.get('host') || ''
-
-  // 🔁 Redirect old domain to new domain
-  if (host.includes('ytsummarize-production.up.railway.app')) {
-    const url = request.nextUrl.clone()
-    url.host = 'lumary.me'
-    return NextResponse.redirect(url)
-  }
-
-  // 🌐 Run i18n handling
-  return intlMiddleware(request)
+  return await intlMiddleware(request)
 }
 
-// 👇 Match routes for i18n (and auth if needed)
 export const config = {
-  matcher: ['/', '/(ko|en)/:path*']
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - images (your static image folder)
+     * Matcher needs to run on the root for locale detection.
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|images).*?)'
+  ],
 }

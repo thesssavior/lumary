@@ -52,11 +52,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ fold
 export async function POST(req: Request, { params }: { params: Promise<{ folderId: string }> }) {
   try {
     const { folderId } = await params;
-    console.log('Folder ID:', folderId);
-
     const session = await auth();
-    console.log('Session in summaries API:', session);
-
     // Anonymous trial logic
     let anonId = null;
     if (!session?.user) {
@@ -96,11 +92,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
       return NextResponse.json({ error: 'Folder not found or unauthorized' }, { status: 403 });
     }
 
-    console.log('Folder verified:', folder);
-
     const body = await req.json();
     const { videoId, summary } = body;
-    console.log('Received data:', { videoId, summaryLength: summary?.length });
 
     if (!videoId || !summary) {
       console.error('Missing required fields:', { videoId, summary });
@@ -136,7 +129,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
       await supabase.from('anon_trials').upsert({ anon_id: anonId, used: true });
     }
 
-    console.log('Summary created successfully:', summaryData);
     return NextResponse.json(summaryData);
   } catch (error) {
     console.error('Unexpected error in summaries API:', error);

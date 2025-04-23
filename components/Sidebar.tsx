@@ -100,7 +100,14 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
       setSummaries([]);
     }
   }, [isSignedIn, refreshKey]);
-  useEffect(() => { if (activeFolder) fetchSummaries(activeFolder.id); }, [activeFolder]);
+
+  // Fetch summaries for active folder - ADD refreshKey dependency
+  useEffect(() => { 
+    if (activeFolder) { 
+        console.log(`Fetching summaries for folder ${activeFolder.id} due to activeFolder change or refreshKey.`);
+        fetchSummaries(activeFolder.id); 
+    }
+  }, [activeFolder, refreshKey]);
 
   // Folder operations
   const handleAddFolder = async () => {
