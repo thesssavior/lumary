@@ -4,17 +4,9 @@ import enMessages from '@/messages/en.json';
 import koMessages from '@/messages/ko.json';
 import { YoutubeTranscript } from 'youtube-transcript';
 import { HttpsProxyAgent } from 'https-proxy-agent';
-import { formatTime } from '@/lib/utils';
-import { Tiktoken } from "js-tiktoken/lite";
-import o200k_base from "js-tiktoken/ranks/o200k_base";
+import { formatTime, calculateTokenCount } from '@/lib/utils';
 
-// Function to calculate token count for a given text
-function calculateTokenCount(text: string) {
-  const encoder = new Tiktoken(o200k_base);
-  const tokens = encoder.encode(text);
-  return tokens.length;
-}
-
+// OpenAI model
 let model = "gpt-4.1-mini";
 
 // Bright Data proxy setup
@@ -59,8 +51,10 @@ export async function POST(req: Request) {
         fetchOptions: { agent },
       } as any);
 
-      transcriptText = transcript.map(item =>
-        `[${formatTime(item.offset)}] ${item.text}`
+      transcriptText = transcript.map((item, idx) =>
+        idx % 4 === 0
+          ? `[${formatTime(item.offset)}] ${item.text}`
+          : item.text
       ).join('\n');
     } catch (error) {
       console.error('Error fetching transcript:', error);
@@ -72,6 +66,11 @@ export async function POST(req: Request) {
     }
 
     const tokenCount = calculateTokenCount(transcriptText);
+    console.log('Token count:', tokenCount);
+
+    // if (tokenCount > 40000) {
+    //   return NextResponse.json({ error: messages.error + ' (Input too long. Please try a shorter video.)' }, { status: 400 });
+    // }
 
     if (tokenCount > 16384) {
       model = "gpt-4.1";
@@ -108,6 +107,7 @@ export async function POST(req: Request) {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
         'Transfer-Encoding': 'chunked',
+        'input_token_count': `${tokenCount}`
       }
     });
   } catch (error: any) {

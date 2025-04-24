@@ -104,6 +104,7 @@ export function VideoSummary() {
       }
 
       const reader = summaryResponse.body.getReader();
+      const input_token_count = parseInt(summaryResponse.headers.get('input_token_count') || '0', 10);
       let result = '';
 
       while (true) {
@@ -133,6 +134,7 @@ export function VideoSummary() {
               body: JSON.stringify({
                 videoId,
                 summary: result,
+                input_token_count: input_token_count,
               }),
             });
 

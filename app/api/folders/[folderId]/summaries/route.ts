@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { supabase } from '@/lib/supabaseClient';
-import { cookies } from 'next/headers';
-import { encoding_for_model, TiktokenModel } from '@dqbd/tiktoken';
-import { Tiktoken } from "js-tiktoken/lite";
-import o200k_base from "js-tiktoken/ranks/o200k_base";
+import { calculateTokenCount } from '@/lib/utils';
 
 // Fetch YouTube video title using YouTube Data API v3
 async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
@@ -25,13 +22,6 @@ async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
     return null;
   }
   return data.items[0].snippet.title ?? null;
-}
-
-// Function to calculate token count for a given text
-function calculateTokenCount(text: string) {
-  const encoder = new Tiktoken(o200k_base);
-  const tokens = encoder.encode(text);
-  return tokens.length;
 }
 
 // GET /api/folders/[folderId]/summaries
@@ -84,7 +74,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
       return NextResponse.json({ error: 'Folder not found or unauthorized' }, { status: 403 });
     }
     const body = await req.json();
-    const { videoId, summary } = body;
+    const { videoId, summary, input_token_count } = body;
 
     if (!videoId || !summary) {
       console.error('Missing required fields:', { videoId, summary });
@@ -92,7 +82,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
     }
 
     // Calculate token count of the summary text
-    const tokenCount = calculateTokenCount(summary);
+    const output_token_count = calculateTokenCount(summary);
+    console.log('Output token count:', output_token_count);
 
     // Fetch the YouTube title server-side
     let name = null;
@@ -109,7 +100,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
         video_id: videoId,
         summary: summary,
         name: name,
-        token_count: tokenCount
+        input_token_count: input_token_count,
+        output_token_count: output_token_count
       })
       .select()
       .single();
@@ -119,7 +111,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
       return NextResponse.json({ error: summaryError.message }, { status: 500 });
     }
     // Return the saved summary data along with the token count
-    return NextResponse.json({ ...summaryData, tokenCount });
+    return NextResponse.json({ ...summaryData, input_token_count, output_token_count });
   } catch (error) {
     console.error('Unexpected error in summaries API:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
