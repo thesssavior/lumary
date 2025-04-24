@@ -52,7 +52,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ fold
 export async function POST(req: Request, { params }: { params: Promise<{ folderId: string }> }) {
   try {
     const { folderId } = await params;
-    console.log('Folder ID:', folderId);
 
     const session = await auth();
     
@@ -83,7 +82,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
 
     // Calculate token count of the summary text
     const output_token_count = calculateTokenCount(summary);
-    console.log('Output token count:', output_token_count);
 
     // Fetch the YouTube title server-side
     let name = null;

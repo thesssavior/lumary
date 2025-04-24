@@ -10,7 +10,7 @@ import { formatTime, calculateTokenCount } from '@/lib/utils';
 let model = "gpt-4.1-mini";
 
 // Bright Data proxy setup
-const proxyUrl = 'http://brd-customer-hl_414d8129-zone-residential_proxy2:77jwj9bnibq7@brd.superproxy.io:33335';
+const proxyUrl = 'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh_country-kr_city-seoul@geo.iproyal.com:12321';
 const agent = new HttpsProxyAgent(proxyUrl);
 
 // Fetch YouTube video title using YouTube Data API v3
