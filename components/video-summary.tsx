@@ -156,6 +156,9 @@ export function VideoSummary() {
     }
   };
 
+  const displaySummary = summary;
+  const showLoadingSkeleton = loading && !displaySummary;
+
   return (
     <div className="space-y-8">
       {/* Login Modal/Overlay */}
@@ -218,11 +221,28 @@ export function VideoSummary() {
         </Alert>
       )}
 
+      {/* Skeleton loader shown when loading and no summary yet */}
+      {showLoadingSkeleton && (
+        <Card className="p-6 bg-white border-zinc-200">
+          <div className="space-y-4">
+            <Skeleton className="h-6 w-3/4 mb-6" />
+            <Skeleton className="h-4 w-full mb-3" />
+            <Skeleton className="h-4 w-full mb-3" />
+            <Skeleton className="h-4 w-5/6 mb-6" />
+            <Skeleton className="h-4 w-full mb-3" />
+            <Skeleton className="h-4 w-full mb-3" />
+            <Skeleton className="h-4 w-4/6 mb-3" />
+          </div>
+        </Card>
+      )}
+
       {summary && (
         <Card className="p-6 bg-white border-zinc-200">
           <div className="prose prose-zinc max-w-none">
-          <div className="text-black [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1:not(:first-child)]:mt-10 [&>h2]:mb-5 [&>h2:not(:first-child)]:mt-8 [&>h3]:mb-4 [&>h3:not(:first-child)]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-black">
-              <ReactMarkdown>{summary}</ReactMarkdown>
+            <div className="text-black [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1:not(:first-child)]:mt-10 [&>h2]:mb-5 [&>h2:not(:first-child)]:mt-8 [&>h3]:mb-4 [&>h3:not(:first-child)]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-black">
+              <ReactMarkdown>
+                {summary}
+              </ReactMarkdown>
             </div>
           </div>
         </Card>

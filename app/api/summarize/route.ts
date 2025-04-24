@@ -5,36 +5,21 @@ import koMessages from '@/messages/ko.json';
 import { YoutubeTranscript } from 'youtube-transcript';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { formatTime } from '@/lib/utils';
-import { Tiktoken } from 'tiktoken/lite';
-import o200k_base from 'tiktoken/encoders/o200k_base.json';
+import { Tiktoken } from "js-tiktoken/lite";
+import o200k_base from "js-tiktoken/ranks/o200k_base";
 
-const encoding = new Tiktoken(
-  o200k_base.bpe_ranks,
-  o200k_base.special_tokens,
-  o200k_base.pat_str
-);
-const tokens = encoding.encode("hello world");
-encoding.free();
-
+// Function to calculate token count for a given text
+function calculateTokenCount(text: string) {
+  const encoder = new Tiktoken(o200k_base);
+  const tokens = encoder.encode(text);
+  return tokens.length;
+}
 
 let model = "gpt-4.1-mini";
 
 // Bright Data proxy setup
 const proxyUrl = 'http://brd-customer-hl_414d8129-zone-residential_proxy1:yd55dtlsq03w@brd.superproxy.io:33335';
 const agent = new HttpsProxyAgent(proxyUrl);
-
-// Function to calculate token count for a given text
-function calculateTokenCount(text: string): number {
-  const encoding = new Tiktoken(
-    o200k_base.bpe_ranks,
-    o200k_base.special_tokens,
-    o200k_base.pat_str
-  );
-  const tokens = encoding.encode(text);
-  const tokenCount = tokens.length;
-  encoding.free();
-  return tokenCount;
-}
 
 // Fetch YouTube video title using YouTube Data API v3
 async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
@@ -87,11 +72,9 @@ export async function POST(req: Request) {
     }
 
     const tokenCount = calculateTokenCount(transcriptText);
-    console.log(`Token count: ${tokenCount}`);
 
     if (tokenCount > 16384) {
       model = "gpt-4.1";
-      console.log("Token count is greater than 16384, using gpt-4.1");
     }
 
     // Summarize with OpenAI

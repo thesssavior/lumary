@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { supabase } from '@/lib/supabaseClient';
 import { cookies } from 'next/headers';
-import { Tiktoken } from 'tiktoken/lite';
-import o200k_base from 'tiktoken/encoders/o200k_base.json';
+import { encoding_for_model, TiktokenModel } from '@dqbd/tiktoken';
+import { Tiktoken } from "js-tiktoken/lite";
+import o200k_base from "js-tiktoken/ranks/o200k_base";
 
 // Fetch YouTube video title using YouTube Data API v3
 async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
@@ -27,16 +28,10 @@ async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
 }
 
 // Function to calculate token count for a given text
-function calculateTokenCount(text: string): number {
-  const encoding = new Tiktoken(
-    o200k_base.bpe_ranks,
-    o200k_base.special_tokens,
-    o200k_base.pat_str
-  );
-  const tokens = encoding.encode(text);
-  const count = tokens.length;
-  encoding.free();
-  return count;
+function calculateTokenCount(text: string) {
+  const encoder = new Tiktoken(o200k_base);
+  const tokens = encoder.encode(text);
+  return tokens.length;
 }
 
 // GET /api/folders/[folderId]/summaries
