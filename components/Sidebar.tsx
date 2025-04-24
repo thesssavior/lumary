@@ -100,7 +100,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
       setSummaries([]);
     }
   }, [isSignedIn, refreshKey]);
-  useEffect(() => { if (activeFolder) fetchSummaries(activeFolder.id); }, [activeFolder]);
+  useEffect(() => { if (activeFolder) fetchSummaries(activeFolder.id); }, [activeFolder, refreshKey]);
 
   // Folder operations
   const handleAddFolder = async () => {

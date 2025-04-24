@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { supabase } from '@/lib/supabaseClient';
 import { cookies } from 'next/headers';
+import { Tiktoken } from 'tiktoken/lite';
+import o200k_base from 'tiktoken/encoders/o200k_base.json';
 
 // Fetch YouTube video title using YouTube Data API v3
 async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
@@ -22,6 +24,19 @@ async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
     return null;
   }
   return data.items[0].snippet.title ?? null;
+}
+
+// Function to calculate token count for a given text
+function calculateTokenCount(text: string): number {
+  const encoding = new Tiktoken(
+    o200k_base.bpe_ranks,
+    o200k_base.special_tokens,
+    o200k_base.pat_str
+  );
+  const tokens = encoding.encode(text);
+  const count = tokens.length;
+  encoding.free();
+  return count;
 }
 
 // GET /api/folders/[folderId]/summaries
@@ -55,29 +70,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
     console.log('Folder ID:', folderId);
 
     const session = await auth();
-    console.log('Session in summaries API:', session);
-
-    // Anonymous trial logic
-    let anonId = null;
-    if (!session?.user) {
-      // Get cookie from request headers
-      const cookieHeader = req.headers.get('cookie') || '';
-      const match = cookieHeader.match(/lumary_anon_id=([^;]+)/);
-      anonId = match ? match[1] : null;
-      if (!anonId) {
-        return NextResponse.json({ error: 'No anonymous ID found.' }, { status: 400 });
-      }
-      // Check if this anonId has already used the trial
-      const { data: trialRow } = await supabase
-        .from('anon_trials')
-        .select('id, used')
-        .eq('anon_id', anonId)
-        .single();
-      if (trialRow?.used) {
-        return NextResponse.json({ error: 'Anonymous trial already used.' }, { status: 403 });
-      }
-    }
-
+    
     if (!session?.user) {
       console.log('No session found in summaries API');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -95,17 +88,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
       console.error('Folder verification error:', folderError);
       return NextResponse.json({ error: 'Folder not found or unauthorized' }, { status: 403 });
     }
-
-    console.log('Folder verified:', folder);
-
     const body = await req.json();
     const { videoId, summary } = body;
-    console.log('Received data:', { videoId, summaryLength: summary?.length });
 
     if (!videoId || !summary) {
       console.error('Missing required fields:', { videoId, summary });
       return NextResponse.json({ error: 'Missing videoId or summary' }, { status: 400 });
     }
+
+    // Calculate token count of the summary text
+    const tokenCount = calculateTokenCount(summary);
 
     // Fetch the YouTube title server-side
     let name = null;
@@ -121,7 +113,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
         folder_id: folderId,
         video_id: videoId,
         summary: summary,
-        name: name
+        name: name,
+        token_count: tokenCount
       })
       .select()
       .single();
@@ -130,16 +123,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
       console.error('Summary creation error:', summaryError);
       return NextResponse.json({ error: summaryError.message }, { status: 500 });
     }
-
-    // Mark trial as used for anonymous user
-    if (!session?.user && anonId) {
-      await supabase.from('anon_trials').upsert({ anon_id: anonId, used: true });
-    }
-
-    console.log('Summary created successfully:', summaryData);
-    return NextResponse.json(summaryData);
+    // Return the saved summary data along with the token count
+    return NextResponse.json({ ...summaryData, tokenCount });
   } catch (error) {
     console.error('Unexpected error in summaries API:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
+  // Fallback: should never reach here, but just in case
+  return NextResponse.json({ error: 'No response generated' }, { status: 500 });
 } 

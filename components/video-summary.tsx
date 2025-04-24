@@ -123,31 +123,7 @@ export function VideoSummary() {
         console.log("Anonymous trial used and persisted.");
       } else {
         // Only attempt to save if the user is logged in
-        
-        // Fetch YouTube title only for logged-in users when saving
-        const fetchYoutubeTitle = async (videoId: string): Promise<string | null> => {
-          const apiKey = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY; // Use NEXT_PUBLIC_ prefix for client-side env vars
-          if (!apiKey) {
-             console.warn("YouTube API Key not configured for fetching title.");
-             return null;
-          }
-          const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`;
-          try {
-            const res = await fetch(url);
-            if (!res.ok) {
-              console.error("Failed to fetch YouTube title:", res.status, await res.text());
-              return null;
-            }
-            const data = await res.json();
-            return data.items?.[0]?.snippet?.title ?? null;
-          } catch (error) {
-            console.error("Error fetching YouTube title:", error);
-            return null;
-          }
-        }
-
-        const videoTitle = await fetchYoutubeTitle(videoId); 
-
+  
         // Save to first folder if available and user is logged in
         if (folders.length > 0) {
           try {
@@ -156,7 +132,6 @@ export function VideoSummary() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 videoId,
-                title: videoTitle || 'Untitled Summary',
                 summary: result,
               }),
             });
@@ -166,9 +141,6 @@ export function VideoSummary() {
               console.error('Failed to save summary:', errorData);
               throw new Error('Failed to save summary');
             }
-
-            const savedData = await saveResponse.json();
-            console.log('Summary saved successfully:', savedData);
             if (refreshSidebar) refreshSidebar();
           } catch (saveError) {
             console.error('Error saving summary:', saveError);

@@ -5,13 +5,36 @@ import koMessages from '@/messages/ko.json';
 import { YoutubeTranscript } from 'youtube-transcript';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { formatTime } from '@/lib/utils';
-import { cookies } from 'next/headers';
-import { supabase } from '@/lib/supabaseClient';
-import { auth } from '@/auth';
+import { Tiktoken } from 'tiktoken/lite';
+import o200k_base from 'tiktoken/encoders/o200k_base.json';
+
+const encoding = new Tiktoken(
+  o200k_base.bpe_ranks,
+  o200k_base.special_tokens,
+  o200k_base.pat_str
+);
+const tokens = encoding.encode("hello world");
+encoding.free();
+
+
+let model = "gpt-4.1-mini";
 
 // Bright Data proxy setup
 const proxyUrl = 'http://brd-customer-hl_414d8129-zone-residential_proxy1:yd55dtlsq03w@brd.superproxy.io:33335';
 const agent = new HttpsProxyAgent(proxyUrl);
+
+// Function to calculate token count for a given text
+function calculateTokenCount(text: string): number {
+  const encoding = new Tiktoken(
+    o200k_base.bpe_ranks,
+    o200k_base.special_tokens,
+    o200k_base.pat_str
+  );
+  const tokens = encoding.encode(text);
+  const tokenCount = tokens.length;
+  encoding.free();
+  return tokenCount;
+}
 
 // Fetch YouTube video title using YouTube Data API v3
 async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
@@ -44,14 +67,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: messages.error }, { status: 400 });
     }
 
-    /* // Remove authentication check for trial usage
-    // Get session
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    */
-
     // Fetch transcript
     let transcriptText = '';
     try {
@@ -71,6 +86,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: messages.error }, { status: 400 });
     }
 
+    const tokenCount = calculateTokenCount(transcriptText);
+    console.log(`Token count: ${tokenCount}`);
+
+    if (tokenCount > 16384) {
+      model = "gpt-4.1";
+      console.log("Token count is greater than 16384, using gpt-4.1");
+    }
+
     // Summarize with OpenAI
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -79,13 +102,12 @@ export async function POST(req: Request) {
     const stream = new ReadableStream({
       async start(controller) {
         const completion = await openai.chat.completions.create({
-          model: "gpt-4.1-mini",
+          model: model,
           messages: [
             { role: "system", content: messages.systemPrompts },
             { role: "user", content: `${messages.userPrompts}\n\n${transcriptText}` }
           ],
           stream: true,
-          max_tokens: 3000,
           temperature: 0.3,
         });
   

@@ -18,7 +18,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
       <div className="flex h-full relative">
         <button
           onClick={() => setOpen((o) => !o)}
-          className={`absolute top-4 ${open ? 'left-72' : 'left-4'} z-20 flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded focus:outline-none shadow-md`}
+          className={`fixed top-4 ${open ? 'left-72' : 'left-4'} z-20 flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded focus:outline-none shadow-md`}
           aria-label="Toggle sidebar"
         >
           {open ? '×' : '☰'}
