@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTranslations } from 'next-intl';
 import { LanguageSwitcher } from './language-switcher';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { signIn, useSession } from "next-auth/react";
 import { SidebarRefreshContext } from './SidebarLayout';
@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from 'uuid';
 export function VideoSummary() {
   const t = useTranslations();
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = params.locale as string;
   const [url, setUrl] = useState("");
   const [summary, setSummary] = useState("");
@@ -51,6 +52,17 @@ export function VideoSummary() {
     }
   }, []); // Run only once on mount
 
+  useEffect(() => {
+    const youtubeParam = searchParams.get('youtube');
+    if (youtubeParam) {
+      try {
+        setUrl(decodeURIComponent(youtubeParam));
+      } catch {
+        setUrl(youtubeParam); // fallback if decoding fails
+      }
+    }
+  }, [searchParams]);
+
   const extractVideoId = (url: string): string | null => {
     const patterns = [
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/|m\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
@@ -75,7 +87,6 @@ export function VideoSummary() {
         setShowLoginPrompt(true);
         return;
       }
-      console.log("Proceeding with anonymous trial summary generation.");
     }
     
     setLoading(true);
@@ -121,7 +132,6 @@ export function VideoSummary() {
         if (typeof window !== 'undefined') { // Ensure localStorage is available
             localStorage.setItem('trialUsed', 'true'); // Persist trial usage
         }
-        console.log("Anonymous trial used and persisted.");
       } else {
         // Only attempt to save if the user is logged in
   

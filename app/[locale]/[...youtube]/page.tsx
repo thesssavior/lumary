@@ -1,26 +1,41 @@
 "use client";
 
 import { use, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface YoutubeCatchAllPageProps {
-  params: Promise<{ youtube: string[] }>;
+  params: Promise<{ youtube: string[]; locale: string }>;
 }
 
 export default function YoutubeCatchAllPage({ params }: YoutubeCatchAllPageProps) {
   const router = useRouter();
-  const { youtube } = use(params);
-  const youtubeUrl = youtube.join("/");
-  console.log(youtubeUrl);
-  // Extract video ID from the URL
-  const match = youtubeUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/|m\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
+  const { youtube, locale } = use(params);
+  const searchParams = useSearchParams();
+  
+  // Join path segments to form the base URL
+  let youtubePath = youtube.join("/");
+  let protocol = youtube[0];
+  try {
+    protocol = decodeURIComponent(protocol);
+  } catch {}
+  if (protocol === "https:" || protocol === "http:") {
+    youtubePath = protocol + "//" + youtube.slice(1).filter(Boolean).join("/");
+  }
+  
+  // Construct query string from searchParams
+  const queryString = new URLSearchParams(searchParams as unknown as Record<string, string>).toString();
+  
+  // Combine path and query string to form the full URL
+  const fullYoutubeUrl = queryString ? `${youtubePath}?${queryString}` : youtubePath;
+
   useEffect(() => {
-    if (match && match[1]) {
-      // Redirect to the ko summary page with videoId as a query param
-      router.replace(`/ko/summaries?videoId=${match[1]}`);
+    if (fullYoutubeUrl) {
+      // Encode the full URL to safely pass it as a query parameter
+      router.replace(`/${locale}?youtube=${encodeURIComponent(fullYoutubeUrl)}`);
     } else {
-      router.replace("/ko");
+      router.replace(`/${locale}`);
     }
-  }, [youtubeUrl]);
+  }, [fullYoutubeUrl, locale]);
+
   return <div>Redirecting...</div>;
-} 
+}

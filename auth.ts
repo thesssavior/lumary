@@ -46,7 +46,6 @@ const authOptions = {
       try {
         // Generate consistent UUID from Google ID
         const userId = generateUUID(account.providerAccountId);
-        console.log("SignIn event - generated userId:", userId); // Debug log
         
         // Upsert user record into Supabase with consistent UUID
         const { error: userError } = await supabase.from('users').upsert({

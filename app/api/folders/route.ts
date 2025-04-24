@@ -35,7 +35,6 @@ export async function GET() {
         console.error('Default folder creation error:', createErr);
       } else {
         foldersList = [defaultFolder];
-        console.log('Default folder created:', defaultFolder);
       }
     }
     return NextResponse.json(foldersList);
