@@ -17,6 +17,7 @@
   "noFolder": "선택된 폴더가 없습니다",
   "trialUsedPrompt": "1회 체험을 사용하셨습니다. 더 많은 요약을 생성하려면 로그인해주세요.",
   "trialInfo": "1회 체험 요약 사용 후 로그인이 필요합니다.",
+  "inputTooLong": "영상 용량이 너무 큽니다. 더 짧은 영상을 시도해 주세요.",
   "Sidebar": {
     "folders": "폴더",
     "newFolder": "새 폴더",

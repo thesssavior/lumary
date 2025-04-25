@@ -86,7 +86,7 @@ export async function POST(req: Request) {
     console.log('Token count:', tokenCount);
 
     if (tokenCount > 65536) {
-      return NextResponse.json({ error: messages.error + ' (Input too long. Please try a shorter video.)' }, { status: 400 });
+      return NextResponse.json({ error: messages.inputTooLong }, { status: 400 });
     }
 
     if (tokenCount > 16384) {

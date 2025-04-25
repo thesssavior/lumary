@@ -17,6 +17,7 @@
   "noFolder": "No folder selected",
   "trialUsedPrompt": "You have used your one trial. Please sign in to generate more summaries.",
   "trialInfo": "Guest users get one free summary trial.",
+  "inputTooLong": "The video is too long to summarize. Please try a shorter video.",
   "Sidebar": {
     "folders": "Folders",
     "newFolder": "New Folder",
