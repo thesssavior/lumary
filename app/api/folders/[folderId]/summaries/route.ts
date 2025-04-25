@@ -97,7 +97,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
         summary: summary,
         name: video_title,
         input_token_count: input_token_count,
-        output_token_count: output_token_count
+        output_token_count: output_token_count,
+        user_id: session.user.id
       })
       .select()
       .single();

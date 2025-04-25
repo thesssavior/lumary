@@ -18,14 +18,14 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const t = useTranslations();
   const [folders, setFolders] = useState<FolderType[]>([]);
   const [isLoadingFolders, setIsLoadingFolders] = useState(false);
-  const [summaries, setSummaries] = useState<SummaryType[]>([]);
-  const [isLoadingSummaries, setIsLoadingSummaries] = useState(false);
+  const [folderSummaries, setFolderSummaries] = useState<{ [folderId: string]: SummaryType[] }>({});
+  const [loadingSummaries, setLoadingSummaries] = useState<{ [folderId: string]: boolean }>({});
   const [newFolderName, setNewFolderName] = useState('');
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState<boolean | null>(null);
   const [recentOpen, setRecentOpen] = useState(true);
   const [knowledgeOpen, setKnowledgeOpen] = useState(true);
-  const [recents, setRecents] = useState<SummaryType[]>([]); // You can wire this up to your own logic
+  const [recents, setRecents] = useState<SummaryType[]>([]);
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
@@ -76,20 +76,19 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
 
   // Fetch summaries for active folder
   const fetchSummaries = async (folderId: string) => {
-    setIsLoadingSummaries(true);
+    setLoadingSummaries(prev => ({ ...prev, [folderId]: true }));
     try {
       const res = await fetch(`/api/folders/${folderId}/summaries`);
       if (res.ok) {
-        setSummaries(await res.json());
+        const data = await res.json();
+        setFolderSummaries(prev => ({ ...prev, [folderId]: data }));
       } else {
-        console.error("Failed to fetch summaries for folder:", folderId);
-        setSummaries([]);
+        setFolderSummaries(prev => ({ ...prev, [folderId]: [] }));
       }
     } catch (error) {
-      console.error("Error fetching summaries:", error);
-      setSummaries([]);
+      setFolderSummaries(prev => ({ ...prev, [folderId]: [] }));
     } finally {
-      setIsLoadingSummaries(false);
+      setLoadingSummaries(prev => ({ ...prev, [folderId]: false }));
     }
   };
 
@@ -100,10 +99,38 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
     } else {
       setFolders([]);
       setActiveFolder(null);
-      setSummaries([]);
+      setFolderSummaries({});
+      setLoadingSummaries({});
     }
   }, [isSignedIn, refreshKey]);
-  useEffect(() => { if (activeFolder) fetchSummaries(activeFolder.id); }, [activeFolder, refreshKey]);
+
+  useEffect(() => {
+    if (activeFolder) {
+      setFolderOpen({ [activeFolder.id]: true });
+      // Fetch summaries for active folder if not already loaded
+      if (!folderSummaries[activeFolder.id]) {
+        fetchSummaries(activeFolder.id);
+      }
+    } else {
+      setFolderOpen({});
+    }
+  }, [activeFolder, refreshKey]);
+
+  useEffect(() => {
+    if (isSignedIn) {
+      fetch('/api/folders/recent-summaries')
+        .then(async (res) => {
+          if (res.ok) {
+            setRecents(await res.json());
+          } else {
+            setRecents([]);
+          }
+        })
+        .catch(() => setRecents([]));
+    } else {
+      setRecents([]);
+    }
+  }, [isSignedIn, refreshKey]);
 
   // Folder operations
   const handleAddFolder = async () => {
@@ -144,10 +171,14 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
       if (sourceFolderId === destFolderId) return;
       const summaryIdx = result.source.index;
       // Find the summary in the current summaries list
-      const summaryToMove = summaries[summaryIdx];
+      const summaryToMove = folderSummaries[sourceFolderId][summaryIdx];
       if (!summaryToMove) return;
       // Optimistically remove from current list
-      setSummaries(summaries => summaries.filter((s, i) => i !== summaryIdx));
+      setFolderSummaries(prev => ({
+        ...prev,
+        [sourceFolderId]: prev[sourceFolderId].filter((_, i) => i !== summaryIdx),
+        [destFolderId]: [...prev[destFolderId], summaryToMove]
+      }));
       // Call API to move summary
       await fetch(`/api/folders/${sourceFolderId}/summaries`, {
         method: 'PATCH',
@@ -173,14 +204,16 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
 
   // Helper to toggle folder open/close
   const toggleFolder = (folderId: string) => {
-    setFolderOpen(prev => ({ ...prev, [folderId]: !prev[folderId] }));
-  };
-
-  useEffect(() => {
-    if (activeFolder) {
-      setFolderOpen(prev => ({ ...prev, [activeFolder.id]: true }));
+    setFolderOpen(prev => {
+      const next = { ...prev, [folderId]: !prev[folderId] };
+      // Only one open at a time if you want accordion style:
+      // Object.keys(next).forEach(id => { if (id !== folderId) next[id] = false; });
+      return next;
+    });
+    if (!folderOpen[folderId] && !folderSummaries[folderId]) {
+      fetchSummaries(folderId);
     }
-  }, [activeFolder]);
+  };
 
   // UI: show login prompt if not signed in
   if (isSignedIn === false) {
@@ -251,7 +284,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
               <ul className="ml-6 mt-1 space-y-1">
                 {recents.length === 0 && <li className="text-xs text-gray-400">최근 항목 없음</li>}
                 {recents.map(r => (
-                  <li key={r.id} className="truncate text-sm text-gray-700 hover:underline cursor-pointer">{r.summary || r.video_id}</li>
+                  <li key={r.id} className="truncate text-sm text-gray-700 hover:underline cursor-pointer">{r.name || r.video_id}</li>
                 ))}
               </ul>
             )}
@@ -327,22 +360,20 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                                 <Droppable droppableId={f.id} type="summary">
                                   {(summaryProvided) => (
                                     <ul className="ml-5 mt-1 space-y-1" ref={summaryProvided.innerRef} {...summaryProvided.droppableProps}>
-                                      {activeFolder?.id === f.id && (
-                                        isLoadingSummaries ? (
-                                          <li className="text-xs text-gray-400">{t('Sidebar.loadingSummaries') || 'Loading summaries...'}</li>
-                                        ) : summaries.length === 0 ? (
-                                          <li className="text-xs text-gray-400">{t('Sidebar.noSummaries') || 'No summaries'}</li>
-                                        ) : (
-                                          summaries.map((s, sIdx) => (
-                                            <Draggable key={s.id} draggableId={s.id} index={sIdx}>
-                                              {(summaryDragProvided) => (
-                                                <li ref={summaryDragProvided.innerRef} {...summaryDragProvided.draggableProps} {...summaryDragProvided.dragHandleProps} className="truncate text-sm text-gray-700 hover:underline cursor-pointer">
-                                                  <Link href={`/${locale}/summaries/${s.id}`}>{s.name}</Link>
-                                                </li>
-                                              )}
-                                            </Draggable>
-                                          ))
-                                        )
+                                      {loadingSummaries[f.id] ? (
+                                        <li className="text-xs text-gray-400">{t('Sidebar.loadingSummaries') || 'Loading summaries...'}</li>
+                                      ) : folderSummaries[f.id]?.length === 0 ? (
+                                        <li className="text-xs text-gray-400">{t('Sidebar.noSummaries') || 'No summaries'}</li>
+                                      ) : (
+                                        folderSummaries[f.id].map((s, sIdx) => (
+                                          <Draggable key={s.id} draggableId={s.id} index={sIdx}>
+                                            {(summaryDragProvided) => (
+                                              <li ref={summaryDragProvided.innerRef} {...summaryDragProvided.draggableProps} {...summaryDragProvided.dragHandleProps} className="truncate text-sm text-gray-700 hover:underline cursor-pointer">
+                                                <Link href={`/${locale}/summaries/${s.id}`}>{s.name}</Link>
+                                              </li>
+                                            )}
+                                          </Draggable>
+                                        ))
                                       )}
                                       {summaryProvided.placeholder}
                                     </ul>

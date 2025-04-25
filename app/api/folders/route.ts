@@ -3,25 +3,21 @@ import { auth } from '@/auth';
 import { supabase } from '@/lib/supabaseClient';
 
 // GET /api/folders - list user folders
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await auth();
-    
     if (!session?.user) {
       console.log('No session found in /api/folders');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
     const { data: folders, error } = await supabase
       .from('folders')
       .select('*')
       .eq('user_id', session.user.id);
-
     if (error) {
       console.error('Supabase folders fetch error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
     // If no folders exist, create a default one
     let foldersList = folders || [];
     if (foldersList.length === 0) {
@@ -64,4 +60,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Failed to create folder' }, { status: 500 });
   }
   return NextResponse.json(data, { status: 201 });
-} 
+}
+
+// Add handler for /api/folders/recent-summaries
+export const dynamic = 'force-dynamic';

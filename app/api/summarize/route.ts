@@ -85,7 +85,6 @@ export async function POST(req: Request) {
     }
 
     const tokenCount = calculateTokenCount(transcriptText);
-    console.log('Token count:', tokenCount);
 
     // Model and token limit logic
     let model = 'gpt-4.1-mini';

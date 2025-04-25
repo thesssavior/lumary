@@ -22,14 +22,14 @@
   "Sidebar": {
     "folders": "폴더",
     "newFolder": "새 폴더",
-    "renameFolder": "수정",
+    "renameFolder": "이름 수정",
     "confirmDeleteFolder": "이 폴더를 삭제하시겠습니까?",
     "noFolder": "선택된 폴더가 없습니다",
-    "loadingSummaries": "요약 로딩 중...",
+    "loadingSummaries": "파일 로딩 중...",
     "loadingFolders": "폴더 로딩 중...",
-    "noSummaries": "요약이 없습니다",
+    "noSummaries": "파일이 없습니다",
     "deleteFolder": "삭제",
-    "editFolder": "수정",
+    "editFolder": "이름 수정",
     "expandFolder": "확장",
     "collapseFolder": "축소",
     "folderOptions": "폴더 옵션"
