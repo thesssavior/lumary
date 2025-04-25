@@ -91,12 +91,12 @@ export async function POST(req: Request) {
     let model = 'gpt-4.1-mini';
     let tokenLimit = 16384;
     if (isSignedIn) {
-      if (tokenCount > 65536) {
+      if (tokenCount > 32768) {
         return NextResponse.json({ error: messages.inputTooLong }, { status: 400 });
       }
       if (tokenCount > 16384) {
         model = 'gpt-4.1';
-        tokenLimit = 65536;
+        tokenLimit = 32768;
       }
     } else {
       // Not signed in: always use mini, always 16384 limit
