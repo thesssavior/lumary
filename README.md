@@ -1,5 +1,7 @@
 ﻿# YTSummarize
 
+lumary.me
+
 input yt url -> output video summary
 
-by youtube-transcript npm & gpt4o
+by youtube-transcript & gpt4.1

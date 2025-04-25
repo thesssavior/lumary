@@ -2,9 +2,14 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { supabase } from './lib/supabaseClient';
 import crypto from 'crypto';
+import type { JWT } from "next-auth/jwt";
+import type { Session, User, Account, Profile } from "next-auth";
 
 // Function to generate a consistent UUID v5 from Google ID
-function generateUUID(googleId: string) {
+function generateUUID(googleId: string | undefined) {
+  if (typeof googleId !== 'string') {
+    throw new Error('Invalid googleId for UUID generation');
+  }
   // Use a consistent namespace UUID (can be any valid UUID)
   const NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
   return crypto.createHash('sha1')
@@ -23,17 +28,27 @@ const authOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, account }: { token: any; account: any }) {
-      if (account) {
-        // Only set the userId when we first get the account info (during sign in)
+    async jwt({ token, user, account, profile, trigger, isNewUser, session }: {
+      token: JWT;
+      user?: User | null;
+      account?: Account | null;
+      profile?: Profile;
+      trigger?: "signIn" | "signUp" | "update";
+      isNewUser?: boolean;
+      session?: any;
+    }) {
+      if (account?.providerAccountId) {
         token.userId = generateUUID(account.providerAccountId);
       }
       return token;
     },
-    async session({ session, token }: { session: any; token: any }) {
-      if (session?.user) {
-        // Copy the userId from the token to the session
-        session.user.id = token.userId;
+    async session({ session, token, user }: {
+      session: Session;
+      token: JWT;
+      user?: User | null;
+    }) {
+      if (session?.user && token.userId) {
+        session.user.id = token.userId as string;
       }
       return session;
     }
@@ -42,10 +57,12 @@ const authOptions = {
     signIn: "/auth/signin",
   },
   events: {
-    async signIn({ user, account }: any) {
+    async signIn({ user, account }: { user: User; account?: Account | null }) {
       try {
-        // Generate consistent UUID from Google ID
-        const userId = generateUUID(account.providerAccountId);
+        if (!account || typeof account.providerAccountId !== 'string') {
+          throw new Error('Missing providerAccountId');
+        }
+        const userId = generateUUID(account.providerAccountId as string);
         
         // Upsert user record into Supabase with consistent UUID
         const { error: userError } = await supabase.from('users').upsert({
