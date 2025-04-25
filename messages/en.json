@@ -3,6 +3,7 @@
   "subtitle": "Get instant AI-powered summaries of any YouTube video",
   "videoUrl": "Enter YouTube URL",
   "getSummary": "Get Summary",
+  "getSummaryShort": "Summarize",
   "loading": "Loading...",
   "error": "An error occurred",
   "language": "Language",

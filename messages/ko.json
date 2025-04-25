@@ -3,6 +3,7 @@
   "subtitle": "YouTube 동영상의 AI 기반 요약을 받아보세요",
   "videoUrl": "YouTube URL을 입력하세요",
   "getSummary": "요약하기",
+  "getSummaryShort": "요약",
   "loading": "요약 생성 중...",
   "error": "오류가 발생했습니다",
   "language": "언어",

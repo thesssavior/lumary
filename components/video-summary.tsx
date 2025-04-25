@@ -266,7 +266,8 @@ export function VideoSummary() {
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               <YoutubeIcon className="mr-2 h-4 w-4" />
-              {loading ? t('loading') : t('getSummary')}
+              <span className="block sm:hidden">{loading ? t('loadingShort') : t('getSummaryShort')}</span>
+              <span className="hidden sm:block">{loading ? t('loading') : t('getSummary')}</span>
             </Button>
           </div>
         </form>
