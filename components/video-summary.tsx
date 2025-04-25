@@ -275,13 +275,13 @@ export function VideoSummary() {
         {!session && (
             <p className="text-sm text-zinc-500 text-center mt-2">{t('trialInfo')}</p>
         )}
-        
+
         {/* In-app browser warning */}
         {inAppBrowser && (
           <div className="bg-red-100 text-red-700 p-4 rounded-md text-base font-semibold flex flex-col items-center mb-4">
             <p>
               Google 로그인이 카카오톡 등 인앱 브라우저에서는 차단될 수 있습니다.<br />
-              <b>크롬 등 다른 브라우저에서 접속 부탁드립니다.</b>
+              로그인을 위해서는 크롬 등 다른 브라우저에서 접속 부탁드려요!.
             </p>
             <button
               className="mt-2 px-3 py-1 bg-red-200 rounded text-red-900 font-bold"
