@@ -114,4 +114,34 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
   }
   // Fallback: should never reach here, but just in case
   return NextResponse.json({ error: 'No response generated' }, { status: 500 });
+}
+
+// PATCH /api/folders/[folderId]/summaries
+export async function PATCH(req: Request, { params }: { params: Promise<{ folderId: string }> }) {
+  try {
+    const { folderId } = await params;
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const body = await req.json();
+    const { summaryId, targetFolderId } = body;
+    if (!summaryId || !targetFolderId) {
+      return NextResponse.json({ error: 'Missing summaryId or targetFolderId' }, { status: 400 });
+    }
+    // Update the summary's folder_id
+    const { data: updated, error: updateError } = await supabase
+      .from('summaries')
+      .update({ folder_id: targetFolderId })
+      .eq('id', summaryId)
+      .select()
+      .single();
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error('Error moving summary:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
 } 

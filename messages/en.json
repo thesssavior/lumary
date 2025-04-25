@@ -18,6 +18,7 @@
   "trialUsedPrompt": "You have used your one trial. Please sign in to generate more summaries.",
   "trialInfo": "Guest users get one free summary trial.",
   "inputTooLong": "The video is too long to summarize. Please try a shorter video.",
+  "guestTokenLimit": "Sign in to use longer videos and more powerful AI features.",
   "Sidebar": {
     "folders": "Folders",
     "newFolder": "New Folder",
@@ -26,6 +27,11 @@
     "noFolder": "No folder selected",
     "loadingSummaries": "Loading summaries...",
     "loadingFolders": "Loading folders...",
-    "noSummaries": "No summaries"
+    "noSummaries": "No summaries",
+    "deleteFolder": "Delete Folder",
+    "editFolder": "Edit Folder",
+    "expandFolder": "Expand Folder",
+    "collapseFolder": "Collapse Folder",
+    "folderOptions": "Folder Options"
   }
 } 

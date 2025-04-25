@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Book, Search, Clock, Folder, ChevronDown, ChevronRight, User, Plus, LogOut } from 'lucide-react';
+import { Book, Search, Clock, Folder, ChevronDown, ChevronRight, User, Plus, LogOut, MoreHorizontal } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
@@ -32,6 +32,8 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const [inAppBrowser, setInAppBrowser] = useState(false);
   const { data: session } = useSession();
   const { activeFolder, setActiveFolder } = useFolder();
+  const [folderOpen, setFolderOpen] = useState<{ [folderId: string]: boolean }>({});
+  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
 
   // Check session
   useEffect(() => {
@@ -125,16 +127,38 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   };
 
   // Drag-and-drop handlers
-  const onDragEnd = (result: DropResult) => {
-    // For now, just reorder folders locally. You can wire this up to persist order in Supabase.
+  const onDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
+    // Folder reordering
     if (result.type === 'folder') {
       const reordered = Array.from(folders);
       const [removed] = reordered.splice(result.source.index, 1);
       reordered.splice(result.destination.index, 0, removed);
       setFolders(reordered);
+      return;
     }
-    // You can add summary drag-and-drop logic here
+    // Summary moving across folders
+    if (result.type === 'summary') {
+      const sourceFolderId = result.source.droppableId;
+      const destFolderId = result.destination.droppableId;
+      if (sourceFolderId === destFolderId) return;
+      const summaryIdx = result.source.index;
+      // Find the summary in the current summaries list
+      const summaryToMove = summaries[summaryIdx];
+      if (!summaryToMove) return;
+      // Optimistically remove from current list
+      setSummaries(summaries => summaries.filter((s, i) => i !== summaryIdx));
+      // Call API to move summary
+      await fetch(`/api/folders/${sourceFolderId}/summaries`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ summaryId: summaryToMove.id, targetFolderId: destFolderId }),
+      });
+      // Refetch summaries for both folders
+      if (activeFolder?.id === sourceFolderId) fetchSummaries(sourceFolderId);
+      if (activeFolder?.id === destFolderId) fetchSummaries(destFolderId);
+      // Optionally, you could optimistically add to dest folder if you keep all summaries in state
+    }
   };
 
   // Example: Detect in-app browsers (client only)
@@ -146,6 +170,17 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
       }
     }
   }, []);
+
+  // Helper to toggle folder open/close
+  const toggleFolder = (folderId: string) => {
+    setFolderOpen(prev => ({ ...prev, [folderId]: !prev[folderId] }));
+  };
+
+  useEffect(() => {
+    if (activeFolder) {
+      setFolderOpen(prev => ({ ...prev, [activeFolder.id]: true }));
+    }
+  }, [activeFolder]);
 
   // UI: show login prompt if not signed in
   if (isSignedIn === false) {
@@ -250,31 +285,69 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                           {(dragProvided) => (
                             <li ref={dragProvided.innerRef} {...dragProvided.draggableProps} {...dragProvided.dragHandleProps}>
                               <div className={`flex items-center gap-1 font-semibold text-gray-800 ${activeFolder?.id===f.id ? 'bg-gray-200 rounded px-1' : ''}`}
-                                onClick={() => {
-                                  if (activeFolder?.id !== f.id) {
-                                    setActiveFolder(f);
-                                  }
-                                }}
+                                onClick={() => setActiveFolder(f)}
                               >
-                                <Folder className="w-4 h-4" /> {f.name}
-                                <button onClick={e => { e.stopPropagation(); handleRenameFolder(f.id); }} className="ml-1 text-xs text-gray-400 hover:text-gray-700">✏️</button>
-                                <button onClick={e => { e.stopPropagation(); handleDeleteFolder(f.id); }} className="ml-1 text-xs text-gray-400 hover:text-red-600">🗑️</button>
-                              </div>
-                              {/* Summaries in folder */}
-                              {activeFolder?.id === f.id && (
-                                <ul className="ml-5 mt-1 space-y-1">
-                                  {isLoadingSummaries ? (
-                                    <li className="text-xs text-gray-400">{t('Sidebar.loadingSummaries') || '로딩중...'}</li>
-                                  ) : summaries.length === 0 ? (
-                                    <li className="text-xs text-gray-400">요약 없음</li>
-                                  ) : (
-                                    summaries.map(s => (
-                                      <li key={s.id} className="truncate text-sm text-gray-700 hover:underline cursor-pointer">
-                                        <Link href={`/${locale}/summaries/${s.id}`}>{s.name}</Link>
-                                      </li>
-                                    ))
+                                <button
+                                  className="mr-1"
+                                  onClick={e => { e.stopPropagation(); toggleFolder(f.id); }}
+                                  aria-label={folderOpen[f.id] ? t('Sidebar.collapseFolder') || 'Collapse folder' : t('Sidebar.expandFolder') || 'Expand folder'}
+                                >
+                                  {folderOpen[f.id] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                                </button>
+                                <Folder className="w-4 h-4" />
+                                <span className="mx-1 flex-1 text-left truncate">{f.name}</span>
+                                <div className="relative ml-auto">
+                                  <button
+                                    className="text-xs text-gray-400 hover:text-gray-700"
+                                    onClick={e => { e.stopPropagation(); setDropdownOpen(dropdownOpen === f.id ? null : f.id); }}
+                                    aria-label={t('Sidebar.folderOptions') || 'Folder options'}
+                                  >
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </button>
+                                  {dropdownOpen === f.id && (
+                                    <div className="absolute right-0 top-full mt-1 bg-white border rounded shadow-md py-1 w-28 min-w-[7rem] text-sm z-20">
+                                      <button
+                                        className="block w-full text-left px-2 py-2 hover:bg-gray-100"
+                                        onClick={e => { e.stopPropagation(); setDropdownOpen(null); handleRenameFolder(f.id); }}
+                                      >
+                                        ✏️ {t('Sidebar.renameFolder') || 'Edit'}
+                                      </button>
+                                      <button
+                                        className="block w-full text-left px-2 py-2 hover:bg-gray-100 text-red-600"
+                                        onClick={e => { e.stopPropagation(); setDropdownOpen(null); handleDeleteFolder(f.id); }}
+                                      >
+                                        🗑️ {t('Sidebar.deleteFolder') || 'Delete'}
+                                      </button>
+                                    </div>
                                   )}
-                                </ul>
+                                </div>
+                              </div>
+                              {/* Summaries in folder: only show if expanded */}
+                              {folderOpen[f.id] && (
+                                <Droppable droppableId={f.id} type="summary">
+                                  {(summaryProvided) => (
+                                    <ul className="ml-5 mt-1 space-y-1" ref={summaryProvided.innerRef} {...summaryProvided.droppableProps}>
+                                      {activeFolder?.id === f.id && (
+                                        isLoadingSummaries ? (
+                                          <li className="text-xs text-gray-400">{t('Sidebar.loadingSummaries') || 'Loading summaries...'}</li>
+                                        ) : summaries.length === 0 ? (
+                                          <li className="text-xs text-gray-400">{t('Sidebar.noSummaries') || 'No summaries'}</li>
+                                        ) : (
+                                          summaries.map((s, sIdx) => (
+                                            <Draggable key={s.id} draggableId={s.id} index={sIdx}>
+                                              {(summaryDragProvided) => (
+                                                <li ref={summaryDragProvided.innerRef} {...summaryDragProvided.draggableProps} {...summaryDragProvided.dragHandleProps} className="truncate text-sm text-gray-700 hover:underline cursor-pointer">
+                                                  <Link href={`/${locale}/summaries/${s.id}`}>{s.name}</Link>
+                                                </li>
+                                              )}
+                                            </Draggable>
+                                          ))
+                                        )
+                                      )}
+                                      {summaryProvided.placeholder}
+                                    </ul>
+                                  )}
+                                </Droppable>
                               )}
                             </li>
                           )}

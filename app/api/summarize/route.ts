@@ -5,9 +5,7 @@ import koMessages from '@/messages/ko.json';
 import { YoutubeTranscript } from 'youtube-transcript';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { formatTime, calculateTokenCount } from '@/lib/utils';
-
-// OpenAI model
-let model = "gpt-4.1-mini";
+import { auth } from '@/auth';
 
 // Bright Data proxy setup
 const proxyUrl = 'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh_country-kr_city-seoul@geo.iproyal.com:12321';
@@ -43,6 +41,10 @@ export async function POST(req: Request) {
     // Get videoId and locale from request
     const { videoId, locale = 'ko' } = await req.json();
     const messages = locale === 'ko' ? koMessages : enMessages;
+
+    // Check session
+    const session = await auth();
+    const isSignedIn = !!session?.user;
 
     if (!videoId) {
       return NextResponse.json({ error: messages.error }, { status: 400 });
@@ -85,12 +87,22 @@ export async function POST(req: Request) {
     const tokenCount = calculateTokenCount(transcriptText);
     console.log('Token count:', tokenCount);
 
-    if (tokenCount > 65536) {
-      return NextResponse.json({ error: messages.inputTooLong }, { status: 400 });
-    }
-
-    if (tokenCount > 16384) {
-      model = "gpt-4.1";
+    // Model and token limit logic
+    let model = 'gpt-4.1-mini';
+    let tokenLimit = 16384;
+    if (isSignedIn) {
+      if (tokenCount > 65536) {
+        return NextResponse.json({ error: messages.inputTooLong }, { status: 400 });
+      }
+      if (tokenCount > 16384) {
+        model = 'gpt-4.1';
+        tokenLimit = 65536;
+      }
+    } else {
+      // Not signed in: always use mini, always 16384 limit
+      if (tokenCount > 16384) {
+        return NextResponse.json({ error: messages.guestTokenLimit || messages.inputTooLong }, { status: 400 });
+      }
     }
 
     // Summarize with OpenAI

@@ -18,13 +18,20 @@
   "trialUsedPrompt": "1회 체험을 사용하셨습니다. 더 많은 요약을 생성하려면 로그인해주세요.",
   "trialInfo": "1회 체험 요약 사용 후 로그인이 필요합니다.",
   "inputTooLong": "영상 용량이 너무 큽니다. 더 짧은 영상을 시도해 주세요.",
+  "guestTokenLimit": "영샹 용량이 너무 큽니다. 로그인 후 더 긴 영상 요약과 강력한 AI 기능을 이용하실 수 있습니다.",
   "Sidebar": {
     "folders": "폴더",
     "newFolder": "새 폴더",
-    "renameFolder": "폴더 이름 바꾸기",
+    "renameFolder": "수정",
     "confirmDeleteFolder": "이 폴더를 삭제하시겠습니까?",
     "noFolder": "선택된 폴더가 없습니다",
     "loadingSummaries": "요약 로딩 중...",
-    "loadingFolders": "폴더 로딩 중..."
+    "loadingFolders": "폴더 로딩 중...",
+    "noSummaries": "요약이 없습니다",
+    "deleteFolder": "삭제",
+    "editFolder": "수정",
+    "expandFolder": "확장",
+    "collapseFolder": "축소",
+    "folderOptions": "폴더 옵션"
   }
 } 
