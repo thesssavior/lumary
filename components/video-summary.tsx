@@ -4,7 +4,7 @@ import { useState, useEffect, useContext } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { YoutubeIcon, AlertCircle } from "lucide-react";
+import { YoutubeIcon, AlertCircle, X, ArrowUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTranslations } from 'next-intl';
@@ -29,6 +29,7 @@ export function VideoSummary() {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [trialUsed, setTrialUsed] = useState(false);
   const refreshSidebar = useContext(SidebarRefreshContext);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Fetch folders on mount - only if logged in
   useEffect(() => {
@@ -65,6 +66,15 @@ export function VideoSummary() {
       }
     }
   }, [searchParams]);
+
+  // Show scroll-to-top button when scrolled down
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 200);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const extractVideoId = (url: string): string | null => {
     const patterns = [
@@ -177,93 +187,119 @@ export function VideoSummary() {
   const showLoadingSkeleton = loading && !displaySummary;
 
   return (
-    <div className="space-y-8">
-      {/* Login Modal/Overlay */}
-      {showLoginPrompt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
-            <h2 className="text-xl font-bold mb-4">{t('signIn')}</h2>
-            <p className="mb-6">{t('trialUsedPrompt')}</p>
-            <Button
-              className="w-full bg-black hover:bg-zinc-800 text-white mb-2"
-              onClick={() => { setShowLoginPrompt(false); signIn("google"); }}
-            >
-              {t('signInWithGoogle')}
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setShowLoginPrompt(false)}
-            >
-              Cancel
-            </Button>
-          </div>
-        </div>
+    <>
+      {/* Scroll to top button */}
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-8 right-8 z-[100] p-2 rounded-full bg-black text-white shadow-lg hover:bg-zinc-800 transition-colors"
+          aria-label="Scroll to top"
+        >
+          <ArrowUp className="w-6 h-6" />
+        </button>
       )}
-      <div className="flex justify-end">
-        <LanguageSwitcher />
-      </div>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex gap-2">
-          <Input
-            type="url"
-            placeholder={t('videoUrl')}
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="border-zinc-200 bg-white text-black placeholder:text-zinc-400 ring-1 ring-ring ring-offset-2 focus-visible:ring-red-600 focus-visible:ring-offset-white transition-colors"
-            required
-            pattern="^https?:\/\/(www\.|m\.)?(youtube\.com\/(watch\?v=|embed\/|v\/)|youtu\.be\/).+"
-            title="Please enter a valid YouTube URL (e.g., https://www.youtube.com/watch?v=..., https://youtu.be/..., https://www.youtube.com/embed/..., or https://m.youtube.com/watch?v=...)"
-          />
-          <Button 
-            type="submit" 
-            disabled={loading}
-            className="bg-red-600 hover:bg-red-700 text-white"
-          >
-            <YoutubeIcon className="mr-2 h-4 w-4" />
-            {loading ? t('loading') : t('getSummary')}
-          </Button>
-        </div>
-      </form>
-
-      {/* Add trial info message here */}      
-      {!session && (
-          <p className="text-sm text-zinc-500 text-center mt-2">{t('trialInfo')}</p>
-      )}
-
-      {error && (
-        <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-600">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Skeleton loader shown when loading and no summary yet */}
-      {showLoadingSkeleton && (
-        <Card className="p-6 bg-white border-zinc-200">
-          <div className="space-y-4">
-            <Skeleton className="h-6 w-3/4 mb-6" />
-            <Skeleton className="h-4 w-full mb-3" />
-            <Skeleton className="h-4 w-full mb-3" />
-            <Skeleton className="h-4 w-5/6 mb-6" />
-            <Skeleton className="h-4 w-full mb-3" />
-            <Skeleton className="h-4 w-full mb-3" />
-            <Skeleton className="h-4 w-4/6 mb-3" />
-          </div>
-        </Card>
-      )}
-
-      {summary && (
-        <Card className="p-6 bg-white border-zinc-200">
-          <div className="prose prose-zinc max-w-none">
-            <div className="text-black [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1:not(:first-child)]:mt-10 [&>h2]:mb-5 [&>h2:not(:first-child)]:mt-8 [&>h3]:mb-4 [&>h3:not(:first-child)]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-black">
-              <ReactMarkdown>
-                {summary}
-              </ReactMarkdown>
+      <div className="space-y-8">
+        {/* Login Modal/Overlay */}
+        {showLoginPrompt && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
+              <h2 className="text-xl font-bold mb-4">{t('signIn')}</h2>
+              <p className="mb-6">{t('trialUsedPrompt')}</p>
+              <Button
+                className="w-full bg-black hover:bg-zinc-800 text-white mb-2"
+                onClick={() => { setShowLoginPrompt(false); signIn("google"); }}
+              >
+                {t('signInWithGoogle')}
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowLoginPrompt(false)}
+              >
+                Cancel
+              </Button>
             </div>
           </div>
-        </Card>
-      )}
-    </div>
+        )}
+        <div className="flex justify-end">
+          <LanguageSwitcher />
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex gap-2 items-center">
+            <div className="relative flex-1">
+              <Input
+                type="url"
+                placeholder={t('videoUrl')}
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className="border-zinc-200 bg-white text-black placeholder:text-zinc-400 ring-1 ring-ring ring-offset-2 focus-visible:ring-red-600 focus-visible:ring-offset-white transition-colors pr-10 w-full"
+                required
+                pattern="^https?:\/\/(www\.|m\.)?(youtube\.com\/(watch\?v=|embed\/|v\/)|youtu\.be\/).+"
+                title="Please enter a valid YouTube URL (e.g., https://www.youtube.com/watch?v=..., https://youtu.be/..., https://www.youtube.com/embed/..., or https://m.youtube.com/watch?v=...)"
+              />
+              {/* Clear button for input */}
+              {url && (
+                <button
+                  type="button"
+                  onClick={() => setUrl("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-1 text-gray-400 hover:text-red-500 bg-white rounded-full"
+                  aria-label="Clear input"
+                  style={{ boxShadow: '0 0 2px rgba(0,0,0,0.05)' }}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              <YoutubeIcon className="mr-2 h-4 w-4" />
+              {loading ? t('loading') : t('getSummary')}
+            </Button>
+          </div>
+        </form>
+
+        {/* Add trial info message here */}      
+        {!session && (
+            <p className="text-sm text-zinc-500 text-center mt-2">{t('trialInfo')}</p>
+        )}
+
+        {error && (
+          <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-600">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Skeleton loader shown when loading and no summary yet */}
+        {showLoadingSkeleton && (
+          <Card className="p-6 bg-white border-zinc-200">
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-3/4 mb-6" />
+              <Skeleton className="h-4 w-full mb-3" />
+              <Skeleton className="h-4 w-full mb-3" />
+              <Skeleton className="h-4 w-5/6 mb-6" />
+              <Skeleton className="h-4 w-full mb-3" />
+              <Skeleton className="h-4 w-full mb-3" />
+              <Skeleton className="h-4 w-4/6 mb-3" />
+            </div>
+          </Card>
+        )}
+
+        {summary && (
+          <Card className="p-6 bg-white border-zinc-200">
+            <div className="prose prose-zinc max-w-none">
+              <div className="text-black [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1:not(:first-child)]:mt-10 [&>h2]:mb-5 [&>h2:not(:first-child)]:mt-8 [&>h3]:mb-4 [&>h3:not(:first-child)]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-black">
+                <ReactMarkdown>
+                  {summary}
+                </ReactMarkdown>
+              </div>
+            </div>
+          </Card>
+        )}
+      </div>
+    </>
   );
 }

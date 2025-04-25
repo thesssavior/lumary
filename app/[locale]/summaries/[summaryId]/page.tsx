@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ArrowUp } from 'lucide-react';
+import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 
 function SummaryContent({ summary }: { summary: any }) {
   return (
@@ -46,8 +48,11 @@ export default async function SummaryDetailPage({ params }: { params: Promise<{ 
   }
 
   return (
-    <Suspense fallback={<SummarySkeleton />}>
-      <SummaryContent summary={summary} />
-    </Suspense>
+    <>
+      <ScrollToTopButton />
+      <Suspense fallback={<SummarySkeleton />}>
+        <SummaryContent summary={summary} />
+      </Suspense>
+    </>
   );
 } 

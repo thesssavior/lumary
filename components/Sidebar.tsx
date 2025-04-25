@@ -284,7 +284,11 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
               <ul className="ml-6 mt-1 space-y-1">
                 {recents.length === 0 && <li className="text-xs text-gray-400">최근 항목 없음</li>}
                 {recents.map(r => (
-                  <li key={r.id} className="truncate text-sm text-gray-700 hover:underline cursor-pointer">{r.name || r.video_id}</li>
+                  <li key={r.id}>
+                    <Link href={`/${locale}/summaries/${r.id}`} className="truncate text-sm text-gray-700 hover:underline cursor-pointer block">
+                      {r.name || r.video_id}
+                    </Link>
+                  </li>
                 ))}
               </ul>
             )}
