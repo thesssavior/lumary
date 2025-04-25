@@ -94,7 +94,7 @@ export async function POST(req: Request) {
       if (tokenCount > 32768) {
         return NextResponse.json({ error: messages.inputTooLong }, { status: 400 });
       }
-      if (tokenCount > 16384) {
+      if (tokenCount > 24000) {
         model = 'gpt-4.1';
         tokenLimit = 32768;
       }
