@@ -198,21 +198,6 @@ export function VideoSummary() {
 
   return (
     <>
-      {/* In-app browser warning */}
-      {inAppBrowser && (
-        <div className="bg-red-100 text-red-700 p-4 rounded-md text-base font-semibold flex flex-col items-center mb-4">
-          <p>
-            Google 로그인이 카카오톡 등 인앱 브라우저에서는 차단될 수 있습니다.<br />
-            <b>크롬 등 다른 브라우저에서 접속 부탁드립니다.</b>
-          </p>
-          <button
-            className="mt-2 px-3 py-1 bg-red-200 rounded text-red-900 font-bold"
-            onClick={() => navigator.clipboard.writeText(window.location.href)}
-          >
-            현재 주소 복사하기
-          </button>
-        </div>
-      )}
       {/* Scroll to top button */}
       {showScrollTop && (
         <button
@@ -286,9 +271,25 @@ export function VideoSummary() {
           </div>
         </form>
 
-        /* Add trial info message here */
+        {/* Add trial info message here */}
         {!session && (
             <p className="text-sm text-zinc-500 text-center mt-2">{t('trialInfo')}</p>
+        )}
+        
+        {/* In-app browser warning */}
+        {inAppBrowser && (
+          <div className="bg-red-100 text-red-700 p-4 rounded-md text-base font-semibold flex flex-col items-center mb-4">
+            <p>
+              Google 로그인이 카카오톡 등 인앱 브라우저에서는 차단될 수 있습니다.<br />
+              <b>크롬 등 다른 브라우저에서 접속 부탁드립니다.</b>
+            </p>
+            <button
+              className="mt-2 px-3 py-1 bg-red-200 rounded text-red-900 font-bold"
+              onClick={() => navigator.clipboard.writeText(window.location.href)}
+            >
+              현재 주소 복사하기
+            </button>
+          </div>
         )}
 
         {error && (
