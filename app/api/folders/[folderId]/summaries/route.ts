@@ -3,8 +3,7 @@ import { auth } from '@/auth';
 import { supabase } from '@/lib/supabaseClient';
 import { calculateTokenCount } from '@/lib/utils';
 
-// Fetch YouTube video title using YouTube Data API v3
-async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
+const fetchYoutubeTitle = async (videoId: string) => {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) {
     console.error('YOUTUBE_API_KEY is not set');
@@ -21,7 +20,7 @@ async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
     console.error('YouTube API returned no items:', JSON.stringify(data));
     return null;
   }
-  return data.items[0].snippet.title ?? null;
+  return data.items[0].snippet.title;
 }
 
 // GET /api/folders/[folderId]/summaries
@@ -80,16 +79,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
       return NextResponse.json({ error: 'Missing videoId or summary' }, { status: 400 });
     }
 
-    // Calculate token count of the summary text
-    const output_token_count = calculateTokenCount(summary);
-
-    // Fetch the YouTube title server-side
-    let name = null;
+    let video_title = null;
     try {
-      name = await fetchYoutubeTitle(videoId);
+      video_title = await fetchYoutubeTitle(videoId);
     } catch (e) {
       console.error('Failed to fetch YouTube title:', e);
     }
+
+    // Calculate token count of the summary text
+    const output_token_count = calculateTokenCount(summary);
 
     const { data: summaryData, error: summaryError } = await supabase
       .from('summaries')
@@ -97,7 +95,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
         folder_id: folderId,
         video_id: videoId,
         summary: summary,
-        name: name,
+        name: video_title,
         input_token_count: input_token_count,
         output_token_count: output_token_count
       })

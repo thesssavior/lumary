@@ -13,8 +13,8 @@ let model = "gpt-4.1-mini";
 const proxyUrl = 'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh_country-kr_city-seoul@geo.iproyal.com:12321';
 const agent = new HttpsProxyAgent(proxyUrl);
 
-// Fetch YouTube video title using YouTube Data API v3
-async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
+// Fetch YouTube video title and description using YouTube Data API v3
+async function fetchYoutubeInfo(videoId: string): Promise<{ title: string; description: string } | null> {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) {
     console.error('YOUTUBE_API_KEY is not set');
@@ -31,7 +31,11 @@ async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
     console.error('YouTube API returned no items:', JSON.stringify(data));
     return null;
   }
-  return data.items[0].snippet.title ?? null;
+  const snippet = data.items[0].snippet;
+  return {
+    title: snippet.title || '',
+    description: snippet.description || ''
+  };
 }
 
 export async function POST(req: Request) {
@@ -42,6 +46,19 @@ export async function POST(req: Request) {
 
     if (!videoId) {
       return NextResponse.json({ error: messages.error }, { status: 400 });
+    }
+
+    // Fetch video info (title, description)
+    let videoTitle = '';
+    let videoDescription = '';
+    try {
+      const videoInfo = await fetchYoutubeInfo(videoId);
+      if (videoInfo) {
+        videoTitle = videoInfo.title;
+        videoDescription = videoInfo.description;
+      }
+    } catch (e) {
+      console.error('Failed to fetch video info:', e);
     }
 
     // Fetch transcript
@@ -68,9 +85,9 @@ export async function POST(req: Request) {
     const tokenCount = calculateTokenCount(transcriptText);
     console.log('Token count:', tokenCount);
 
-    // if (tokenCount > 40000) {
-    //   return NextResponse.json({ error: messages.error + ' (Input too long. Please try a shorter video.)' }, { status: 400 });
-    // }
+    if (tokenCount > 65536) {
+      return NextResponse.json({ error: messages.error + ' (Input too long. Please try a shorter video.)' }, { status: 400 });
+    }
 
     if (tokenCount > 16384) {
       model = "gpt-4.1";
@@ -87,7 +104,7 @@ export async function POST(req: Request) {
           model: model,
           messages: [
             { role: "system", content: messages.systemPrompts },
-            { role: "user", content: `${messages.userPrompts}\n\n${transcriptText}` }
+            { role: "user", content: `${messages.userPrompts}\n\nVideo Title: ${videoTitle}\n\nVideo Description: ${videoDescription}\n\nTranscript:\n${transcriptText}` }
           ],
           stream: true,
           temperature: 0.3,
@@ -107,7 +124,7 @@ export async function POST(req: Request) {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
         'Transfer-Encoding': 'chunked',
-        'input_token_count': `${tokenCount}`
+        'input_token_count': `${tokenCount}`,
       }
     });
   } catch (error: any) {

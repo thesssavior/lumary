@@ -12,8 +12,7 @@ import { LanguageSwitcher } from './language-switcher';
 import { useParams, useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { signIn, useSession } from "next-auth/react";
-import { SidebarRefreshContext } from './SidebarLayout';
-import { v4 as uuidv4 } from 'uuid';
+import { SidebarRefreshContext, useFolder } from './SidebarLayout';
 
 export function VideoSummary() {
   const t = useTranslations();
@@ -25,6 +24,7 @@ export function VideoSummary() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
+  const { activeFolder, setActiveFolder } = useFolder();
   const { data: session, status } = useSession();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [trialUsed, setTrialUsed] = useState(false);
@@ -37,6 +37,9 @@ export function VideoSummary() {
         if (res.ok) {
           const data = await res.json();
           setFolders(data);
+          if (!activeFolder && data.length) {
+            setActiveFolder(data[0]);
+          }
         }
       });
     }
@@ -135,10 +138,11 @@ export function VideoSummary() {
       } else {
         // Only attempt to save if the user is logged in
   
-        // Save to first folder if available and user is logged in
-        if (folders.length > 0) {
+        // Save to the active folder if available and user is logged in
+        if (activeFolder) {
           try {
-            const saveResponse = await fetch(`/api/folders/${folders[0].id}/summaries`, {
+            console.log('Saving summary to folder:', activeFolder);
+            const saveResponse = await fetch(`/api/folders/${activeFolder.id}/summaries`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -158,7 +162,7 @@ export function VideoSummary() {
             console.error('Error saving summary:', saveError);
           }
         } else {
-          console.log('No folders available to save summary');
+          console.log('No active folder available to save summary');
         }
       }
     } catch (err: any) {

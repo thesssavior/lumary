@@ -9,6 +9,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import Image from 'next/image';
 import { useSession } from "next-auth/react";
+import { useFolder } from './SidebarLayout';
 
 interface FolderType { id: string; name: string; }
 interface SummaryType { id: string; video_id: string; summary: string; name: string; }
@@ -17,7 +18,6 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const t = useTranslations();
   const [folders, setFolders] = useState<FolderType[]>([]);
   const [isLoadingFolders, setIsLoadingFolders] = useState(false);
-  const [activeFolder, setActiveFolder] = useState<FolderType | null>(null);
   const [summaries, setSummaries] = useState<SummaryType[]>([]);
   const [isLoadingSummaries, setIsLoadingSummaries] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -31,6 +31,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const locale = params.locale as string;
   const [inAppBrowser, setInAppBrowser] = useState(false);
   const { data: session } = useSession();
+  const { activeFolder, setActiveFolder } = useFolder();
 
   // Check session
   useEffect(() => {
@@ -222,13 +223,23 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
           </li>
           {/* My Knowledge */}
           <li>
-            <button
-              className="flex items-center gap-2 w-full px-2 py-2 rounded hover:bg-gray-100 font-medium"
-              onClick={() => setKnowledgeOpen(o => !o)}
-            >
-              {knowledgeOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-              내 지식
-            </button>
+            <div className="flex items-center gap-2 w-full px-2 py-2 rounded hover:bg-gray-100 font-medium">
+              <button
+                className="flex items-center gap-2 w-full"
+                onClick={() => setKnowledgeOpen(o => !o)}
+                style={{ flex: 1 }}
+              >
+                {knowledgeOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                내 지식
+              </button>
+              <button
+                className="ml-1 text-xs text-gray-400 hover:text-green-700"
+                title="새 폴더 만들기"
+                onClick={() => setShowNewFolderInput(true)}
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
             {knowledgeOpen && (
               <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId="folders-droppable" type="folder">
@@ -273,19 +284,34 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                       {isLoadingFolders && (
                         <li className="ml-6 mt-1 space-y-1 text-xs text-gray-400">{t('Sidebar.loadingFolders') || '로딩중...'}</li>
                       )}
-                      {/* Add folder */}
+                      {/* Add folder input */}
                       {showNewFolderInput && (
-                        <li className="mt-2 flex items-center gap-1">
+                        <li className="flex items-center gap-1 bg-gray-200 rounded px-1 py-1 mt-2">
+                          <span className="flex items-center">
+                            <Folder className="w-4 h-4 text-gray-500 mr-1" />
+                          </span>
                           <input
                             type="text"
-                            className="flex-1 border p-1 text-xs"
+                            className="flex-1 bg-transparent outline-none border-none text-sm px-1"
                             placeholder={t('Sidebar.newFolder')}
                             value={newFolderName}
                             onChange={e => setNewFolderName(e.target.value)}
                             autoFocus
                             onKeyDown={e => { if (e.key === 'Enter') handleAddFolder(); }}
+                            style={{ minWidth: 0 }}
                           />
-                          <button onClick={handleAddFolder} className="px-2 bg-blue-600 text-white rounded text-xs">+</button>
+                          <button
+                            onClick={handleAddFolder}
+                            className="px-1 py-1 bg-green-100 text-green-700 rounded text-xs shadow hover:bg-green-200 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+                            title="폴더 추가"
+                          >
+                            <Plus className="w-4 h-4 inline" />
+                          </button>
+                          <button
+                            onClick={() => { setShowNewFolderInput(false); setNewFolderName(''); }}
+                            className="px-2 py-1 bg-gray-300 text-gray-700 rounded text-xs ml-1 hover:bg-gray-400 transition-colors duration-150"
+                            title="취소"
+                          >취소</button>
                         </li>
                       )}
                     </ul>
