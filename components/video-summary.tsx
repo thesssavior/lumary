@@ -110,7 +110,8 @@ export function VideoSummary() {
       });
 
       if (!summaryResponse.ok) {
-        throw new Error(t('error'));
+        const errorData = await summaryResponse.json();
+        throw new Error(errorData.error || t('error'));
       }
 
       if (!summaryResponse.body) {
