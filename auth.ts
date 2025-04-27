@@ -49,6 +49,17 @@ const authOptions = {
     }) {
       if (session?.user && token.userId) {
         session.user.id = token.userId as string;
+        // Fetch the user's plan from Supabase
+        const { data, error } = await supabase
+          .from('users')
+          .select('plan')
+          .eq('id', token.userId)
+          .single();
+        if (!error && data?.plan) {
+          session.user.plan = data.plan;
+        } else {
+          session.user.plan = 'free';
+        }
       }
       return session;
     }

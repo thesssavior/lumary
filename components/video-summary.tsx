@@ -80,8 +80,10 @@ export function VideoSummary() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const ua = navigator.userAgent || navigator.vendor;
-      if (/KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line|Daum|Whale|SamsungBrowser/i.test(ua)) {
+      if (/KAKAOTALK/i.test(ua)) {
         setInAppBrowser(true);
+      } else {
+        setInAppBrowser(false);
       }
     }
   }, []);

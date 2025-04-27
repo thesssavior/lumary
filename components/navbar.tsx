@@ -2,21 +2,18 @@
 
 import { Button } from "@/components/ui/button";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
 import Image from 'next/image';
 
 export function Navbar() {
   const t = useTranslations();
   const { data: session } = useSession();
-  const params = useParams();
-  const locale = params.locale as string;
-
+  const locale = useLocale();
   return (
     <nav className="border-b border-zinc-200 bg-white">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center space-x-2">
+        <Link href={`/${locale}`} className="flex items-center space-x-2">
           <Image src="/lumary-logo.png" alt="Lumary Logo" width={100} height={100} />
         </Link>
 

@@ -10,6 +10,7 @@ import { signIn } from 'next-auth/react';
 import Image from 'next/image';
 import { useSession } from "next-auth/react";
 import { useFolder } from './SidebarLayout';
+import SubscriptionPlans from './SubscriptionPlans';
 
 interface FolderType { id: string; name: string; }
 interface SummaryType { id: string; video_id: string; summary: string; name: string; }
@@ -434,9 +435,14 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
       {/* Footer */}
       <div className="border-t px-4 py-3 text-xs text-gray-500 flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <User className="w-4 h-4" /> {session?.user?.name} <span className="ml-auto text-green-600">무료</span>
+          <User className="w-4 h-4" /> {session?.user?.name} <span className="ml-auto text-green-600">{t('Sidebar.plan_status_free')}</span>
         </div>
-        <button className="w-full bg-yellow-300 text-yellow-900 font-bold py-1 rounded mt-2 hover:bg-yellow-400">업그레이드</button>
+        <Link 
+          href={`/${locale}/payment`}
+          className="w-full bg-yellow-300 text-yellow-900 font-bold py-1 rounded mt-2 hover:bg-yellow-400 text-center block"
+        >
+          {t('Sidebar.upgrade')}
+        </Link>
       </div>
     </div>
   );

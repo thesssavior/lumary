@@ -89,21 +89,29 @@ export async function POST(req: Request) {
     // Model and token limit logic
     let model = 'gpt-4.1-mini';
     let tokenLimit = 16384;
-    if (isSignedIn) {
-      if (tokenCount > 32768) {
+    if (isSignedIn && session?.user?.plan && session.user.plan !== 'free') {
+      // Paid user
+      if (tokenCount > 65536) {
         return NextResponse.json({ error: messages.inputTooLong }, { status: 400 });
       }
       if (tokenCount > 24000) {
         model = 'gpt-4.1';
-        tokenLimit = 32768;
+        tokenLimit = 65536;
+      } else {
+        model = 'gpt-4.1-mini';
+        tokenLimit = 65536;
       }
     } else {
-      // Not signed in: always use mini, always 16384 limit
-      if (tokenCount > 16384) {
+      // Unpaid/guest: always use mini, always 32768 limit
+      if (tokenCount > 32768) {
         return NextResponse.json({ error: messages.guestTokenLimit || messages.inputTooLong }, { status: 400 });
       }
+      model = 'gpt-4.1-mini';
+      tokenLimit = 32768;
     }
 
+    console.log('model:', model);
+    
     // Summarize with OpenAI
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 

@@ -33,6 +33,18 @@
     "editFolder": "이름 수정",
     "expandFolder": "확장",
     "collapseFolder": "축소",
-    "folderOptions": "폴더 옵션"
+    "folderOptions": "폴더 옵션",
+    "plan_status_free": "무료",
+    "plan_status_premium": "프리미엄",
+    "upgrade": "업그레이드"
+  },
+  "PaymentPage": {
+    "title": "플랜 업그레이드",
+    "description_line1": "프리미엄 기능으로 더 많은 혜택을 누려보세요.",
+    "description_line2": "나에게 맞는 구독 플랜을 선택하세요."
+  },
+  "SubscriptionPlans": {
+    "subscribeButton": "구독하기",
+    "loading": "구독 처리 중..."
   }
 } 

@@ -33,6 +33,18 @@
     "editFolder": "Edit Folder",
     "expandFolder": "Expand Folder",
     "collapseFolder": "Collapse Folder",
-    "folderOptions": "Folder Options"
+    "folderOptions": "Folder Options",
+    "plan_status_free": "Free",
+    "plan_status_premium": "Premium",
+    "upgrade": "Upgrade"
+  },
+  "PaymentPage": {
+    "title": "Upgrade Your Plan",
+    "description_line1": "Unlock premium features and get the most out of our service.",
+    "description_line2": "Choose the subscription plan that fits you best."
+  },
+  "SubscriptionPlans": {
+    "subscribeButton": "Subscribe",
+    "loading": "Processing subscription..."
   }
 } 
