@@ -10,7 +10,9 @@ export default function PaymentPage() {
         <h1 className="text-3xl font-bold mb-3 text-gray-800">{t('title')}</h1>
         <p className="mb-8 text-gray-600 text-center">
           {t('description_line1')}<br />
-          {t('description_line2')}
+          {t('description_line2')}<br />
+          {t('description_line3')}<br />
+          {t('description_line4')}
         </p>
         <SubscriptionPlans />
       </div>

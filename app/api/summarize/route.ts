@@ -75,8 +75,11 @@ export async function POST(req: Request) {
           ? `[${formatTime(item.offset)}] ${item.text}`
           : item.text
       ).join('\n');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching transcript:', error);
+      if (typeof error.message === 'string' && error.message.includes('Transcript is disabled')) {
+        return NextResponse.json({ error: messages.transcriptDisabled }, { status: 400 });
+      }
       return NextResponse.json({ error: messages.error }, { status: 400 });
     }
 
@@ -109,9 +112,7 @@ export async function POST(req: Request) {
       model = 'gpt-4.1-mini';
       tokenLimit = 32768;
     }
-
-    console.log('model:', model);
-    
+        
     // Summarize with OpenAI
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 

@@ -13,6 +13,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { signIn, useSession } from "next-auth/react";
 import { SidebarRefreshContext, useFolder } from './SidebarLayout';
+import Link from 'next/link';
 
 export function VideoSummary() {
   const t = useTranslations();
@@ -278,7 +279,10 @@ export function VideoSummary() {
         {!session && (
             <p className="text-sm text-zinc-500 text-center mt-2">{t('trialInfo')}</p>
         )}
-
+        {/* Premium plan banner */}
+        {/* <div className="bg-yellow-100 border border-yellow-300 text-yellow-900 rounded-md px-4 py-3 text-center text-base mb-2">
+          {t('subCTA')} <Link href={`/${locale}/payment`} className="underline font-bold hover:text-yellow-700 transition-colors">{t('startForFree')}</Link>
+        </div> */}
         {/* In-app browser warning */}
         {inAppBrowser && (
           <div className="bg-red-100 text-red-700 p-4 rounded-md text-base font-semibold flex flex-col items-center mb-4">

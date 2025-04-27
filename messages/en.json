@@ -20,6 +20,8 @@
   "trialInfo": "Guest users get one free summary trial.",
   "inputTooLong": "The video is too long to summarize. Please try a shorter video.",
   "guestTokenLimit": "Sign in to use longer videos and more powerful AI features.",
+  "subCTA": "Upgrade to Premium for unlimited summaries and more features.",
+  "startForFree": "Start for free",
   "Sidebar": {
     "folders": "Folders",
     "newFolder": "New Folder",
@@ -46,5 +48,6 @@
   "SubscriptionPlans": {
     "subscribeButton": "Subscribe",
     "loading": "Processing subscription..."
-  }
+  },
+  "transcriptDisabled": "Transcript is disabled for this video. Unfortunately, we cannot summarize videos without a transcript. Please try another video."
 } 
