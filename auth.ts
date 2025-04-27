@@ -20,6 +20,8 @@ function generateUUID(googleId: string | undefined) {
 }
 
 const authOptions = {
+  // Use a stable secret for signing CSRF and PKCE tokens
+  secret: process.env.NEXTAUTH_SECRET,
   trustHost: true,
   providers: [
     GoogleProvider({

@@ -26,5 +26,8 @@ export async function middleware(request: NextRequest) {
 
 // 👇 Match routes for i18n (and auth if needed)
 export const config = {
-  matcher: ['/', '/(ko|en)/:path*']
-}
+  // Apply i18n middleware only to page routes (excluding API routes, Next.js internals, and static files)
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$).*)'
+  ],
+};
