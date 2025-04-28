@@ -118,10 +118,6 @@ const baseAuthOptions = {
 
 // Use lazy initialization to inspect headers
 const { handlers, auth, signIn, signOut } = NextAuth((req: NextRequest | undefined) => {
-  if (req) {
-    // Log headers specifically when Auth.js is invoked server-side
-    console.log('[Auth.js Request Headers]:', JSON.stringify(Object.fromEntries(req.headers.entries()), null, 2));
-  }
   return baseAuthOptions; // Return the static options
 });
 
