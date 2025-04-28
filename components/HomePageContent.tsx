@@ -30,6 +30,8 @@ export default function HomePageContent() {
       <div className="text-center px-4">
         <h1 className="text-3xl font-bold mb-4">서버 점검 중</h1>
         <p className="text-xl text-gray-600">죄송합니다 서둘러 고치겠습니다ㅠㅠ</p>
+        <p className="text-xl text-gray-600">lily's ai 나 다른 웹사이트에서도 유튜브 요약 가능합니다</p>
+        <p className="text-xl text-gray-600">https://lilys.ai/</p>
       </div>
     );
   }
