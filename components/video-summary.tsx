@@ -12,8 +12,7 @@ import { LanguageSwitcher } from './language-switcher';
 import { useParams, useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { signIn, useSession } from "next-auth/react";
-import { SidebarRefreshContext, useFolder } from './SidebarLayout';
-import Link from 'next/link';
+import { SidebarRefreshContext, useFolder, FolderContext } from './SidebarLayout';
 
 export function VideoSummary() {
   const t = useTranslations();
@@ -25,13 +24,14 @@ export function VideoSummary() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
-  const { activeFolder, setActiveFolder } = useFolder();
+  const { activeFolder, setActiveFolder, openSubscriptionModal } = useFolder();
   const { data: session, status } = useSession();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [trialUsed, setTrialUsed] = useState(false);
   const refreshSidebar = useContext(SidebarRefreshContext);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [inAppBrowser, setInAppBrowser] = useState(false);
+  const [showUpgradeBanner, setShowUpgradeBanner] = useState(true);
 
   // Fetch folders on mount - only if logged in
   useEffect(() => {
@@ -106,6 +106,7 @@ export function VideoSummary() {
     e.preventDefault();
     setError("");
     setSummary("");
+    setShowUpgradeBanner(false);
     
     // Check if user needs to log in
     if (!session) {
@@ -279,10 +280,15 @@ export function VideoSummary() {
         {!session && (
             <p className="text-sm text-zinc-500 text-center mt-2">{t('trialInfo')}</p>
         )}
-        {/* Premium plan banner */}
-        {/* <div className="bg-yellow-100 border border-yellow-300 text-yellow-900 rounded-md px-4 py-3 text-center text-base mb-2">
-          {t('subCTA')} <Link href={`/${locale}/payment`} className="underline font-bold hover:text-yellow-700 transition-colors">{t('startForFree')}</Link>
-        </div> */}
+        {/* Conditionally render the Premium plan banner */}
+        {showUpgradeBanner && (
+          <button
+            onClick={openSubscriptionModal}
+            className="w-full bg-yellow-100 border border-yellow-300 text-yellow-900 rounded-md px-4 py-3 text-center text-sm mb-2 hover:bg-yellow-200 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
+          >
+            {t('subCTA')} <span className="underline font-bold">{t('startForFree')}</span>
+          </button>
+        )}
         {/* In-app browser warning */}
         {inAppBrowser && (
           <div className="bg-red-100 text-red-700 p-4 rounded-md text-base font-semibold flex flex-col items-center mb-4">

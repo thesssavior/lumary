@@ -38,7 +38,8 @@
     "folderOptions": "Folder Options",
     "plan_status_free": "Free",
     "plan_status_premium": "Premium",
-    "upgrade": "Upgrade"
+    "upgrade": "Upgrade plan",
+    "upgradeSubtitle": "Get more features and unlimited access"
   },
   "PaymentPage": {
     "title": "Upgrade Your Plan",
@@ -46,12 +47,27 @@
     "description_line2": "Choose the subscription plan that fits you best."
   },
   "SubscriptionPlans": {
-    "subscribeButton": "Subscribe",
-    "loading": "Processing subscription...",
-    "cancelButton": "Cancel Subscription",
-    "title": "Manage Subscription",
-    "description": "Manage your subscription and billing details.",
-    "loadingPlans": "Loading subscription plans..."
+    "title": "Choose Your Plan",
+    "description": "Select the plan that best suits your needs.",
+    "loadingPlans": "Loading plans...",
+    "featureListTitle": "Everything in free plan plus",
+    "features": [
+      "Unlimited note generations",
+      "Unlimited podcasts and youtube videos",
+      "Best-in-class Transcription and Summarization",
+      "Customer support 24/7",
+      "Priority Access to new features: audio, quiz, conversation, and more",
+      "And more..."
+    ],
+    "pricePerMonth": "/ per month",
+    "pricePerWeek": "/ per week",
+    "pricePerYear": "/ per year",
+    "subscribeButton": "Upgrade plan",
+    "loading": "Processing...",
+    "weekly": "Weekly",
+    "yearly": "Yearly",
+    "monthly": "Monthly",
+    "save": "Save {percentage}%"
   },
   "transcriptDisabled": "Transcript is disabled for this video. Unfortunately, we cannot summarize videos without a transcript. Please try another video."
 } 

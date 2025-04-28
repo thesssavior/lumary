@@ -8,18 +8,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter // Optional: If you want a footer with a close button
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button"; // Optional: For a close button
+import { Check } from 'lucide-react';
+import Image from 'next/image'; // Import Next.js Image component
 
 type Plan = {
-  id: string;
+  id: string; // Product ID
   name: string;
-  price: number; // Keep as number for sorting
-  price_formatted: string; // Store formatted price for display
+  price: number; // Price in cents
+  price_formatted: string;
   description: string;
-  buy_link: string;
-  variant_id: string; // Add variant_id
+  buy_link: string; // Probably not needed if using custom checkout
+  variant_id: string; // Variant ID
+  interval: 'month' | 'week' | null; // Billing interval from variant
 };
 
 interface SubscriptionPlansProps {
@@ -30,12 +31,14 @@ interface SubscriptionPlansProps {
 export default function SubscriptionPlans({ isOpen, onClose }: SubscriptionPlansProps) {
   const t = useTranslations('SubscriptionPlans');
   const locale = useLocale();
-  const [plans, setPlans] = useState<Plan[]>([]);
+  const [weeklyPlan, setWeeklyPlan] = useState<Plan | null>(null);
+  const [monthlyPlan, setMonthlyPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkingOutId, setCheckingOutId] = useState<string | null>(null);
+  const [billingCycle, setBillingCycle] = useState<'weekly' | 'monthly'>('weekly');
 
   const handleCheckout = async (productId: string, variantId: string) => {
-    setCheckingOutId(productId);
+    setCheckingOutId(variantId); // Track checkout by variantId
     try {
       const res = await fetch('/api/lemonsqueezy/checkout', {
         method: 'POST',
@@ -56,69 +59,161 @@ export default function SubscriptionPlans({ isOpen, onClose }: SubscriptionPlans
   };
 
   useEffect(() => {
-    if (isOpen) { // Only fetch when the modal is open
+    if (isOpen) {
+      console.log("SubscriptionPlans useEffect triggered, isOpen:", isOpen);
       setLoading(true);
+      setWeeklyPlan(null);
+      setMonthlyPlan(null);
       fetch('/api/lemonsqueezy')
         .then(res => res.json())
         .then(data => {
-          // Lemon Squeezy API returns products in data.data and variants in data.included
-          const variants = (data.included || []).filter((item: any) => item.type === 'variants');
-          const formatted = data.data.map((product: any) => {
-            // Find the first variant for this product
-            const variant = variants.find((v: any) => v.attributes.product_id == product.id);
-            return {
+          console.log("Lemon Squeezy API Data (Products with Variants):", JSON.stringify(data, null, 2));
+
+          const products = data.data || [];
+          const variants = data.included || [];
+          console.log("All Variants:", JSON.stringify(variants, null, 2));
+
+          let foundWeekly: Plan | null = null;
+          let foundMonthly: Plan | null = null;
+
+          variants.forEach((variant: any) => {
+            if (variant.type !== 'variants') return;
+
+            console.log(`Processing variant ${variant.id}, interval: ${variant.attributes.interval}`);
+
+            const product = products.find((p: any) => p.type === 'products' && p.id == variant.attributes.product_id);
+            if (!product) {
+              console.warn(`Product details not found for variant ${variant.id}`);
+              return;
+            }
+
+            const priceInWon = variant.attributes.price / 100;
+            const formattedKoreanWon = priceInWon.toLocaleString('ko-KR', {
+              style: 'currency',
+              currency: 'KRW',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0
+            });
+
+            const planData: Plan = {
               id: product.id,
               name: product.attributes.name,
-              price: product.attributes.price, // price is in cents
-              price_formatted: product.attributes.price_formatted || `$${(product.attributes.price / 100).toFixed(2)}`,
+              price: variant.attributes.price,
+              price_formatted: formattedKoreanWon,
               description: product.attributes.description || '',
-              buy_link: product.attributes.buy_now_url,
-              variant_id: variant ? variant.id : '',
+              buy_link: '',
+              variant_id: variant.id,
+              interval: variant.attributes.interval,
             };
+
+            if (variant.attributes.interval === 'week') {
+              console.log(`Found weekly plan: ${variant.id} for product ${product.id}`);
+              foundWeekly = planData;
+            } else if (variant.attributes.interval === 'month') {
+              console.log(`Found monthly plan: ${variant.id} for product ${product.id}`);
+              foundMonthly = planData;
+            }
           });
-          // Sort plans by price (ascending)
-          formatted.sort((a: Plan, b: Plan) => a.price - b.price);
-          setPlans(formatted);
+
+          console.log("Setting weeklyPlan:", foundWeekly);
+          console.log("Setting monthlyPlan:", foundMonthly);
+          setWeeklyPlan(foundWeekly);
+          setMonthlyPlan(foundMonthly);
           setLoading(false);
+        }).catch(err => {
+            console.error("Error fetching plans:", err);
+            setLoading(false);
         });
     }
-  }, [isOpen]); // Add isOpen as a dependency
+  }, [isOpen]);
+
+  const currentPlan = billingCycle === 'weekly' ? weeklyPlan : monthlyPlan;
+  const planFeatures = t.raw('features'); // Get features array
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
             {t('description')}
           </DialogDescription>
         </DialogHeader>
+
+        {/* Billing Cycle Toggle */}
+        <div className="flex justify-center my-4">
+           <div className="inline-flex bg-gray-100 p-1 rounded-full">
+               <button
+                   onClick={() => setBillingCycle('weekly')}
+                   className={`px-4 py-1 rounded-full text-sm font-medium transition-colors duration-150 ${billingCycle === 'weekly' ? 'bg-gray-900 text-white shadow' : 'text-gray-600 hover:text-gray-900'}`}
+               >
+                   {t('weekly')}
+               </button>
+               <button
+                   onClick={() => setBillingCycle('monthly')}
+                   className={`px-4 py-1 rounded-full text-sm font-medium transition-colors duration-150 ${billingCycle === 'monthly' ? 'bg-gray-900 text-white shadow' : 'text-gray-600 hover:text-gray-900'}`}
+               >
+                   {t('monthly')}
+               </button>
+           </div>
+        </div>
+
         <div className="py-4">
           {loading ? (
             <div>{t('loadingPlans')}</div>
+          ) : !currentPlan ? (
+            <div>Plan not available for selected cycle.</div> // Handle case where plan isn't found
           ) : (
-            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
-              {plans.map(plan => (
-                <div key={plan.id} className="border border-gray-200 p-6 rounded-lg shadow-sm bg-white flex flex-col h-full">
-                  <h3 className="font-semibold text-lg text-gray-800 mb-2">{plan.name}</h3>
-                  <p className="text-2xl font-bold text-gray-900 mb-3">{plan.price_formatted}</p>
-                  <div className="prose prose-sm text-gray-600 mb-4 flex-grow" dangerouslySetInnerHTML={{ __html: plan.description }} />
-                  <button
-                    onClick={() => handleCheckout(plan.id, plan.variant_id)}
-                    disabled={checkingOutId === plan.id}
-                    className="w-full bg-yellow-500 text-white font-bold py-2 px-4 rounded hover:bg-yellow-600 transition-colors duration-200 text-center block mt-auto disabled:opacity-50"
+            // Display only the selected plan
+            <div key={currentPlan.variant_id} className="border border-gray-200 p-6 rounded-lg shadow-sm bg-white flex flex-col md:flex-row gap-6">
+              {/* Left Column */}
+              <div className="flex flex-col w-full md:w-1/3">
+                 <div className="flex items-center mb-4">
+                   <Image
+                      src="/logo3.png" // Assuming logo2.png is in the /public directory
+                      alt="Lumary Logo"
+                      width={48} // Adjust size as needed
+                      height={48}
+                      className="mr-3 rounded-md" // Add margin and potentially rounded corners
+                    />
+                     <div>
+                        <h3 className="font-semibold text-xl text-gray-800">{currentPlan.name}</h3>
+                     </div>
+                 </div>
+                 <p className="text-sm text-gray-600 mb-4 flex-grow">
+                   Get access to all features and benefits of the app. No limits, no restrictions.
+                 </p>
+                 <p className="text-3xl font-bold text-gray-900 mb-1">{currentPlan.price_formatted}
+                    <span className="text-sm font-normal text-gray-500">
+                       {billingCycle === 'weekly' ? t('pricePerWeek') : t('pricePerMonth')}
+                    </span>
+                 </p>
+                 <button
+                  onClick={() => handleCheckout(currentPlan.id, currentPlan.variant_id)}
+                  disabled={checkingOutId === currentPlan.variant_id}
+                  className="w-full bg-gray-900 text-white font-bold py-2 px-4 rounded hover:bg-gray-700 transition-colors duration-200 text-center block mt-4 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    {checkingOutId === plan.id ? t('loading') : t('subscribeButton')}
-                  </button>
-                </div>
-              ))}
+                    {checkingOutId === currentPlan.variant_id ? t('loading') : t('subscribeButton')}
+                    {checkingOutId !== currentPlan.variant_id && <span aria-hidden="true">→</span>}
+                 </button>
+              </div>
+
+              {/* Right Column (Feature List) */}
+              <div className="w-full md:w-2/3">
+                <h4 className="font-medium text-gray-700 mb-3">{t('featureListTitle')}</h4>
+                <ul className="space-y-2">
+                   {/* Use translated features */}
+                   {Array.isArray(planFeatures) ? planFeatures.map((feature: string, index: number) => (
+                    <li key={index} className="flex items-center text-sm text-gray-600">
+                      <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                      {feature}
+                    </li>
+                  )) : <li className="text-red-500">Error: Features not loaded correctly.</li>}
+                </ul>
+              </div>
             </div>
           )}
         </div>
-        {/* Optional Footer with Close Button */}
-        {/* <DialogFooter>
-          <Button variant="outline" onClick={onClose}>{t('closeButton')}</Button>
-        </DialogFooter> */}
       </DialogContent>
     </Dialog>
   );

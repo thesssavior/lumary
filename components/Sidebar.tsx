@@ -1,19 +1,29 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useTranslations } from 'next-intl';
-import { Book, Search, Clock, Folder, ChevronDown, ChevronRight, User, Plus, LogOut, MoreHorizontal } from 'lucide-react';
+import { Book, Search, Clock, Folder, ChevronDown, ChevronRight, User, Plus, LogOut, MoreHorizontal, Crown, Settings } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, signOut } from 'next-auth/react';
 import Image from 'next/image';
 import { useSession } from "next-auth/react";
-import { useFolder } from './SidebarLayout';
-import SubscriptionPlans from './SubscriptionPlans';
+import { useFolder, FolderContext } from './SidebarLayout';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface FolderType { id: string; name: string; }
 interface SummaryType { id: string; video_id: string; summary: string; name: string; }
+
+// Helper to get initials from name
+const getInitials = (name: string = '') => {
+  return name
+    .split(' ')
+    .map(part => part[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+};
 
 export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const t = useTranslations();
@@ -32,10 +42,9 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const locale = params.locale as string;
   const [inAppBrowser, setInAppBrowser] = useState(false);
   const { data: session } = useSession();
-  const { activeFolder, setActiveFolder } = useFolder();
+  const { activeFolder, setActiveFolder, openSubscriptionModal } = useFolder();
   const [folderOpen, setFolderOpen] = useState<{ [folderId: string]: boolean }>({});
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
-  const [isPlansModalOpen, setIsPlansModalOpen] = useState(false);
 
   // Check session
   useEffect(() => {
@@ -433,23 +442,40 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
         </ul>
       </nav>
 
-      {/* Footer */}
-      <div className="border-t px-4 py-3 text-xs text-gray-500 flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <User className="w-4 h-4" /> {session?.user?.name}
-          <span className={`ml-auto px-1.5 py-0.5 rounded text-xs font-medium ${session?.user?.plan && session?.user?.plan !== 'free' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-            {session?.user?.plan ? t(`Sidebar.plan_status_${session.user.plan}`) : t('Sidebar.plan_status_free')}
-          </span>
+      {/* --- Footer Area Redesign --- */}
+      <div className="px-4 py-3 space-y-3 border-t">
+        {/* Upgrade Section */}
+        <div className="bg-gray-100 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-200 transition-colors"
+             onClick={openSubscriptionModal} >
+          <button
+            className="w-full bg-gray-900 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-700 transition-colors duration-200 text-sm flex items-center justify-center gap-2 mb-2"
+          >
+            <Crown className="w-4 h-4" />
+            {t('Sidebar.upgrade')}
+          </button>
+          <p className="text-xs text-gray-600">{t('Sidebar.upgradeSubtitle')}</p>
         </div>
-        <button
-          onClick={() => setIsPlansModalOpen(true)}
-          className="w-full bg-yellow-300 text-yellow-900 font-bold py-1 rounded mt-2 hover:bg-yellow-400 text-center block text-xs"
-        >
-          {t('Sidebar.upgrade')}
-        </button>
-      </div>
 
-      <SubscriptionPlans isOpen={isPlansModalOpen} onClose={() => setIsPlansModalOpen(false)} />
+        {/* User Info Section */}
+        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={session?.user?.image ?? undefined} alt={session?.user?.name ?? 'User'} />
+            <AvatarFallback>{getInitials(session?.user?.name ?? '')}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 overflow-hidden">
+            <p className="text-sm font-medium truncate text-gray-800">{session?.user?.name}</p>
+            <p className="text-xs truncate text-gray-500">{session?.user?.email}</p>
+          </div>
+          <button className="text-gray-400 hover:text-gray-700" title="Settings"> {/* Add functionality later */}
+            <Settings className="w-5 h-5" />
+          </button>
+          {/* Add Sign Out Button Here? Or in a dropdown from Settings? */}
+           <button onClick={() => signOut()} className="text-gray-400 hover:text-red-600" title="Sign Out">
+             <LogOut className="w-5 h-5" />
+           </button>
+        </div>
+      </div>
+      {/* --- End Footer Area Redesign --- */}
     </div>
   );
 } 

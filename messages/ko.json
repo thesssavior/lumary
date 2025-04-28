@@ -38,7 +38,8 @@
     "folderOptions": "폴더 옵션",
     "plan_status_free": "무료",
     "plan_status_premium": "프리미엄",
-    "upgrade": "업그레이드"
+    "upgrade": "플랜 업그레이드",
+    "upgradeSubtitle": "더 많은 기능과 무제한 이용 혜택을 누리세요"
   },
   "PaymentPage": {
     "title": "플랜 업그레이드",
@@ -48,12 +49,31 @@
     "description_line4": "생산성 100배. 1주일 무료 체험"
   },
   "SubscriptionPlans": {
-    "subscribeButton": "구독하기",
-    "loading": "구독 처리 중...",
-    "cancelButton": "구독 취소",
-    "title": "구독 관리",
-    "description": "구독 및 결제 세부 정보를 관리하세요.",
-    "loadingPlans": "구독 플랜 로딩 중..."
+    "title": "플랜 선택하기",
+    "description": "필요에 가장 적합한 플랜을 선택하세요.",
+    "loadingPlans": "플랜 로딩 중...",
+    "featureListTitle": "무료 플랜의 모든 기능 포함 및:",
+    "features": [
+      "무제한 노트 생성",
+      "무제한 팟캐스트 및 유튜브 동영상",
+      "최고 수준의 받아쓰기 및 요약",
+      "연중무휴 고객 지원",
+      "신규 기능 우선 이용권: 오디오, 퀴즈, 대화 등등",
+      "기타 등등..."
+    ],
+    "pricePerMonth": "/ 월",
+    "pricePerWeek": "/ 주",
+    "pricePerYear": "/ 년",
+    "subscribeButton": "플랜 업그레이드",
+    "loading": "처리 중...",
+    "weekly": "주간",
+    "yearly": "연간",
+    "monthly": "월간",
+    "save": "{percentage}% 할인"
   },
-  "transcriptDisabled": "이 영상은 요약할 수 없습니다. 다른 영상을 시도해 주세요."
+  "transcriptDisabled": "이 영상은 요약할 수 없습니다. 다른 영상을 시도해 주세요.",
+  "Index": {
+  },
+  "Errors": {
+  }
 } 

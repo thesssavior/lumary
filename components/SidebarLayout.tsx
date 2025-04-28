@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState } from 'react';
 import Sidebar from './Sidebar';
+import SubscriptionPlans from './SubscriptionPlans';
 
 export interface FolderType {
   id: string;
@@ -11,11 +12,13 @@ export interface FolderType {
 interface FolderContextType {
   activeFolder: FolderType | null;
   setActiveFolder: (folder: FolderType | null) => void;
+  openSubscriptionModal: () => void;
 }
 
 export const FolderContext = createContext<FolderContextType>({
   activeFolder: null,
   setActiveFolder: () => {},
+  openSubscriptionModal: () => {},
 });
 
 export const useFolder = () => useContext(FolderContext);
@@ -31,9 +34,12 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
   const refreshSidebar = () => setRefreshKey(k => k + 1);
 
   const [activeFolder, setActiveFolder] = useState<FolderType | null>(null);
+  const [isPlansModalOpen, setIsPlansModalOpen] = useState(false);
+
+  const openSubscriptionModal = () => setIsPlansModalOpen(true);
 
   return (
-    <FolderContext.Provider value={{ activeFolder, setActiveFolder }}>
+    <FolderContext.Provider value={{ activeFolder, setActiveFolder, openSubscriptionModal }}>
       <SidebarRefreshContext.Provider value={refreshSidebar}>
         <div className="flex h-full relative">
           <button
@@ -56,6 +62,8 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
           <main className="flex-1 overflow-auto">
             {children}
           </main>
+
+          <SubscriptionPlans isOpen={isPlansModalOpen} onClose={() => setIsPlansModalOpen(false)} />
         </div>
       </SidebarRefreshContext.Provider>
     </FolderContext.Provider>
