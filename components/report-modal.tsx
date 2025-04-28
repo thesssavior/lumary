@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 // TODO: Add translations if needed
 
 interface ReportModalProps {
@@ -19,6 +20,7 @@ interface ReportModalProps {
 }
 
 export function ReportModal({ isOpen, onClose }: ReportModalProps) {
+  const t = useTranslations();
   const [content, setContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,30 +80,30 @@ export function ReportModal({ isOpen, onClose }: ReportModalProps) {
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Report an Issue</DialogTitle> {/* TODO: Translate */}
+          <DialogTitle>{t('reportModalTitle')}</DialogTitle>
           <DialogDescription>
-            Describe the problem you encountered or share your feedback. {/* TODO: Translate */}
+            {t('reportModalDescription')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <Textarea
               id="content"
-              placeholder="Please provide details about the issue..." /* TODO: Translate */
+              placeholder={t('reportModalPlaceholder')}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={5}
               disabled={isLoading || success}
             />
-            {error && <p className="text-sm text-red-600">{error}</p>}
-            {success && <p className="text-sm text-green-600">Report submitted successfully!</p>} {/* TODO: Translate */}
+            {error && <p className="text-sm text-red-600">{t('reportModalError')}</p>}
+            {success && <p className="text-sm text-green-600">{t('reportModalSuccess')}</p>}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
-              Cancel {/* TODO: Translate */}
+              {t('reportModalCancel')}
             </Button>
             <Button type="submit" disabled={isLoading || success || !content.trim()}>
-              {isLoading ? 'Submitting...' : 'Submit Report'} {/* TODO: Translate */}
+              {isLoading ? t('reportModalSubmitting') : t('reportModalSubmit')}
             </Button>
           </DialogFooter>
         </form>

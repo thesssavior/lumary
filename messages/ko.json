@@ -86,5 +86,13 @@
   "Index": {
   },
   "Errors": {
-  }
+  },
+  "reportModalTitle": "문제 신고",
+  "reportModalDescription": "발생한 문제나 피드백을 작성해 주세요.",
+  "reportModalPlaceholder": "문제에 대한 자세한 내용을 입력해 주세요...",
+  "reportModalError": "문제를 작성해 주세요.",
+  "reportModalSuccess": "신고가 성공적으로 제출되었습니다!",
+  "reportModalCancel": "취소",
+  "reportModalSubmit": "신고 제출",
+  "reportModalSubmitting": "제출 중..."
 } 

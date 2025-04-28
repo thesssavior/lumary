@@ -79,5 +79,13 @@
     "statusActive": "Your subscription is now active!",
     "newSummaryButton": "New Summary"
   },
-  "transcriptDisabled": "Transcript is disabled for this video. Unfortunately, we cannot summarize videos without a transcript. Please try another video."
+  "transcriptDisabled": "Transcript is disabled for this video. Unfortunately, we cannot summarize videos without a transcript. Please try another video.",
+  "reportModalTitle": "Report an Issue",
+  "reportModalDescription": "Describe the problem you encountered or share your feedback.",
+  "reportModalPlaceholder": "Please provide details about the issue...",
+  "reportModalError": "Please describe the issue.",
+  "reportModalSuccess": "Report submitted successfully!",
+  "reportModalCancel": "Cancel",
+  "reportModalSubmit": "Submit Report",
+  "reportModalSubmitting": "Submitting..."
 } 
