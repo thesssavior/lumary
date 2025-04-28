@@ -1,30 +1,27 @@
 // Removed 'use client' - this is now a Server Component
 
 // Keep necessary server-side imports if any (e.g., for fetching data unrelated to searchParams)
-import { HomeHeader } from "@/components/home-header";
-import { VideoSummary } from "@/components/video-summary";
-import { Suspense } from "react";
+import HomePageContent from '@/components/HomePageContent';
+import { Suspense } from 'react';
 
-// Original PageProps interface
+// Revert PageProps to use Promise for params
 interface PageProps {
-  params: Promise<{
+  params: Promise<{ // Changed back to Promise
     locale: string;
   }>;
 }
 
-// Revert to original async function and rendering
-export default async function Home({ params }: PageProps) {
-  const resolvedParams = await params;
-  const { locale } = resolvedParams;
+// Use async and await for params again
+export default async function Home({ params }: PageProps) { 
+  const resolvedParams = await params; // Await the params promise
+  // const { locale } = resolvedParams; // Locale is available here if needed
 
   return (
-    <main className="min-h-screen bg-white text-black">
-      <div className="container mx-auto px-4 py-16 max-w-3xl">
-        <HomeHeader locale={locale} />
-        <Suspense fallback={<div>Loading...</div>}> 
-          <VideoSummary />
-        </Suspense>
-      </div>
+    <main className="min-h-screen bg-white text-black flex items-center justify-center">
+      {/* Suspense boundary around the client component */}
+      <Suspense fallback={<div>Loading Page...</div>}>
+        <HomePageContent /> 
+      </Suspense>
     </main>
   );
 } 
