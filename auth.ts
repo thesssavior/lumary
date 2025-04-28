@@ -26,9 +26,8 @@ const authOptions = {
   // Custom logger to suppress PKCE/CSRF spam in production logs
   logger: {
     error(error: Error) {
-      // Suppress PKCE state and CSRF missing errors
-      if (error.name === 'InvalidCheck' || error.name === 'MissingCSRF') return;
-      console.error('[auth][error]', error);
+      // Log only name and message for production debugging
+      console.error('[auth][error] Name:', error.name, 'Message:', error.message);
     }
   },
   providers: [

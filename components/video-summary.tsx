@@ -281,14 +281,14 @@ export function VideoSummary() {
             <p className="text-sm text-zinc-500 text-center mt-2">{t('trialInfo')}</p>
         )}
         {/* Conditionally render the Premium plan banner */}
-        {showUpgradeBanner && (
+        {/* {showUpgradeBanner && (
           <button
             onClick={openSubscriptionModal}
             className="w-full bg-yellow-100 border border-yellow-300 text-yellow-900 rounded-md px-4 py-3 text-center text-sm mb-2 hover:bg-yellow-200 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
           >
             {t('subCTA')} <span className="underline font-bold">{t('startForFree')}</span>
           </button>
-        )}
+        )} */}
         {/* In-app browser warning */}
         {inAppBrowser && (
           <div className="bg-red-100 text-red-700 p-4 rounded-md text-base font-semibold flex flex-col items-center mb-4">
