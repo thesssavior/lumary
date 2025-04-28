@@ -1,24 +1,13 @@
-import { VideoSummary } from "@/components/video-summary";
-import { HomeHeader } from "@/components/home-header";
-import { Suspense } from "react";
+import { useTranslations } from 'next-intl';
 
-interface PageProps {
-  params: Promise<{
-    locale: string;
-  }>;
-}
-
-export default async function Home({ params }: PageProps) {
-  const resolvedParams = await params;
-  const { locale } = resolvedParams;
+export default function Home() {
+  const t = useTranslations(); // Keep for potential future use or remove if not needed
   
   return (
-    <main className="min-h-screen bg-white text-black">
-      <div className="container mx-auto px-4 py-16 max-w-3xl">
-        <HomeHeader locale={locale} />
-        <Suspense fallback={<div>Loading...</div>}>
-          <VideoSummary />
-        </Suspense>
+    <main className="min-h-screen bg-white text-black flex items-center justify-center">
+      <div className="text-center px-4">
+        <h1 className="text-3xl font-bold mb-4">서버 점검 중</h1>
+        <p className="text-xl text-gray-600">죄송합니다 서둘러 고치겠습니다ㅠㅠ</p>
       </div>
     </main>
   );
