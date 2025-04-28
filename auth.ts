@@ -23,6 +23,14 @@ const authOptions = {
   // Use NEXTAUTH_SECRET or fallback to legacy AUTH_SECRET
   secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
   trustHost: true,
+  // Custom logger to suppress PKCE/CSRF spam in production logs
+  logger: {
+    error(error: Error) {
+      // Suppress PKCE state and CSRF missing errors
+      if (error.name === 'InvalidCheck' || error.name === 'MissingCSRF') return;
+      console.error('[auth][error]', error);
+    }
+  },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,

@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { signIn } from "@/auth";
 import { useTranslations } from 'next-intl';
+import { cookies } from 'next/headers';
 
-export default function SignIn() {
+export default async function SignIn() {
   const t = useTranslations();
+  const csrfToken = (await cookies()).get('authjs.csrf-token')?.value ?? "";
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
@@ -19,6 +21,7 @@ export default function SignIn() {
           }}
           className="mt-8"
         >
+          <input type="hidden" name="csrfToken" value={csrfToken} />
           <Button
             type="submit"
             className="w-full bg-black hover:bg-zinc-800 text-white"
