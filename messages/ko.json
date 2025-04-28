@@ -49,7 +49,11 @@
   },
   "SubscriptionPlans": {
     "subscribeButton": "구독하기",
-    "loading": "구독 처리 중..."
+    "loading": "구독 처리 중...",
+    "cancelButton": "구독 취소",
+    "title": "구독 관리",
+    "description": "구독 및 결제 세부 정보를 관리하세요.",
+    "loadingPlans": "구독 플랜 로딩 중..."
   },
   "transcriptDisabled": "이 영상은 요약할 수 없습니다. 다른 영상을 시도해 주세요."
 } 

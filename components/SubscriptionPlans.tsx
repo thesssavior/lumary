@@ -2,6 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter // Optional: If you want a footer with a close button
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button"; // Optional: For a close button
 
 type Plan = {
   id: string;
@@ -13,7 +22,12 @@ type Plan = {
   variant_id: string; // Add variant_id
 };
 
-export default function SubscriptionPlans() {
+interface SubscriptionPlansProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function SubscriptionPlans({ isOpen, onClose }: SubscriptionPlansProps) {
   const t = useTranslations('SubscriptionPlans');
   const locale = useLocale();
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -42,49 +56,70 @@ export default function SubscriptionPlans() {
   };
 
   useEffect(() => {
-    fetch('/api/lemonsqueezy')
-      .then(res => res.json())
-      .then(data => {
-        // Lemon Squeezy API returns products in data.data and variants in data.included
-        const variants = (data.included || []).filter((item: any) => item.type === 'variants');
-        const formatted = data.data.map((product: any) => {
-          // Find the first variant for this product
-          const variant = variants.find((v: any) => v.attributes.product_id == product.id);
-          return {
-            id: product.id,
-            name: product.attributes.name,
-            price: product.attributes.price, // price is in cents
-            price_formatted: product.attributes.price_formatted || `$${(product.attributes.price / 100).toFixed(2)}`,
-            description: product.attributes.description || '',
-            buy_link: product.attributes.buy_now_url,
-            variant_id: variant ? variant.id : '',
-          };
+    if (isOpen) { // Only fetch when the modal is open
+      setLoading(true);
+      fetch('/api/lemonsqueezy')
+        .then(res => res.json())
+        .then(data => {
+          // Lemon Squeezy API returns products in data.data and variants in data.included
+          const variants = (data.included || []).filter((item: any) => item.type === 'variants');
+          const formatted = data.data.map((product: any) => {
+            // Find the first variant for this product
+            const variant = variants.find((v: any) => v.attributes.product_id == product.id);
+            return {
+              id: product.id,
+              name: product.attributes.name,
+              price: product.attributes.price, // price is in cents
+              price_formatted: product.attributes.price_formatted || `$${(product.attributes.price / 100).toFixed(2)}`,
+              description: product.attributes.description || '',
+              buy_link: product.attributes.buy_now_url,
+              variant_id: variant ? variant.id : '',
+            };
+          });
+          // Sort plans by price (ascending)
+          formatted.sort((a: Plan, b: Plan) => a.price - b.price);
+          setPlans(formatted);
+          setLoading(false);
         });
-        // Sort plans by price (ascending)
-        formatted.sort((a: Plan, b: Plan) => a.price - b.price);
-        setPlans(formatted);
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) return <div>Loading plans...</div>;
+    }
+  }, [isOpen]); // Add isOpen as a dependency
 
   return (
-    <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
-      {plans.map(plan => (
-        <div key={plan.id} className="border border-gray-200 p-6 rounded-lg shadow-sm bg-white flex flex-col h-full">
-          <h3 className="font-semibold text-lg text-gray-800 mb-2">{plan.name}</h3>
-          <p className="text-2xl font-bold text-gray-900 mb-3">{plan.price_formatted}</p>
-          <div className="prose prose-sm text-gray-600 mb-4 flex-grow" dangerouslySetInnerHTML={{ __html: plan.description }} />
-          <button
-            onClick={() => handleCheckout(plan.id, plan.variant_id)}
-            disabled={checkingOutId === plan.id}
-            className="w-full bg-yellow-500 text-white font-bold py-2 px-4 rounded hover:bg-yellow-600 transition-colors duration-200 text-center block mt-auto"
-          >
-            {checkingOutId === plan.id ? t('loading') : t('subscribeButton')}
-          </button>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogDescription>
+            {t('description')}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="py-4">
+          {loading ? (
+            <div>{t('loadingPlans')}</div>
+          ) : (
+            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+              {plans.map(plan => (
+                <div key={plan.id} className="border border-gray-200 p-6 rounded-lg shadow-sm bg-white flex flex-col h-full">
+                  <h3 className="font-semibold text-lg text-gray-800 mb-2">{plan.name}</h3>
+                  <p className="text-2xl font-bold text-gray-900 mb-3">{plan.price_formatted}</p>
+                  <div className="prose prose-sm text-gray-600 mb-4 flex-grow" dangerouslySetInnerHTML={{ __html: plan.description }} />
+                  <button
+                    onClick={() => handleCheckout(plan.id, plan.variant_id)}
+                    disabled={checkingOutId === plan.id}
+                    className="w-full bg-yellow-500 text-white font-bold py-2 px-4 rounded hover:bg-yellow-600 transition-colors duration-200 text-center block mt-auto disabled:opacity-50"
+                  >
+                    {checkingOutId === plan.id ? t('loading') : t('subscribeButton')}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      ))}
-    </div>
+        {/* Optional Footer with Close Button */}
+        {/* <DialogFooter>
+          <Button variant="outline" onClick={onClose}>{t('closeButton')}</Button>
+        </DialogFooter> */}
+      </DialogContent>
+    </Dialog>
   );
 } 

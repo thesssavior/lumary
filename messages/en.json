@@ -47,7 +47,11 @@
   },
   "SubscriptionPlans": {
     "subscribeButton": "Subscribe",
-    "loading": "Processing subscription..."
+    "loading": "Processing subscription...",
+    "cancelButton": "Cancel Subscription",
+    "title": "Manage Subscription",
+    "description": "Manage your subscription and billing details.",
+    "loadingPlans": "Loading subscription plans..."
   },
   "transcriptDisabled": "Transcript is disabled for this video. Unfortunately, we cannot summarize videos without a transcript. Please try another video."
 } 

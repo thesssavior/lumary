@@ -35,6 +35,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const { activeFolder, setActiveFolder } = useFolder();
   const [folderOpen, setFolderOpen] = useState<{ [folderId: string]: boolean }>({});
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+  const [isPlansModalOpen, setIsPlansModalOpen] = useState(false);
 
   // Check session
   useEffect(() => {
@@ -435,15 +436,20 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
       {/* Footer */}
       <div className="border-t px-4 py-3 text-xs text-gray-500 flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <User className="w-4 h-4" /> {session?.user?.name} <span className="ml-auto text-green-600">{t('Sidebar.plan_status_free')}</span>
+          <User className="w-4 h-4" /> {session?.user?.name}
+          <span className={`ml-auto px-1.5 py-0.5 rounded text-xs font-medium ${session?.user?.plan && session?.user?.plan !== 'free' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+            {session?.user?.plan ? t(`Sidebar.plan_status_${session.user.plan}`) : t('Sidebar.plan_status_free')}
+          </span>
         </div>
-        <Link 
-          href={`/${locale}/payment`}
-          className="w-full bg-yellow-300 text-yellow-900 font-bold py-1 rounded mt-2 hover:bg-yellow-400 text-center block"
+        <button
+          onClick={() => setIsPlansModalOpen(true)}
+          className="w-full bg-yellow-300 text-yellow-900 font-bold py-1 rounded mt-2 hover:bg-yellow-400 text-center block text-xs"
         >
           {t('Sidebar.upgrade')}
-        </Link>
+        </button>
       </div>
+
+      <SubscriptionPlans isOpen={isPlansModalOpen} onClose={() => setIsPlansModalOpen(false)} />
     </div>
   );
 } 
