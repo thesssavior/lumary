@@ -84,7 +84,8 @@
     "vaul": "^0.9.9",
     "youtube-transcript": "^1.2.1",
     "youtubei.js": "^13.3.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@types/react": "^19.1.0",

@@ -135,6 +135,19 @@ export function VideoSummary() {
 
       if (!summaryResponse.ok) {
         const errorData = await summaryResponse.json();
+        
+        // Check if it's a server maintenance error (500 status code or proxy error)
+        if (summaryResponse.status === 500 || (errorData?.error && 
+            (errorData.error.includes('fetch') || 
+             errorData.error.includes('proxy') || 
+             errorData.error.includes('transcript')))) {
+          // Show the server maintenance modal
+          // @ts-ignore - Using global handler defined in ServerDownModalProvider
+          if (typeof window !== 'undefined' && window.showServerMaintenanceModal) {
+            window.showServerMaintenanceModal();
+          }
+        }
+        
         throw new Error(errorData.error || t('error'));
       }
 
