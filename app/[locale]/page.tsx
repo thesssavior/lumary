@@ -4,21 +4,23 @@
 import HomePageContent from '@/components/HomePageContent';
 import { Suspense } from 'react';
 
-// If you need params server-side for other things, keep this interface
+// Revert PageProps to use Promise for params
 interface PageProps {
-  params: { // Changed from Promise to direct object for Server Components
+  params: Promise<{ // Changed back to Promise
     locale: string;
-  };
+  }>;
 }
 
-export default function Home({ params }: PageProps) {
-  // const { locale } = params; // Locale is available here if needed server-side
+// Use async and await for params again
+export default async function Home({ params }: PageProps) { 
+  const resolvedParams = await params; // Await the params promise
+  // const { locale } = resolvedParams; // Locale is available here if needed
 
   return (
     <main className="min-h-screen bg-white text-black flex items-center justify-center">
       {/* Suspense boundary around the client component */}
       <Suspense fallback={<div>Loading Page...</div>}>
-        <HomePageContent />
+        <HomePageContent /> 
       </Suspense>
     </main>
   );
