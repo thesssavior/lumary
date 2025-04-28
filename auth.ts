@@ -20,13 +20,14 @@ function generateUUID(googleId: string | undefined) {
 }
 
 const authOptions = {
-  // Use a stable secret for signing CSRF and PKCE tokens
-  secret: process.env.NEXTAUTH_SECRET,
+  // Use NEXTAUTH_SECRET or fallback to legacy AUTH_SECRET
+  secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
   trustHost: true,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      // Use GOOGLE_CLIENT_SECRET or fallback to legacy AUTH_GOOGLE_SECRET
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || process.env.AUTH_GOOGLE_SECRET!,
     }),
   ],
   callbacks: {
