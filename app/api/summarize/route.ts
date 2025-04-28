@@ -7,8 +7,8 @@ import { HttpsProxyAgent } from 'https-proxy-agent';
 import { formatTime, calculateTokenCount } from '@/lib/utils';
 import { auth } from '@/auth';
 
-// Bright Data proxy setup
-const proxyUrl = 'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh_country-kr_city-seoul@geo.iproyal.com:12321';
+// Webshare proxy setup
+const proxyUrl = 'http://toehivex-rotate:esiwn5hn17xs@p.webshare.io:80/';
 const agent = new HttpsProxyAgent(proxyUrl);
 
 // Fetch YouTube video title and description using YouTube Data API v3
