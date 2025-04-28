@@ -5,6 +5,7 @@
   "getSummary": "요약하기",
   "getSummaryShort": "요약",
   "loading": "요약 생성 중...",
+  "loadingShort": "로딩중...",
   "error": "오류가 발생했습니다",
   "language": "언어",
   "korean": "한국어",

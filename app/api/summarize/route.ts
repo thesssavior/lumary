@@ -8,7 +8,7 @@ import { formatTime, calculateTokenCount } from '@/lib/utils';
 import { auth } from '@/auth';
 
 // Webshare proxy setup
-const proxyUrl = 'http://toehivex-rotate:esiwn5hn17xs@p.webshare.io:80/';
+const proxyUrl = 'http://toehivex:esiwn5hn17xs@p.webshare.io:80/';
 const agent = new HttpsProxyAgent(proxyUrl);
 
 // Fetch YouTube video title and description using YouTube Data API v3
