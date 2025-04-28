@@ -1,5 +1,7 @@
+'use client';
+
 import { Button } from "@/components/ui/button";
-import { signIn } from "@/auth";
+import { signIn } from "next-auth/react";
 import { useTranslations } from 'next-intl';
 
 export default function SignIn() {
@@ -12,20 +14,12 @@ export default function SignIn() {
           <h1 className="text-2xl font-bold text-black">{t('signIn')}</h1>
           <p className="mt-2 text-zinc-600">{t('signInDescription')}</p>
         </div>
-        <form
-          action={async () => {
-            "use server"
-            await signIn("google")
-          }}
-          className="mt-8"
+        <Button
+          onClick={() => signIn("google")}
+          className="w-full bg-black hover:bg-zinc-800 text-white mt-8"
         >
-          <Button
-            type="submit"
-            className="w-full bg-black hover:bg-zinc-800 text-white"
-          >
-            {t('signInWithGoogle')}
-          </Button>
-        </form>
+          {t('signInWithGoogle')}
+        </Button>
       </div>
     </div>
   );
