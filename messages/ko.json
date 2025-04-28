@@ -71,6 +71,15 @@
     "monthly": "월간",
     "save": "{percentage}% 할인"
   },
+  "PaymentSuccess": {
+    "title": "결제 성공!",
+    "statusLabel": "플랜:",
+    "planPremium": "프리미엄",
+    "planFree": "무료",
+    "statusUpdating": "플랜 업데이트 중...",
+    "statusActive": "구독이 활성화되었습니다!",
+    "newSummaryButton": "새로운 요약"
+  },
   "transcriptDisabled": "이 영상은 요약할 수 없습니다. 다른 영상을 시도해 주세요.",
   "Index": {
   },

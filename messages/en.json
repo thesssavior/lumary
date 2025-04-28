@@ -69,5 +69,14 @@
     "monthly": "Monthly",
     "save": "Save {percentage}%"
   },
+  "PaymentSuccess": {
+    "title": "Payment Successful!",
+    "statusLabel": "Your plan:",
+    "planPremium": "Premium",
+    "planFree": "Free",
+    "statusUpdating": "Updating your plan...",
+    "statusActive": "Your subscription is now active!",
+    "newSummaryButton": "New Summary"
+  },
   "transcriptDisabled": "Transcript is disabled for this video. Unfortunately, we cannot summarize videos without a transcript. Please try another video."
 } 

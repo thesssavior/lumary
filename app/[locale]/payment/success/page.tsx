@@ -1,50 +1,76 @@
 'use client';
-import { Plus } from 'lucide-react';
+import { CheckCircle, Plus } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 export default function PaymentSuccess() {
+  const t = useTranslations('PaymentSuccess');
   const { data: session, update } = useSession();
   const [plan, setPlan] = useState(session?.user?.plan);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const locale = useLocale();
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (session?.user?.email) {
+    if (session?.user?.email && plan === 'free') {
       interval = setInterval(async () => {
-        const res = await fetch(`/api/user/plan?email=${session.user.email}`);
-        const { plan: latestPlan } = await res.json();
-        if (latestPlan && latestPlan !== plan) {
-          setPlan(latestPlan);
-          await update(); // Refresh the session
-          clearInterval(interval);
-          setLoading(false);
+        try {
+            const res = await fetch(`/api/user/plan?email=${session.user.email}`);
+            if (!res.ok) {
+                console.error("Failed to fetch plan status:", res.status);
+                return; 
+            }
+            const { plan: latestPlan } = await res.json();
+            console.log("Fetched plan:", latestPlan);
+            if (latestPlan && latestPlan !== 'free') {
+              setPlan(latestPlan);
+              await update();
+              clearInterval(interval);
+              setLoading(false);
+            }
+        } catch (error) {
+            console.error("Error polling for plan status:", error);
         }
-      }, 2000); // Poll every 2 seconds
+      }, 3000);
     } else {
       setLoading(false);
     }
     return () => clearInterval(interval);
   }, [session, plan, update]);
 
+  const isPremium = plan && plan !== 'free';
+  const displayPlanName = isPremium ? t('planPremium') : t('planFree');
+  const isLoadingPlan = loading && !isPremium;
+
   return (
-    <div className="max-w-lg mx-auto py-16 text-center">
-      <h1 className="text-2xl font-bold mb-4">Payment Successful!</h1>
-      <p className="mb-2">Your plan: <span className="font-mono">{plan}</span></p>
-      {loading || plan === 'free' ? (
-        <p className="text-yellow-600">Updating your plan...</p>
-      ) : (
-        <p className="text-green-600">Your subscription is now active!</p>
-      )}
-        <button
-        className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium hover:bg-green-200"
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] text-center px-4">
+      <CheckCircle className="w-16 h-16 text-green-500 mb-6" />
+      <h1 className="text-3xl font-bold mb-4">{t('title')}</h1>
+      
+      <div className="mb-8">
+          <p className="text-lg text-gray-600 mb-2">
+              {t('statusLabel')} <span className="font-semibold text-gray-800">{displayPlanName}</span>
+          </p>
+          {isLoadingPlan ? (
+            <p className="text-yellow-600 animate-pulse">{t('statusUpdating')}</p>
+          ) : isPremium ? (
+            <p className="text-green-600">{t('statusActive')}</p>
+          ) : (
+            <p className="text-gray-500">Your plan is currently {displayPlanName}.</p>
+          )}
+      </div>
+
+      <Button
+        size="lg"
+        className="bg-black hover:bg-zinc-800 text-white"
         onClick={() => router.push(`/${locale}`)}
-        >
-        <Plus className="inline w-4 h-4 mr-1" /> 새로운 요약
-        </button>
+      >
+        <Plus className="w-5 h-5 mr-2" /> {t('newSummaryButton')}
+      </Button>
     </div>
   );
 }

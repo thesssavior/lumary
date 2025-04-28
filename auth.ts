@@ -4,6 +4,7 @@ import { supabase } from './lib/supabaseClient';
 import crypto from 'crypto';
 import type { JWT } from "next-auth/jwt";
 import type { Session, User, Account, Profile } from "next-auth";
+import type { NextRequest } from 'next/server';
 
 // Function to generate a consistent UUID v5 from Google ID
 function generateUUID(googleId: string | undefined) {
@@ -19,15 +20,16 @@ function generateUUID(googleId: string | undefined) {
     .replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5');
 }
 
-const authOptions = {
+const baseAuthOptions = {
   // Use NEXTAUTH_SECRET or fallback to legacy AUTH_SECRET
   secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
   trustHost: true,
   // Custom logger to suppress PKCE/CSRF spam in production logs
   logger: {
     error(error: Error) {
-      // Log only name and message for production debugging
-      console.error('[auth][error] Name:', error.name, 'Message:', error.message);
+      // Suppress PKCE state and CSRF missing errors
+      if (error.name === 'InvalidCheck' || error.name === 'MissingCSRF') return;
+      console.error('[auth][error]', error);
     }
   },
   providers: [
@@ -114,6 +116,13 @@ const authOptions = {
   }
 };
 
-const { handlers, auth, signIn, signOut } = NextAuth(authOptions);
+// Use lazy initialization to inspect headers
+const { handlers, auth, signIn, signOut } = NextAuth((req: NextRequest | undefined) => {
+  if (req) {
+    // Log headers specifically when Auth.js is invoked server-side
+    console.log('[Auth.js Request Headers]:', JSON.stringify(Object.fromEntries(req.headers.entries()), null, 2));
+  }
+  return baseAuthOptions; // Return the static options
+});
 
-export { authOptions, handlers, auth, signIn, signOut };
+export { baseAuthOptions as authOptions, handlers, auth, signIn, signOut };

@@ -33,17 +33,22 @@ export async function POST(req: NextRequest) {
 
     if (eventName === 'subscription_created' || eventName === 'subscription_updated') {
       let userEmail = attributes?.user_email;
-      const planName = attributes?.variant_name || attributes?.product_name; 
       const status = attributes?.status;
+      const variantId = event.data?.relationships?.variant?.data?.id; // Get variant ID
+      const productName = attributes?.product_name; // Get product name
 
-      if (!userEmail || !planName) {
-        return new Response('Missing user email or plan name.', { status: 400 });
+      if (!userEmail) {
+        console.warn('Webhook received without user_email.', event.data);
+        return new Response('Missing user email.', { status: 400 });
       }
 
       userEmail = userEmail.toLowerCase().trim();
 
       const activeStatuses = ['active', 'on_trial', 'paused', 'past_due'];
-      const planToUpdate = activeStatuses.includes(status) ? planName : 'free';
+      // Determine the plan based on status - use 'premium' for active subscriptions
+      const planToUpdate = activeStatuses.includes(status) ? 'premium' : 'free';
+
+      console.log(`Webhook: Updating plan for ${userEmail} to '${planToUpdate}'. Event: ${eventName}, Status: ${status}, Variant: ${variantId}, Product: ${productName}`);
 
       const { error, data } = await supabase
         .from('users')
@@ -52,7 +57,10 @@ export async function POST(req: NextRequest) {
         .select();
 
       if (error) {
+        console.error(`Supabase error updating plan for ${userEmail}:`, error.message);
+        // Decide if we should return an error to Lemon Squeezy? Usually no, log and monitor.
       } else {
+        console.log(`Successfully updated plan for ${userEmail} to '${planToUpdate}'.`);
       }
     } 
     else if (eventName === 'subscription_cancelled' || eventName === 'subscription_payment_failed' ) {
