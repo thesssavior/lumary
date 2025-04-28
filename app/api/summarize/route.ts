@@ -7,9 +7,12 @@ import { HttpsProxyAgent } from 'https-proxy-agent';
 import { formatTime, calculateTokenCount } from '@/lib/utils';
 import { auth } from '@/auth';
 
-// Webshare proxy setup
-const proxyUrl = 'http://toehivex:esiwn5hn17xs@p.webshare.io:80/';
-const agent = new HttpsProxyAgent(proxyUrl);
+// Webshare and fallback proxy setup
+const proxyUrls = [
+  'http://toehivex:esiwn5hn17xs@p.webshare.io:80/',
+  'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh@geo.iproyal.com:12321',
+  'http://brd-customer-hl_414d8129-zone-residential_proxy1:yd55dtlsq03w@brd.superproxy.io:33335'
+];
 
 // Fetch YouTube video title and description using YouTube Data API v3
 async function fetchYoutubeInfo(videoId: string): Promise<{ title: string; description: string } | null> {
@@ -34,6 +37,24 @@ async function fetchYoutubeInfo(videoId: string): Promise<{ title: string; descr
     title: snippet.title || '',
     description: snippet.description || ''
   };
+}
+
+// Helper to try proxies in order
+async function fetchTranscriptWithFallback(videoId: string) {
+  let lastError;
+  for (const proxyUrl of proxyUrls) {
+    try {
+      const agent = new HttpsProxyAgent(proxyUrl);
+      const transcript = await YoutubeTranscript.fetchTranscript(videoId, {
+        fetchOptions: { agent } as any
+      } as any);
+      return transcript;
+    } catch (err: any) {
+      lastError = err;
+      console.error(`Proxy failed: ${proxyUrl}`, err && err.message ? err.message : String(err));
+    }
+  }
+  throw lastError;
 }
 
 export async function POST(req: Request) {
@@ -66,10 +87,7 @@ export async function POST(req: Request) {
     // Fetch transcript
     let transcriptText = '';
     try {
-      const transcript = await YoutubeTranscript.fetchTranscript(videoId, {
-        fetchOptions: { agent },
-      } as any);
-
+      const transcript = await fetchTranscriptWithFallback(videoId);
       transcriptText = transcript.map((item, idx) =>
         idx % 4 === 0
           ? `[${formatTime(item.offset)}] ${item.text}`
