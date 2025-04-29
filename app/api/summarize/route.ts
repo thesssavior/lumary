@@ -63,7 +63,7 @@ async function fetchTranscriptWithFallback(videoId: string) {
 
 // New helper to fetch transcript from ngrok endpoint
 async function fetchTranscriptFromNgrok(videoId: string) {
-  const endpoint = 'https://f919-182-220-197-87.ngrok-free.app/fetch-transcript';
+  const endpoint = 'https://130c-182-220-197-87.ngrok-free.app/fetch-transcript';
   const SECRET_TOKEN = 'Tmdwn123098';
   const res = await fetch(endpoint, {
     method: 'POST',
