@@ -13,19 +13,19 @@ export default function HomePageContent() {
   const isDevMode = searchParams.get('dev') === 'true';
   const locale = params.locale as string || 'ko'; // Get locale from client-side params
 
-  if (isDevMode) {
-    // Render the original page content for developers
-    return (
-      <div className="container mx-auto px-4 py-16 max-w-3xl">
-        <HomeHeader locale={locale} />
-        {/* Wrap VideoSummary in Suspense if it fetches data */}
-        <Suspense fallback={<div>Loading Summary...</div>}>
-          <VideoSummary />
-        </Suspense>
-      </div>
-    );
-  } else {
-    // Render the maintenance message for regular users
+  // if (isDevMode) {
+  //   // Render the original page content for developers
+  //   return (
+  //     <div className="container mx-auto px-4 py-16 max-w-3xl">
+  //       <HomeHeader locale={locale} />
+  //       {/* Wrap VideoSummary in Suspense if it fetches data */}
+  //       <Suspense fallback={<div>Loading Summary...</div>}>
+  //         <VideoSummary />
+  //       </Suspense>
+  //     </div>
+  //   );
+  // } else {
+  //   // Render the maintenance message for regular users
     return (
       <div className="text-center px-4">
         <h1 className="text-3xl font-bold mb-4">서버 점검 중</h1>
@@ -34,5 +34,5 @@ export default function HomePageContent() {
         <p className="text-xl text-gray-600">https://lilys.ai</p>
       </div>
     );
-  }
+  // }
 } 
