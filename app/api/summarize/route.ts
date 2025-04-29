@@ -2,12 +2,11 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import enMessages from '@/messages/en.json';
 import koMessages from '@/messages/ko.json';
-import { YoutubeTranscript } from 'youtube-transcript';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import { formatTime, calculateTokenCount } from '@/lib/utils';
 import { auth } from '@/auth';
+import { YoutubeTranscript } from 'youtube-transcript';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
-// Webshare and fallback proxy setup
 const proxyUrls = [
   'http://toehivex:esiwn5hn17xs@p.webshare.io:80/',
   'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh@geo.iproyal.com:12321',
@@ -62,6 +61,28 @@ async function fetchTranscriptWithFallback(videoId: string) {
   throw lastError;
 }
 
+// New helper to fetch transcript from ngrok endpoint
+async function fetchTranscriptFromNgrok(videoId: string) {
+  const endpoint = 'https://f919-182-220-197-87.ngrok-free.app/fetch-transcript';
+  const SECRET_TOKEN = 'Tmdwn123098';
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Auth-Token': SECRET_TOKEN,
+    },
+    body: JSON.stringify({ video_id: videoId }),
+  });
+  if (!res.ok) {
+    throw new Error('Failed to fetch transcript from ngrok endpoint');
+  }
+  const data = await res.json();
+  if (!data.transcript || !Array.isArray(data.transcript)) {
+    throw new Error('Transcript not found in ngrok response');
+  }
+  return data.transcript;
+}
+
 export async function POST(req: Request) {
   try {
     // Get videoId and locale from request
@@ -89,15 +110,26 @@ export async function POST(req: Request) {
       console.error('Failed to fetch video info:', e);
     }
 
-    // Fetch transcript
+    // Fetch transcript: try original, fallback to ngrok
     let transcriptText = '';
     try {
-      const transcript = await fetchTranscriptWithFallback(videoId);
-      transcriptText = transcript.map((item, idx) =>
-        idx % 4 === 0
-          ? `[${formatTime(item.offset)}] ${item.text}`
-          : item.text
-      ).join('\n');
+      let transcript;
+      try {
+        transcript = await fetchTranscriptWithFallback(videoId);
+        transcriptText = transcript.map((item: any, idx: number) =>
+          idx % 4 === 0
+            ? `[${formatTime(item.offset)}] ${item.text}`
+            : item.text
+        ).join('\n');
+      } catch (primaryError) {
+        console.warn('Primary transcript fetch failed, trying ngrok fallback:', primaryError);
+        transcript = await fetchTranscriptFromNgrok(videoId);
+        transcriptText = transcript.map((item: any, idx: number) =>
+          idx % 4 === 0
+            ? `[${formatTime(item.start)}] ${item.text}`
+            : item.text
+        ).join('\n');
+      }
     } catch (error: any) {
       console.error('Error fetching transcript:', error);
       if (typeof error.message === 'string' && error.message.includes('Transcript is disabled')) {

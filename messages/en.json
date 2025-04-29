@@ -5,6 +5,7 @@
   "getSummary": "Get Summary",
   "getSummaryShort": "Summarize",
   "loading": "Loading...",
+  "loadingShort": "Loading...",
   "error": "An error occurred",
   "language": "Language",
   "korean": "Korean",
