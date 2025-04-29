@@ -17,7 +17,7 @@ export default async function Home({ params }: PageProps) {
   // const { locale } = resolvedParams; // Locale is available here if needed
 
   return (
-    <main className="min-h-screen bg-white text-black flex items-center justify-center">
+    <main className=" bg-white text-black flex items-center justify-center">
       {/* Suspense boundary around the client component */}
       <Suspense fallback={<div>Loading Page...</div>}>
         <HomePageContent /> 

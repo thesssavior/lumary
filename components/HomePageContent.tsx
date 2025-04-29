@@ -16,7 +16,7 @@ export default function HomePageContent() {
   // if (isDevMode) {
   //   // Render the original page content for developers
     return (
-      <div className="container mx-auto px-4 py-16 max-w-3xl">
+      <div className="container mx-auto px-4 max-w-3xl mt-16">
         <HomeHeader locale={locale} />
         {/* Wrap VideoSummary in Suspense if it fetches data */}
         <Suspense fallback={<div>Loading Summary...</div>}>
