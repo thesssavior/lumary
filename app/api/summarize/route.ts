@@ -12,10 +12,10 @@ const proxyUrls = [
   'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh@geo.iproyal.com:12321',
   'http://brd-customer-hl_414d8129-zone-residential_proxy1:yd55dtlsq03w@brd.superproxy.io:33335',
   'http://user-sp1d2iv3s7-country-kr-city-seoul:QY0p3ewONhqn92_kau@gate.decodo.com:10001',
-  'http://user-sp1d2iv3s7-country-kr-city-seoul:QY0p3ewONhqn92_kau@gate.decodo.com:10002',
-  'http://user-sp1d2iv3s7-country-kr-city-seoul:QY0p3ewONhqn92_kau@gate.decodo.com:10003',
-  'http://user-sp1d2iv3s7-country-kr-city-seoul:QY0p3ewONhqn92_kau@gate.decodo.com:10004',
-  'http://user-sp1d2iv3s7-country-kr-city-seoul:QY0p3ewONhqn92_kau@gate.decodo.com:10005'
+  // 'http://user-sp1d2iv3s7-country-kr-city-seoul:QY0p3ewONhqn92_kau@gate.decodo.com:10002',
+  // 'http://user-sp1d2iv3s7-country-kr-city-seoul:QY0p3ewONhqn92_kau@gate.decodo.com:10003',
+  // 'http://user-sp1d2iv3s7-country-kr-city-seoul:QY0p3ewONhqn92_kau@gate.decodo.com:10004',
+  // 'http://user-sp1d2iv3s7-country-kr-city-seoul:QY0p3ewONhqn92_kau@gate.decodo.com:10005'
 ];
 
 // Fetch YouTube video title and description using YouTube Data API v3
