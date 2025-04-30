@@ -36,7 +36,7 @@ export default function RootLayout({
             gtag('config', 'G-C64P1CEGZR');
           `}
         </Script>
-        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="icon" href="/symbol.png" type="image/png" />
       </head>
       <body className={inter.className}>
         <Providers>

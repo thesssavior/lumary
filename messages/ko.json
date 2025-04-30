@@ -25,6 +25,11 @@
   "startForFree": "무료로 시작하기",
   "getHelp": "도움",
   "Sidebar": {
+    "newNote": "새로운 노트",
+    "home": "홈",
+    "search": "검색",
+    "recent": "최근",
+    "myKnowledge": "내 지식",
     "folders": "폴더",
     "newFolder": "새 폴더",
     "renameFolder": "이름 수정",
@@ -94,5 +99,17 @@
   "reportModalSuccess": "신고가 성공적으로 제출되었습니다!",
   "reportModalCancel": "취소",
   "reportModalSubmit": "신고 제출",
-  "reportModalSubmitting": "제출 중..."
+  "reportModalSubmitting": "제출 중...",
+  "fileSummarizer": {
+    "title": "파일 요약",
+    "subtitle": "파일을 업로드하고 요약을 받아보세요.",
+    "description": "파일을 업로드하고 요약을 받아보세요.",
+    "uploadFile": "파일 업로드",
+    "uploadLabel": "파일을 업로드하세요.",
+    "summarizeButton": "요약하기",
+    "noFileSelected": "파일을 선택해 주세요.",
+    "errorNoTextExtracted": "텍스트를 추출할 수 없습니다.",
+    "errorUnknown": "알 수 없는 오류가 발생했습니다.",
+    "errorExtractionFailed": "텍스트 추출 실패"
+  }
 } 

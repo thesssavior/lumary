@@ -25,6 +25,11 @@
   "startForFree": "Start for free",
   "getHelp": "Support",
   "Sidebar": {
+    "newNote": "New Note",
+    "home": "Home",
+    "search": "Search",
+    "recent": "Recent",
+    "myKnowledge": "My Knowledge",
     "folders": "Folders",
     "newFolder": "New Folder",
     "renameFolder": "Rename Folder",
@@ -88,5 +93,17 @@
   "reportModalSuccess": "Report submitted successfully!",
   "reportModalCancel": "Cancel",
   "reportModalSubmit": "Submit Report",
-  "reportModalSubmitting": "Submitting..."
+  "reportModalSubmitting": "Submitting...",
+  "fileSummarizer": {
+    "title": "File Summarizer",
+    "subtitle": "Upload a file and get a summary.",
+    "description": "Upload a file and get a summary.",
+    "uploadFile": "Upload File",
+    "uploadLabel": "Upload a file",
+    "summarizeButton": "Summarize",
+    "noFileSelected": "Please select a file.",
+    "errorNoTextExtracted": "No text extracted.",
+    "errorUnknown": "An unknown error occurred.",
+    "errorExtractionFailed": "Text extraction failed"
+  }
 } 

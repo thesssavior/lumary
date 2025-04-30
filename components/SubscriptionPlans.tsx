@@ -170,7 +170,7 @@ export default function SubscriptionPlans({ isOpen, onClose }: SubscriptionPlans
               <div className="flex flex-col w-full md:w-1/3">
                  <div className="flex items-center mb-4">
                    <Image
-                      src="/logo3.png" // Assuming logo2.png is in the /public directory
+                      src="/lumary.png" // Assuming logo2.png is in the /public directory
                       alt="Lumary Logo"
                       width={48} // Adjust size as needed
                       height={48}

@@ -62,7 +62,7 @@ async function fetchTranscriptWithFallback(videoId: string) {
 }
 
 // New helper to fetch transcript from ngrok endpoint
-async function fetchTranscriptFromNgrok(videoId: string) {
+async function fetchTranscriptFromCloudflare(videoId: string) {
   const endpoint = 'https://pi.lumarly.com/fetch-transcript';
   const SECRET_TOKEN = 'Tmdwn123098';
   const res = await fetch(endpoint, {
@@ -122,8 +122,8 @@ export async function POST(req: Request) {
             : item.text
         ).join('\n');
       } catch (primaryError) {
-        console.warn('Primary transcript fetch failed, trying ngrok fallback:', primaryError);
-        transcript = await fetchTranscriptFromNgrok(videoId);
+        console.warn('Primary transcript fetch failed, trying cloudflare fallback:', primaryError);
+        transcript = await fetchTranscriptFromCloudflare(videoId);
         transcriptText = transcript.map((item: any, idx: number) =>
           idx % 4 === 0
             ? `[${formatTime(item.start)}] ${item.text}`

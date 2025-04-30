@@ -253,18 +253,18 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   return (
     <div className="flex flex-col h-full bg-[#f8fafc]">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b">
-        <span className="font-bold text-lg flex items-center gap-2">
-          <Link href="/" className="flex items-center space-x-2">
-            <Image src="/lumary-logo.png" alt="Lumary Logo" width={100} height={100} />
+      <div className="flex flex-col items-center justify-center px-4 py-6 border-b">
+        <span className="w-full flex justify-center">
+          <Link href="/" className="flex items-center w-full justify-center">
+            <Image src="/lumary.png" alt="Lumary Logo" width={120} height={120} className="w-full h-auto max-w-[120px]" />
           </Link>
         </span>
-        <button
-          className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium hover:bg-green-200"
+        {/* <button
+          className="mt-4 bg-black text-white px-2 py-2 rounded text-base font-medium hover:bg-zinc-900 transition-colors"
           onClick={() => router.push(`/${locale}`)}
         >
-          <Plus className="inline w-4 h-4 mr-1" /> 새로운 요약
-        </button>
+          {t('Sidebar.newNote', { defaultValue: '새로운 노트' })}
+        </button> */}
       </div>
 
       {/* Navigation */}
@@ -273,13 +273,13 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
           <li>
             <Link href={`/${locale}/`}>
               <div className="flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 font-medium">
-                <Book className="w-4 h-4" /> 홈
+                <Book className="w-4 h-4" /> {t('Sidebar.home', { defaultValue: '홈' })}
               </div>
             </Link>
           </li>
           <li>
             <a href="#" className="flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 font-medium">
-              <Search className="w-4 h-4" /> 검색
+              <Search className="w-4 h-4" /> {t('Sidebar.search', { defaultValue: '검색' })}
             </a>
           </li>
           {/* Recent */}
@@ -289,7 +289,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
               onClick={() => setRecentOpen(o => !o)}
             >
               {recentOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-              최근
+              {t('Sidebar.recent', { defaultValue: '최근' })}
             </button>
             {recentOpen && (
               <ul className="ml-6 mt-1 space-y-1">
@@ -313,7 +313,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                 style={{ flex: 1 }}
               >
                 {knowledgeOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                내 지식
+                {t('Sidebar.myKnowledge', { defaultValue: '내 지식' })}
               </button>
               <button
                 className="ml-1 text-xs text-gray-400 hover:text-green-700"

@@ -20,7 +20,7 @@ export function Navbar() {
       <nav className="border-b border-zinc-200 bg-white">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link href={`/${locale}`} className="flex items-center space-x-2">
-            <Image src="/lumary-logo.png" alt="Lumary Logo" width={100} height={100} />
+            <Image src="/lumary.png" alt="Lumary Logo" width={100} height={100} />
           </Link>
 
           <div className="flex items-center space-x-4">
@@ -42,9 +42,8 @@ export function Navbar() {
                   {session.user?.name}
                 </span>
                 <Button
-                  variant="outline"
                   onClick={() => signOut({ callbackUrl: `/${locale}` })}
-                  className="border-zinc-200 text-zinc-600 hover:bg-zinc-50"
+                  className="bg-black hover:bg-zinc-800 text-white"
                   title={t('signOut')}
                 >
                   <span className="sm:hidden"><LogOut className="h-5 w-5" /></span>
