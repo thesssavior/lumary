@@ -53,14 +53,14 @@ export default function PaymentSuccess() {
       
       <div className="mb-8">
           <p className="text-lg text-gray-600 mb-2">
-              {t('statusLabel')} <span className="font-semibold text-gray-800">{displayPlanName}</span>
+              {t('statusLabel')} <span className="font-semibold text-gray-800">Premium</span>
           </p>
           {isLoadingPlan ? (
             <p className="text-yellow-600 animate-pulse">{t('statusUpdating')}</p>
           ) : isPremium ? (
             <p className="text-green-600">{t('statusActive')}</p>
           ) : (
-            <p className="text-gray-500">Your plan is currently {displayPlanName}.</p>
+            <p className="text-gray-500">Your plan is currently Premium.</p>
           )}
       </div>
 

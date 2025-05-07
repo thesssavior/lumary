@@ -29,7 +29,6 @@ export function VideoSummary() {
   const [trialUsed, setTrialUsed] = useState(false);
   const refreshSidebar = useContext(SidebarRefreshContext);
   const [inAppBrowser, setInAppBrowser] = useState(false);
-  const [showUpgradeBanner, setShowUpgradeBanner] = useState(true);
   const [showTokenLimitUpgrade, setShowTokenLimitUpgrade] = useState(false);
 
   // Fetch folders on mount - only if logged in
@@ -96,7 +95,6 @@ export function VideoSummary() {
     e.preventDefault();
     setError("");
     setSummary("");
-    setShowUpgradeBanner(false);
     setShowTokenLimitUpgrade(false);
     
     // Check if user needs to log in
@@ -304,14 +302,14 @@ export function VideoSummary() {
           </Alert>
         )}
         {/* Conditionally render the Premium plan banner for token limits */}
-        {showTokenLimitUpgrade && (
+        {/* {showTokenLimitUpgrade && (
           <button
             onClick={openSubscriptionModal}
             className="w-full bg-yellow-100 border border-yellow-300 text-yellow-900 rounded-md px-4 py-3 text-center text-sm mb-2 hover:bg-yellow-200 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
           >
             {t('subCTA')} <span className="underline font-bold">{t('upgrade')}</span>
           </button>
-        )}
+        )} */}
         {/* Skeleton loader shown when loading and no summary yet */}
         {showLoadingSkeleton && (
           <Card className="p-6 bg-white border-zinc-200">
