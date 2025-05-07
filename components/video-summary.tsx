@@ -12,7 +12,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { signIn, useSession } from "next-auth/react";
 import { SidebarRefreshContext, useFolder, FolderContext } from './SidebarLayout';
-
+import { LanguageSwitcher } from './language-switcher';
 export function VideoSummary() {
   const t = useTranslations();
   const params = useParams();
@@ -237,6 +237,9 @@ export function VideoSummary() {
             </div>
           </div>
         )}
+        <div className="flex justify-end">
+          <LanguageSwitcher />
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex gap-2 items-center">
             <div className="relative flex-1">
