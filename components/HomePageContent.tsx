@@ -17,7 +17,9 @@ export default function HomePageContent() {
   //   // Render the original page content for developers
     return (
       <div className="container mx-auto px-4 max-w-3xl mt-16">
-        <HomeHeader locale={locale} />
+        <div className='mb-4'>
+          <HomeHeader locale={locale} />
+        </div>
         {/* Wrap VideoSummary in Suspense if it fetches data */}
         <Suspense fallback={<div>Loading Summary...</div>}>
           <VideoSummary />

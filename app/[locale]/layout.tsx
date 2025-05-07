@@ -5,6 +5,10 @@ import '../globals.css';
 import { Navbar } from '@/components/navbar';
 import SidebarLayout from '@/components/SidebarLayout';
 import ServerDownModalProvider from '@/components/ServerDownModalProvider';
+import type { Metadata } from "next";
+// Add react-pdf CSS imports
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 
 const inter = Inter({ subsets: ['latin'] });
 

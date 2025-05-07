@@ -159,6 +159,13 @@ export async function POST(req: Request) {
         model = 'gpt-4.1-mini';
         tokenLimit = 65536;
       }
+    } else if (isSignedIn) {
+      // Unpaid: always use mini, always 32768 limit
+      if (tokenCount > 32768) {
+        return NextResponse.json({ error: messages.unpaidInputTooLong || messages.inputTooLong }, { status: 400 });
+      }
+      model = 'gpt-4.1-mini';
+      tokenLimit = 32768;
     } else {
       // Unpaid/guest: always use mini, always 32768 limit
       if (tokenCount > 32768) {
@@ -167,6 +174,7 @@ export async function POST(req: Request) {
       model = 'gpt-4.1-mini';
       tokenLimit = 32768;
     }
+
         
     // Summarize with OpenAI
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });

@@ -7,6 +7,8 @@ const nextConfig = {
   },
   images: { unoptimized: true },
   webpack: (config, { isServer }) => {
+    config.resolve.alias.canvas = false;
+
     if (isServer && config.optimization?.splitChunks) {
       // Disable server-side vendor chunk splitting
       config.optimization.splitChunks.cacheGroups = {

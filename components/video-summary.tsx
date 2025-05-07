@@ -4,11 +4,10 @@ import { useState, useEffect, useContext } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { YoutubeIcon, AlertCircle, X, ArrowUp } from "lucide-react";
+import { YoutubeIcon, AlertCircle, X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTranslations } from 'next-intl';
-import { LanguageSwitcher } from './language-switcher';
 import { useParams, useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { signIn, useSession } from "next-auth/react";
@@ -29,9 +28,9 @@ export function VideoSummary() {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [trialUsed, setTrialUsed] = useState(false);
   const refreshSidebar = useContext(SidebarRefreshContext);
-  const [showScrollTop, setShowScrollTop] = useState(false);
   const [inAppBrowser, setInAppBrowser] = useState(false);
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(true);
+  const [showTokenLimitUpgrade, setShowTokenLimitUpgrade] = useState(false);
 
   // Fetch folders on mount - only if logged in
   useEffect(() => {
@@ -69,15 +68,6 @@ export function VideoSummary() {
     }
   }, [searchParams]);
 
-  // Show scroll-to-top button when scrolled down
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 200);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const ua = navigator.userAgent || navigator.vendor;
@@ -107,6 +97,7 @@ export function VideoSummary() {
     setError("");
     setSummary("");
     setShowUpgradeBanner(false);
+    setShowTokenLimitUpgrade(false);
     
     // Check if user needs to log in
     if (!session) {
@@ -135,12 +126,13 @@ export function VideoSummary() {
 
       if (!summaryResponse.ok) {
         const errorData = await summaryResponse.json();
+        const errorMessage = errorData.error || t('error');
         
         // Check if it's a server maintenance error (500 status code or proxy error)
-        if (summaryResponse.status === 500 || (errorData?.error && 
-            (errorData.error.includes('fetch') || 
-             errorData.error.includes('proxy') || 
-             errorData.error.includes('transcript')))) {
+        if (summaryResponse.status === 500 || (errorMessage && 
+            (errorMessage.includes('fetch') || 
+             errorMessage.includes('proxy') || 
+             errorMessage.includes('transcript')))) {
           // Show the server maintenance modal
           // @ts-ignore - Using global handler defined in ServerDownModalProvider
           if (typeof window !== 'undefined' && window.showServerMaintenanceModal) {
@@ -148,7 +140,12 @@ export function VideoSummary() {
           }
         }
         
-        throw new Error(errorData.error || t('error'));
+        // Check for token limit errors
+        if (errorMessage === t('unpaidInputTooLong')) { // Only show banner for free plan user limit error
+          setShowTokenLimitUpgrade(true);
+        }
+
+        throw new Error(errorMessage);
       }
 
       if (!summaryResponse.body) {
@@ -205,6 +202,10 @@ export function VideoSummary() {
       }
     } catch (err: any) {
       setError(err.message);
+      // If the error isn't the specific guest token limit error, ensure the banner isn't shown
+      if (err.message !== t('unpaidInputTooLong')) {
+          setShowTokenLimitUpgrade(false);
+      }
     } finally {
       setLoading(false);
     }
@@ -215,16 +216,6 @@ export function VideoSummary() {
 
   return (
     <>
-      {/* Scroll to top button */}
-      {showScrollTop && (
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-8 right-8 z-[100] p-2 rounded-full bg-black text-white shadow-lg hover:bg-zinc-800 transition-colors"
-          aria-label="Scroll to top"
-        >
-          <ArrowUp className="w-6 h-6" />
-        </button>
-      )}
       <div className="space-y-8">
         {/* Login Modal/Overlay */}
         {showLoginPrompt && (
@@ -248,9 +239,6 @@ export function VideoSummary() {
             </div>
           </div>
         )}
-        <div className="flex justify-end">
-          <LanguageSwitcher />
-        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex gap-2 items-center">
             <div className="relative flex-1">
@@ -293,15 +281,6 @@ export function VideoSummary() {
         {!session && (
             <p className="text-sm text-zinc-500 text-center mt-2">{t('trialInfo')}</p>
         )}
-        {/* Conditionally render the Premium plan banner */}
-        {/* {showUpgradeBanner && (
-          <button
-            onClick={openSubscriptionModal}
-            className="w-full bg-yellow-100 border border-yellow-300 text-yellow-900 rounded-md px-4 py-3 text-center text-sm mb-2 hover:bg-yellow-200 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
-          >
-            {t('subCTA')} <span className="underline font-bold">{t('startForFree')}</span>
-          </button>
-        )} */}
         {/* In-app browser warning */}
         {inAppBrowser && (
           <div className="bg-red-100 text-red-700 p-4 rounded-md text-base font-semibold flex flex-col items-center mb-4">
@@ -324,7 +303,15 @@ export function VideoSummary() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-
+        {/* Conditionally render the Premium plan banner for token limits */}
+        {showTokenLimitUpgrade && (
+          <button
+            onClick={openSubscriptionModal}
+            className="w-full bg-yellow-100 border border-yellow-300 text-yellow-900 rounded-md px-4 py-3 text-center text-sm mb-2 hover:bg-yellow-200 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
+          >
+            {t('subCTA')} <span className="underline font-bold">{t('upgrade')}</span>
+          </button>
+        )}
         {/* Skeleton loader shown when loading and no summary yet */}
         {showLoadingSkeleton && (
           <Card className="p-6 bg-white border-zinc-200">

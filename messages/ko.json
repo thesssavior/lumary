@@ -1,6 +1,6 @@
 {
-  "title": "YouTube 요약 AI",
-  "subtitle": "YouTube 동영상의 AI 기반 요약을 받아보세요",
+  "title": "유튜브 요약 AI",
+  "subtitle": "유튜브 동영상의 AI 기반 요약을 받아보세요",
   "videoUrl": "YouTube URL을 입력하세요",
   "getSummary": "요약하기",
   "getSummaryShort": "요약",
@@ -20,8 +20,10 @@
   "trialUsedPrompt": "1회 체험을 사용하셨습니다. 더 많은 요약을 생성하려면 로그인해주세요.",
   "trialInfo": "1회 체험 요약 사용 후 로그인이 필요합니다.",
   "inputTooLong": "영상 용량이 너무 큽니다. 더 짧은 영상을 시도해 주세요.",
+  "unpaidInputTooLong": "영상 용량이 너무 큽니다. 더 짧은 영상을 시도해 주세요.",
   "guestTokenLimit": "영샹 용량이 너무 큽니다. 로그인 후 더 긴 영상 요약과 강력한 AI 기능을 이용하실 수 있습니다.",
-  "subCTA": "최고의 퀄리티의 무제한 요약을 이용하려면 프리미엄 플랜을 구독하세요.",
+  "subCTA": "긴 영상, 최상의 퀄리티의 무제한 요약을 이용하려면 프리미엄 플랜을 구독하세요.",
+  "upgrade": "업그레이드",
   "startForFree": "무료로 시작하기",
   "getHelp": "도움",
   "Sidebar": {
@@ -53,7 +55,7 @@
     "description_line1": "프리미엄 기능으로 더 많은 혜택을 누려보세요.",
     "description_line2": "-최고 성능의 AI",
     "description_line3": "-무제한 요약",
-    "description_line4": "생산성 100배. 1주일 무료 체험"
+    "description_line4": "생산성 100배."
   },
   "SubscriptionPlans": {
     "title": "플랜 선택하기",
@@ -61,6 +63,7 @@
     "loadingPlans": "플랜 로딩 중...",
     "featureListTitle": "무료 플랜의 모든 기능 포함 및:",
     "features": [
+      "영상 길이, 요약 퀄리티 ⬆️",
       "무제한 노트 생성",
       "무제한 팟캐스트 및 유튜브 동영상",
       "최고 수준의 받아쓰기 및 요약",

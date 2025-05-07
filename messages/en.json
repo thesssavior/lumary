@@ -20,8 +20,10 @@
   "trialUsedPrompt": "You have used your one trial. Please sign in to generate more summaries.",
   "trialInfo": "Guest users get one free summary trial.",
   "inputTooLong": "The video is too long to summarize. Please try a shorter video.",
+  "unpaidInputTooLong": "The video is too long to summarize. Please try a shorter video.",
   "guestTokenLimit": "Sign in to use longer videos and more powerful AI features.",
   "subCTA": "Upgrade to Premium for unlimited summaries and more features.",
+  "upgrade": "Upgrade plan",
   "startForFree": "Start for free",
   "getHelp": "Support",
   "Sidebar": {

@@ -11,6 +11,16 @@ const intlMiddleware = createIntlMiddleware({
 })
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  // Skip internal or static files
+  if (
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/_next') ||
+    pathname === '/favicon.ico' ||
+    pathname.match(/\.(png|mjs)$/)
+  ) {
+    return NextResponse.next();
+  }
   const host = request.headers.get('host') || ''
 
   // 🔁 Redirect old domain to new domain
@@ -24,10 +34,8 @@ export async function middleware(request: NextRequest) {
   return intlMiddleware(request)
 }
 
-// 👇 Match routes for i18n (and auth if needed)
 export const config = {
-  // Apply i18n middleware only to page routes (excluding API routes, Next.js internals, and static files)
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$).*)'
-  ],
+  matcher: ['/((?!.*\\..*).*)'], // match all except static files with extensions
 };
+
+

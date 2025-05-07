@@ -3,23 +3,27 @@
 
 import { useState } from 'react';
 import { PdfUploader } from '@/components/pdfUploader';
-import { PdfPageSelector } from '@/components/pdfPageSelector';
-import { PdfRenderer } from '@/components/pdfRenderer';
+import dynamic from 'next/dynamic';
+
+// Dynamically import the ReactPdfViewer to avoid SSR issues with canvas
+const ReactPdfViewer = dynamic(() => import('@/components/reactPdfViewer'), { ssr: false });
 
 export default function Home() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [selectedPages, setSelectedPages] = useState<number[]>([]);
+
+  const handlePdfLoad = (file: File | null) => {
+    setPdfFile(file);
+  };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto', fontFamily: 'sans-serif' }}>
-      <h1 style={{ marginBottom: '20px', textAlign: 'center' }}>PDF Page Renderer</h1>
+    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'sans-serif' }}>
+      <h1 style={{ marginBottom: '20px', textAlign: 'center' }}>PDF Viewer</h1>
       <div style={{ marginBottom: '20px' }}>
-        <PdfUploader onPdfLoad={setPdfFile} />
+        <PdfUploader onPdfLoad={handlePdfLoad} />
       </div>
       {pdfFile && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-          <PdfPageSelector pdfFile={pdfFile} onPagesSelected={setSelectedPages} />
-          <PdfRenderer pdfFile={pdfFile} selectedPages={selectedPages} />
+        <div style={{ marginTop: '30px' }}>
+          <ReactPdfViewer pdfFile={pdfFile} />
         </div>
       )}
     </div>
