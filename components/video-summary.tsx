@@ -21,7 +21,16 @@ export function VideoSummary() {
   const locale = params.locale as string;
   const [url, setUrl] = useState("");
   const [summary, setSummary] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoadingTranscript, setIsLoadingTranscript] = useState(false);
+  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+  const [transcriptInfo, setTranscriptInfo] = useState<{
+    transcript: string;
+    title: string;
+    description: string;
+    tokenCount: number;
+    videoId: string;
+    locale: string;
+  } | null>(null);
   const [error, setError] = useState("");
   const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
   const { activeFolder, setActiveFolder, openSubscriptionModal } = useFolder();
@@ -99,9 +108,9 @@ export function VideoSummary() {
     e.preventDefault();
     setError("");
     setSummary("");
+    setTranscriptInfo(null);
     setShowTokenLimitUpgrade(false);
     
-    // Check if user needs to log in
     if (!session) {
       if (trialUsed) {
         setShowLoginPrompt(true);
@@ -109,7 +118,7 @@ export function VideoSummary() {
       }
     }
     
-    setLoading(true);
+    setIsLoadingTranscript(true);
 
     try {
       const videoId = extractVideoId(url);
@@ -117,24 +126,52 @@ export function VideoSummary() {
         throw new Error(t('error'));
       }
 
-      // First get the summary
-      const summaryResponse = await fetch('/api/summarize', {
+      // Step 1: Call /api/transcript
+      const transcriptResponse = await fetch('/api/transcript', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoId, locale }),
+      });
+
+      if (!transcriptResponse.ok) {
+        const errorData = await transcriptResponse.json();
+        throw new Error(errorData.error || 'Failed to fetch transcript');
+      }
+
+      const fetchedTranscriptData = await transcriptResponse.json();
+      setTranscriptInfo(fetchedTranscriptData);
+      setIsLoadingTranscript(false);
+      setIsLoadingSummary(true);
+
+      // Step 2: Decide which summarization API to call and then call it
+      const YOUR_TOKEN_THRESHOLD = 20000; 
+
+      const summaryApiEndpoint = fetchedTranscriptData.tokenCount > YOUR_TOKEN_THRESHOLD
+        ? '/api/yt_long' // Placeholder for your new route for long videos
+        : '/api/summarize';
+
+      const summaryResponse = await fetch(summaryApiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ videoId, locale }),
+        body: JSON.stringify({ 
+          videoId: fetchedTranscriptData.videoId,
+          locale: fetchedTranscriptData.locale,
+          transcriptText: fetchedTranscriptData.transcript,
+          title: fetchedTranscriptData.title,
+          videoDescription: fetchedTranscriptData.description,
+          tokenCount: fetchedTranscriptData.tokenCount,
+        }),
       });
 
       if (!summaryResponse.ok) {
         const errorData = await summaryResponse.json();
         const errorMessage = errorData.error || t('error');
         
-        // Check for token limit errors
-        if (errorMessage === t('unpaidInputTooLong')) { // Only show banner for free plan user limit error
+        if (errorMessage === t('unpaidInputTooLong')) {
           setShowTokenLimitUpgrade(true);
         }
-
         throw new Error(errorMessage);
       }
 
@@ -143,7 +180,6 @@ export function VideoSummary() {
       }
 
       const reader = summaryResponse.body.getReader();
-      const input_token_count = parseInt(summaryResponse.headers.get('input_token_count') || '0', 10);
       let result = '';
 
       while (true) {
@@ -154,26 +190,22 @@ export function VideoSummary() {
         setSummary(result);
       }
       
-      // If the user is anonymous, mark the trial as used after successful summary
       if (!session) {
         setTrialUsed(true);
-        if (typeof window !== 'undefined') { // Ensure localStorage is available
-            localStorage.setItem('trialUsed', 'true'); // Persist trial usage
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('trialUsed', 'true');
         }
       } else {
-        // Only attempt to save if the user is logged in
-  
-        // Save to the active folder if available and user is logged in
-        if (activeFolder) {
+        if (activeFolder && fetchedTranscriptData) {
           try {
             console.log('Saving summary to folder:', activeFolder);
             const saveResponse = await fetch(`/api/folders/${activeFolder.id}/summaries`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                videoId,
+                videoId: fetchedTranscriptData.videoId,
                 summary: result,
-                input_token_count: input_token_count,
+                input_token_count: fetchedTranscriptData.tokenCount,
               }),
             });
 
@@ -187,22 +219,23 @@ export function VideoSummary() {
             console.error('Error saving summary:', saveError);
           }
         } else {
-          console.log('No active folder available to save summary');
+          console.log('No active folder or transcript data available to save summary');
         }
       }
     } catch (err: any) {
       setError(err.message);
-      // If the error isn't the specific guest token limit error, ensure the banner isn't shown
       if (err.message !== t('unpaidInputTooLong')) {
           setShowTokenLimitUpgrade(false);
       }
     } finally {
-      setLoading(false);
+      setIsLoadingTranscript(false);
+      setIsLoadingSummary(false);
     }
   };
 
   const displaySummary = summary;
-  const showLoadingSkeleton = loading && !displaySummary;
+  const showLoadingSkeleton = (isLoadingTranscript || isLoadingSummary) && !displaySummary;
+  const overallLoading = isLoadingTranscript || isLoadingSummary;
 
   return (
     <>
@@ -264,12 +297,12 @@ export function VideoSummary() {
             {/* Submit button */}
             <Button 
               type="submit" 
-              disabled={loading}
+              disabled={overallLoading}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               <YoutubeIcon className="mr-2 h-4 w-4" />
-              <span className="block sm:hidden">{loading ? t('loadingShort') : t('getSummaryShort')}</span>
-              <span className="hidden sm:block">{loading ? t('loading') : t('getSummary')}</span>
+              <span className="block sm:hidden">{overallLoading ? t('loadingShort') : t('getSummaryShort')}</span>
+              <span className="hidden sm:block">{overallLoading ? t('loading') : t('getSummary')}</span>
             </Button>
           </div>
         </form>

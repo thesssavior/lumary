@@ -5,9 +5,9 @@ import {
   formatTranscript,
   fetchYoutubeInfo
 } from '@/lib/youtube-utils';
-import { supabase } from '@/lib/supabaseClient';
 import enMessages from '@/messages/en.json';
 import koMessages from '@/messages/ko.json';
+import { calculateTokenCount } from '@/lib/utils';
 
 export async function POST(req: Request) {
   try {
@@ -63,33 +63,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: messages.transcriptDisabled }, { status: 400 });
     }
 
-    // Save the transcript data to the database
-    try {
-      const { data, error: dbError } = await supabase
-        .from('youtube_videos')
-        .upsert({
-          video_id: videoId, 
-          title: title,
-          description: description,
-          raw_transcript: rawTranscript,
-        }, { 
-          onConflict: 'video_id',
-          ignoreDuplicates: true
-        })
-        .select();
+    const tokenCount = calculateTokenCount(formattedTranscriptText);
 
-      if (dbError) {
-        console.error('Supabase DB Error:', dbError);
-      } else {
-        console.log('Transcript data saved to Supabase successfully');
-      }
-    } catch (e: any) {
-      console.error('Supabase operation failed:', e.message);
-    }
     return NextResponse.json({ 
       transcript: formattedTranscriptText, 
       title: title, 
-      description: description 
+      description: description,
+      tokenCount: tokenCount,
+      videoId: videoId,
+      locale: locale
     }, { status: 200 });
 
   } catch (error: any) {

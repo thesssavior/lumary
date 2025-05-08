@@ -7,11 +7,9 @@ import { calculateTokenCount } from '@/lib/utils';
 // Constants
 const MAX_CHUNK_INPUT_TOKENS = 20000; // Maximum tokens per chunk
 const model = 'gpt-4.1-mini';
-let fetcher = "railway";
 
 // Helper function to split transcript into chunks
-function chunkTranscript(transcriptText: string, maxTokens: number = MAX_CHUNK_INPUT_TOKENS, overlap: number = 100): string[] {
-  const totalTokens = calculateTokenCount(transcriptText);
+function chunkTranscript(transcriptText: string, totalTokens: number, maxTokens: number = MAX_CHUNK_INPUT_TOKENS, overlap: number = 100): string[] {
   const numChunks = Math.ceil(totalTokens / maxTokens);
   const approxCharPerChunk = Math.ceil(transcriptText.length / numChunks);
   const chunks: string[] = [];
@@ -31,50 +29,28 @@ function chunkTranscript(transcriptText: string, maxTokens: number = MAX_CHUNK_I
   return chunks;
 }
 
-// proxyUrls, fetchTranscriptWithFallback, fetchTranscriptFromCloudflare, formatTranscript
-// are now imported from @/lib/youtube-utils
-
-// Fetch YouTube video title and description using YouTube Data API v3
-
 export async function POST(req: Request) {
   try {
     console.log("summarize route called");
-    // Get videoId and locale from request
-    const { videoId, locale = 'ko' } = await req.json();
-    const messages = locale === 'ko' ? koMessages : enMessages;
-
-    if (!videoId) {
-      return NextResponse.json({ error: messages.error }, { status: 400 });
-    }
-
-    // Build absolute URL for /api/transcript
-    const { origin } = new URL(req.url);
-    const transcriptUrl = `${origin}/api/transcript`;
-
-    // Fetch transcript, title, and description
-    const transcriptApiResponse = await fetch(transcriptUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ videoId, locale })
-    });
-    const transcriptData = await transcriptApiResponse.json();
-
-    if (!transcriptApiResponse.ok || transcriptData.error) {
-      return NextResponse.json({ error: transcriptData.error || messages.error }, { status: transcriptApiResponse.status || 500 });
-    }
+    // Get videoId, locale, transcriptText, title, and videoDescription from request
+    const { 
+      videoId, 
+      locale = 'ko', 
+      transcriptText, 
+      title, 
+      videoDescription,
+      tokenCount
+    } = await req.json();
     
-    const transcriptText = transcriptData.transcript;
-    const videoTitle = transcriptData.title || ''; // Use title from transcript API
-    const videoDescription = transcriptData.description || ''; // Use description from transcript API
+    const messages = locale === 'ko' ? koMessages : enMessages;
+    const videoTitle = title || ''; 
 
-    if (!transcriptText) {
+    if (!videoId || !transcriptText) { 
       return NextResponse.json({ error: messages.error }, { status: 400 });
     }
 
-    // Calculate total tokens and determine if chunking is needed
-    const tokenCount = calculateTokenCount(transcriptText);
     const isMultiChunk = tokenCount > MAX_CHUNK_INPUT_TOKENS;
-    const transcriptChunks = isMultiChunk ? chunkTranscript(transcriptText) : [transcriptText];
+    const transcriptChunks = isMultiChunk ? chunkTranscript(transcriptText, tokenCount) : [transcriptText];
     let systemPrompt = isMultiChunk ? messages.systemPromptsChunked : messages.systemPrompts;
     let userPrompt = isMultiChunk ? messages.userPromptsChunked : messages.userPrompts;
 
@@ -117,7 +93,6 @@ export async function POST(req: Request) {
         'Content-Type': 'text/plain; charset=utf-8',
         'Transfer-Encoding': 'chunked',
         'input_token_count': `${tokenCount}`,
-        'fetcher': `${fetcher}`,
       }
     });
   } catch (error: any) {
