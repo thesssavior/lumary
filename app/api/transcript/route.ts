@@ -25,21 +25,9 @@ export async function POST(req: Request) {
     let fetcherUsed = 'unknown';
 
     try {
-      const videoInfo = await fetchYoutubeInfo(videoId);
-      if (videoInfo) {
-        title = videoInfo.title;
-        description = videoInfo.description;
-      }
-    } catch (e: any) {
-      console.warn(`Failed to fetch video info for ${videoId}: ${e.message}. Proceeding without it.`);
-    }
-
-    try {
-      console.log(`Fetching transcript for ${videoId} via standard method.`);
       rawTranscript = await fetchTranscriptWithFallback(videoId);
       formattedTranscriptText = formatTranscript(rawTranscript, 'offset');
       fetcherUsed = "residential";
-      console.log(`Transcript for ${videoId} fetched successfully via standard method.`);
     } catch (primaryError: any) {
       console.warn(
         `Primary transcript fetch for ${videoId} failed: ${primaryError.message}. Trying fallback.`
@@ -48,7 +36,6 @@ export async function POST(req: Request) {
         rawTranscript = await fetchTranscriptFromCloudflare(videoId);
         formattedTranscriptText = formatTranscript(rawTranscript, 'start');
         fetcherUsed = "cloudflare";
-        console.log(`Transcript for ${videoId} fetched successfully via Cloudflare fallback.`);
       } catch (fallbackError: any) {
         console.error(
           `Fallback transcript fetch for ${videoId} also failed: ${fallbackError.message}`
@@ -59,12 +46,24 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: messages.error || 'Failed to fetch transcript after multiple attempts' }, { status: 500 });
       }
     }
-
+    
+    try {
+        const videoInfo = await fetchYoutubeInfo(videoId);
+        if (videoInfo) {
+          title = videoInfo.title;
+          description = videoInfo.description;
+        }
+    } catch (e: any) {
+    console.warn(`Failed to fetch video info for ${videoId}: ${e.message}. Proceeding without it.`);
+    }
+  
+  
     if (!rawTranscript || rawTranscript.length === 0) {
       console.warn(`Transcript for ${videoId} resulted in empty items, possibly disabled.`);
       return NextResponse.json({ error: messages.transcriptDisabled }, { status: 400 });
     }
 
+    // Save the transcript data to the database
     try {
       const { data, error: dbError } = await supabase
         .from('youtube_videos')
@@ -74,19 +73,19 @@ export async function POST(req: Request) {
           description: description,
           raw_transcript: rawTranscript,
         }, { 
-          onConflict: 'video_id'
+          onConflict: 'video_id',
+          ignoreDuplicates: true
         })
         .select();
 
       if (dbError) {
         console.error('Supabase DB Error:', dbError);
       } else {
-        console.log('Transcript and metadata saved to Supabase for videoId:', videoId, data);
+        console.log('Transcript data saved to Supabase successfully');
       }
     } catch (e: any) {
       console.error('Supabase operation failed:', e.message);
     }
-    
     return NextResponse.json({ 
       transcript: formattedTranscriptText, 
       title: title, 
@@ -99,3 +98,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: messagesForError.error || 'An unexpected error occurred.' }, { status: 500 });
   }
 } 
+
+
+function setTranscriptData(arg0: { transcript: string; title: string; description: string; }) {
+    throw new Error('Function not implemented.');
+}
+

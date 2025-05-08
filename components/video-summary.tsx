@@ -57,6 +57,7 @@ export function VideoSummary() {
     }
   }, []); // Run only once on mount
 
+  // Extract video ID from URL
   useEffect(() => {
     const youtubeParam = searchParams.get('youtube');
     if (youtubeParam) {
@@ -68,6 +69,7 @@ export function VideoSummary() {
     }
   }, [searchParams]);
 
+  // Check if the user is using an in-app browser
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const ua = navigator.userAgent || navigator.vendor;
@@ -79,6 +81,7 @@ export function VideoSummary() {
     }
   }, []);
 
+  // Extract video ID from URL
   const extractVideoId = (url: string): string | null => {
     const patterns = [
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/|m\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
@@ -126,18 +129,6 @@ export function VideoSummary() {
       if (!summaryResponse.ok) {
         const errorData = await summaryResponse.json();
         const errorMessage = errorData.error || t('error');
-        
-        // Check if it's a server maintenance error (500 status code or proxy error)
-        if (summaryResponse.status === 500 || (errorMessage && 
-            (errorMessage.includes('fetch') || 
-             errorMessage.includes('proxy') || 
-             errorMessage.includes('transcript')))) {
-          // Show the server maintenance modal
-          // @ts-ignore - Using global handler defined in ServerDownModalProvider
-          if (typeof window !== 'undefined' && window.showServerMaintenanceModal) {
-            window.showServerMaintenanceModal();
-          }
-        }
         
         // Check for token limit errors
         if (errorMessage === t('unpaidInputTooLong')) { // Only show banner for free plan user limit error
@@ -238,10 +229,13 @@ export function VideoSummary() {
             </div>
           </div>
         )}
+        {/* Language switcher */}
         <div className="flex justify-end">
           <LanguageSwitcher />
         </div>
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Input field */}
           <div className="flex gap-2 items-center">
             <div className="relative flex-1">
               <Input
@@ -267,6 +261,7 @@ export function VideoSummary() {
                 </button>
               )}
             </div>
+            {/* Submit button */}
             <Button 
               type="submit" 
               disabled={loading}
@@ -283,6 +278,7 @@ export function VideoSummary() {
         {!session && (
             <p className="text-sm text-zinc-500 text-center mt-2">{t('trialInfo')}</p>
         )}
+
         {/* In-app browser warning */}
         {inAppBrowser && (
           <div className="bg-red-100 text-red-700 p-4 rounded-md text-base font-semibold flex flex-col items-center mb-4">
@@ -299,12 +295,14 @@ export function VideoSummary() {
           </div>
         )}
 
+        {/* Error message */}
         {error && (
           <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-600">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+
         {/* Conditionally render the Premium plan banner for token limits */}
         {/* {showTokenLimitUpgrade && (
           <button
@@ -314,6 +312,7 @@ export function VideoSummary() {
             {t('subCTA')} <span className="underline font-bold">{t('upgrade')}</span>
           </button>
         )} */}
+
         {/* Skeleton loader shown when loading and no summary yet */}
         {showLoadingSkeleton && (
           <Card className="p-6 bg-white border-zinc-200">
@@ -329,6 +328,7 @@ export function VideoSummary() {
           </Card>
         )}
 
+        {/* Display the summary */}
         {summary && (
           <Card className="p-6 bg-white border-zinc-200">
             <div className="prose prose-zinc max-w-none">

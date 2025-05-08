@@ -2,13 +2,7 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import enMessages from '@/messages/en.json';
 import koMessages from '@/messages/ko.json';
-import { formatTime, calculateTokenCount } from '@/lib/utils';
-import { auth } from '@/auth';
-import { 
-  fetchTranscriptWithFallback,
-  fetchTranscriptFromCloudflare,
-  formatTranscript
-} from '@/lib/youtube-utils';
+import { calculateTokenCount } from '@/lib/utils';
 
 // Constants
 const MAX_CHUNK_INPUT_TOKENS = 20000; // Maximum tokens per chunk
@@ -24,7 +18,8 @@ function chunkTranscript(transcriptText: string, maxTokens: number = MAX_CHUNK_I
   
   for (let i = 0; i < numChunks; i++) {
     // Calculate start position with overlap (except for first chunk)
-    const start = i === 0 ? 0 : i * approxCharPerChunk - overlap;
+    const start = i === 0 ? 0 : i * approxCharPerChunk;
+    // const start = i === 0 ? 0 : i * approxCharPerChunk - overlap;
     // Calculate end position with overlap (except for last chunk)
     const end = i === numChunks - 1 
       ? transcriptText.length 
@@ -40,32 +35,10 @@ function chunkTranscript(transcriptText: string, maxTokens: number = MAX_CHUNK_I
 // are now imported from @/lib/youtube-utils
 
 // Fetch YouTube video title and description using YouTube Data API v3
-async function fetchYoutubeInfo(videoId: string): Promise<{ title: string; description: string } | null> {
-  const apiKey = process.env.YOUTUBE_API_KEY;
-  if (!apiKey) {
-    console.error('YOUTUBE_API_KEY is not set');
-    return null;
-  }
-  const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    console.error('YouTube API response not ok:', res.status, await res.text());
-    return null;
-  }
-  const data = await res.json();
-  if (!data.items || !data.items[0]) {
-    console.error('YouTube API returned no items:', JSON.stringify(data));
-    return null;
-  }
-  const snippet = data.items[0].snippet;
-  return {
-    title: snippet.title || '',
-    description: snippet.description || ''
-  };
-}
 
 export async function POST(req: Request) {
   try {
+    console.log("summarize route called");
     // Get videoId and locale from request
     const { videoId, locale = 'ko' } = await req.json();
     const messages = locale === 'ko' ? koMessages : enMessages;
@@ -73,11 +46,15 @@ export async function POST(req: Request) {
     if (!videoId) {
       return NextResponse.json({ error: messages.error }, { status: 400 });
     }
-    
+
+    // Build absolute URL for /api/transcript
+    const { origin } = new URL(req.url);
+    const transcriptUrl = `${origin}/api/transcript`;
+
     // Fetch transcript, title, and description
-    const transcriptApiResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/transcript`, { // Use absolute URL for server-side fetch
+    const transcriptApiResponse = await fetch(transcriptUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }, // Added headers
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ videoId, locale })
     });
     const transcriptData = await transcriptApiResponse.json();
@@ -89,6 +66,10 @@ export async function POST(req: Request) {
     const transcriptText = transcriptData.transcript;
     const videoTitle = transcriptData.title || ''; // Use title from transcript API
     const videoDescription = transcriptData.description || ''; // Use description from transcript API
+
+    if (!transcriptText) {
+      return NextResponse.json({ error: messages.error }, { status: 400 });
+    }
 
     // Calculate total tokens and determine if chunking is needed
     const tokenCount = calculateTokenCount(transcriptText);

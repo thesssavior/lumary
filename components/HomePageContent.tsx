@@ -6,6 +6,7 @@ import { VideoSummary } from "@/components/video-summary";
 import { FullTranscriptViewer } from "@/components/FullTranscriptViewer";
 import { HomeHeader } from "@/components/home-header";
 import { Suspense } from "react";
+import { TranscriptProvider } from "@/components/TranscriptContext";
 
 export default function HomePageContent() {
   const t = useTranslations();
@@ -18,18 +19,18 @@ export default function HomePageContent() {
   // if (isDevMode) {
   //   // Render the original page content for developers
     return (
-      <div className="container mx-auto px-4 max-w-3xl mt-16">
-        <div className='mb-4'>
-          <HomeHeader locale={locale} />
+      <TranscriptProvider>
+        <div className="container mx-auto px-4 max-w-3xl mt-16">
+          <div className='mb-4'>
+            <HomeHeader locale={locale} />
+          </div>
+          <Suspense fallback={<div>Loading Summary...</div>}>
+            <VideoSummary />
+          </Suspense>
+          {/* Pass videoIdFromUrl to FullTranscriptViewer */}
+          <FullTranscriptViewer />
         </div>
-        {/* Wrap VideoSummary in Suspense if it fetches data */}
-        <Suspense fallback={<div>Loading Summary...</div>}>
-          <VideoSummary />
-        </Suspense>
-        {/* Pass videoIdFromUrl to FullTranscriptViewer */}
-        {/* FullTranscriptViewer will only attempt to fetch if videoIdFromUrl is not null */}
-        <FullTranscriptViewer videoId={videoIdFromUrl} locale={locale} />
-      </div>
+      </TranscriptProvider>
     );
   // } else {
   //   // Render the maintenance message for regular users
