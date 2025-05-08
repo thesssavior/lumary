@@ -48,7 +48,9 @@
     "plan_status_free": "무료",
     "plan_status_premium": "프리미엄",
     "upgrade": "플랜 업그레이드",
-    "upgradeSubtitle": "더 많은 기능과 무제한 이용 혜택을 누리세요"
+    "upgradeSubtitle": "더 많은 기능과 무제한 이용 혜택을 누리세요",
+    "premiumActive": "프리미엄 플랜 활성화",
+    "premiumActiveSubtitle": "최고 성능 AI, 무제한 요약"
   },
   "PaymentPage": {
     "title": "플랜 업그레이드",

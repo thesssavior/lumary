@@ -48,7 +48,9 @@
     "plan_status_free": "Free",
     "plan_status_premium": "Premium",
     "upgrade": "Upgrade plan",
-    "upgradeSubtitle": "Get more features and unlimited access"
+    "upgradeSubtitle": "Get more features and unlimited access",
+    "premiumActive": "Premium plan active",
+    "premiumActiveSubtitle": "Best-in-class AI, unlimited summaries"
   },
   "PaymentPage": {
     "title": "Upgrade Your Plan",

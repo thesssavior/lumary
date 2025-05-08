@@ -445,16 +445,28 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
       {/* --- Footer Area Redesign --- */}
       <div className="px-4 py-3 space-y-3 border-t">
         {/* Upgrade Section */}
-        <div className="bg-gray-100 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-200 transition-colors"
-             onClick={openSubscriptionModal} >
-          <button
-            className="w-full bg-gray-900 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-700 transition-colors duration-200 text-sm flex items-center justify-center gap-2 mb-2"
+        {session?.user?.plan === 'premium' ? (
+          <div className="bg-green-50 p-4 rounded-lg text-center">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <Crown className="w-5 h-5 text-green-600" />
+              <p className="text-sm font-semibold text-green-700">{t('Sidebar.premiumActive')}</p>
+            </div>
+            <p className="text-xs text-green-500">{t('Sidebar.premiumActiveSubtitle')}</p>
+          </div>
+        ) : (
+          <div 
+            className="bg-gray-100 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-200 transition-colors"
+            onClick={openSubscriptionModal}
           >
-            <Crown className="w-4 h-4" />
-            {t('Sidebar.upgrade')}
-          </button>
-          <p className="text-xs text-gray-600">{t('Sidebar.upgradeSubtitle')}</p>
-        </div>
+            <button
+              className="w-full bg-gray-900 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-700 transition-colors duration-200 text-sm flex items-center justify-center gap-2 mb-2"
+            >
+              <Crown className="w-4 h-4" />
+              {t('Sidebar.upgrade')}
+            </button>
+            <p className="text-xs text-gray-600">{t('Sidebar.upgradeSubtitle')}</p>
+          </div>
+        )}
 
         {/* User Info Section */}
         <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
