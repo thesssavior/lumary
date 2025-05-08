@@ -174,9 +174,6 @@ export async function POST(req: Request) {
       model = 'gpt-4.1-mini';
       tokenLimit = 32768;
     }
-    console.log('tokenCount', tokenCount);
-    console.log('model', model);
-    console.log('tokenLimit', tokenLimit);
         
     // Summarize with OpenAI
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
