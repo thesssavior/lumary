@@ -207,7 +207,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const ua = navigator.userAgent || navigator.vendor;
-      if (/KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line|Daum|Whale|SamsungBrowser/i.test(ua)) {
+      if (/KAKAOTALK/i.test(ua)) {
         setInAppBrowser(true);
       }
     }
