@@ -13,6 +13,7 @@ import ReactMarkdown from 'react-markdown';
 import { signIn, useSession } from "next-auth/react";
 import { SidebarRefreshContext, useFolder, FolderContext } from './SidebarLayout';
 import { LanguageSwitcher } from './language-switcher';
+
 export function VideoSummary() {
   const t = useTranslations();
   const params = useParams();

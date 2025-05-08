@@ -3,6 +3,7 @@
 import { useSearchParams, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { VideoSummary } from "@/components/video-summary";
+import { FullTranscriptViewer } from "@/components/FullTranscriptViewer";
 import { HomeHeader } from "@/components/home-header";
 import { Suspense } from "react";
 
@@ -12,6 +13,7 @@ export default function HomePageContent() {
   const params = useParams();
   const isDevMode = searchParams.get('dev') === 'true';
   const locale = params.locale as string || 'ko'; // Get locale from client-side params
+  const videoIdFromUrl = searchParams.get('videoId'); // Get videoId from URL
 
   // if (isDevMode) {
   //   // Render the original page content for developers
@@ -24,6 +26,9 @@ export default function HomePageContent() {
         <Suspense fallback={<div>Loading Summary...</div>}>
           <VideoSummary />
         </Suspense>
+        {/* Pass videoIdFromUrl to FullTranscriptViewer */}
+        {/* FullTranscriptViewer will only attempt to fetch if videoIdFromUrl is not null */}
+        <FullTranscriptViewer videoId={videoIdFromUrl} locale={locale} />
       </div>
     );
   // } else {
