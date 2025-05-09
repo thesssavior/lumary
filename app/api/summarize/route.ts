@@ -50,7 +50,6 @@ async function fetchTranscriptWithFallback(videoId: string) {
       return transcript;
     } catch (err: any) {
       lastError = err;
-      console.error(`Proxy failed: ${proxyUrl}`, err && err.message ? err.message : String(err));
     }
   }
   throw lastError;
@@ -92,6 +91,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: messages.error }, { status: 400 });
     }
 
+    let currentFetcher = "primary"; // Initialize fetcher for this request
+
     // Fetch video info (title, description)
     let videoTitle = '';
     let videoDescription = '';
@@ -127,6 +128,7 @@ export async function POST(req: Request) {
           identifiedAsDisabled = true;
         }
         // Attempt 2: Cloudflare
+        currentFetcher = "cloudflare";
         transcriptRawData = await fetchTranscriptFromCloudflare(videoId);
         // Ensure transcriptRawData is an array before mapping
         if (Array.isArray(transcriptRawData)) {
@@ -241,6 +243,8 @@ export async function POST(req: Request) {
         'Content-Type': 'text/plain; charset=utf-8',
         'Transfer-Encoding': 'chunked',
         'input_token_count': `${tokenCount}`,
+        'fetcher': `${currentFetcher}`,
+        'video_title': encodeURIComponent(`${videoTitle}`),
       }
     });
   } catch (error: any) {

@@ -72,18 +72,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
       return NextResponse.json({ error: 'Folder not found or unauthorized' }, { status: 403 });
     }
     const body = await req.json();
-    const { videoId, summary, input_token_count } = body;
+    const { videoId, video_title, summary, input_token_count, fetcher } = body;
 
     if (!videoId || !summary) {
       console.error('Missing required fields:', { videoId, summary });
       return NextResponse.json({ error: 'Missing videoId or summary' }, { status: 400 });
-    }
-
-    let video_title = null;
-    try {
-      video_title = await fetchYoutubeTitle(videoId);
-    } catch (e) {
-      console.error('Failed to fetch YouTube title:', e);
     }
 
     // Calculate token count of the summary text
@@ -98,7 +91,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
         name: video_title,
         input_token_count: input_token_count,
         output_token_count: output_token_count,
-        user_id: session.user.id
+        user_id: session.user.id,
+        fetcher: fetcher,
       })
       .select()
       .single();

@@ -26,6 +26,7 @@
   "upgrade": "Upgrade plan",
   "startForFree": "Start for free",
   "getHelp": "Support",
+  "transcriptRequiredError": "This video does not have a transcript. Please try another video.",
   "Sidebar": {
     "newNote": "New Note",
     "home": "Home",

@@ -124,26 +124,43 @@ export function VideoSummary() {
 
       if (!summaryResponse.ok) {
         const errorData = await summaryResponse.json();
-        const errorMessage = errorData.error || t('error');
-        
-        // Check if it's a server maintenance error (500 status code or proxy error)
-        if (summaryResponse.status === 500 || (errorMessage && 
-            (errorMessage.includes('fetch') || 
-             errorMessage.includes('proxy') || 
-             errorMessage.includes('transcript')))) {
-          // Show the server maintenance modal
+        const backendErrorString = errorData.error; // Raw error from backend
+        let finalDisplayError: string;
+
+        // Determine the primary error message to display to the user
+        if (backendErrorString &&
+            (backendErrorString.includes('Transcript is disabled') ||
+             backendErrorString.includes('Failed to fetch transcript'))) {
+          finalDisplayError = t('transcriptRequiredError'); // User-friendly message for this specific case
+        } else if (backendErrorString && backendErrorString === t('unpaidInputTooLong')) {
+          finalDisplayError = backendErrorString; // Use the specific "unpaid input too long" message
+          setShowTokenLimitUpgrade(true); // And show the upgrade banner
+        } else {
+          finalDisplayError = backendErrorString || t('error'); // Fallback to backend string or generic t('error')
+        }
+
+        // Side effect: Show server maintenance modal if applicable, based on original error/status
+        // This doesn't change finalDisplayError, just shows a modal.
+        if (summaryResponse.status === 500 || (backendErrorString &&
+            (backendErrorString.includes('fetch') ||
+             backendErrorString.includes('proxy') ||
+             // General transcript issues (not 'disabled' or 'failed to fetch') might indicate server problems
+             (backendErrorString.includes('transcript') &&
+              !backendErrorString.includes('Transcript is disabled') &&
+              !backendErrorString.includes('Failed to fetch transcript')))
+            )) {
           // @ts-ignore - Using global handler defined in ServerDownModalProvider
           if (typeof window !== 'undefined' && window.showServerMaintenanceModal) {
             window.showServerMaintenanceModal();
           }
         }
         
-        // Check for token limit errors
-        if (errorMessage === t('unpaidInputTooLong')) { // Only show banner for free plan user limit error
-          setShowTokenLimitUpgrade(true);
-        }
+        // Note: The logic for setShowTokenLimitUpgrade(true) is handled when
+        // backendErrorString === t('unpaidInputTooLong').
+        // The catch block for handleSubmit will handle setShowTokenLimitUpgrade(false)
+        // for other errors, including the new transcriptRequiredError.
 
-        throw new Error(errorMessage);
+        throw new Error(finalDisplayError);
       }
 
       if (!summaryResponse.body) {
@@ -152,6 +169,9 @@ export function VideoSummary() {
 
       const reader = summaryResponse.body.getReader();
       const input_token_count = parseInt(summaryResponse.headers.get('input_token_count') || '0', 10);
+      const fetcher = summaryResponse.headers.get('fetcher') || 'unknown';
+      const raw_video_title = summaryResponse.headers.get('video_title') || 'unknown';
+      const video_title = decodeURIComponent(raw_video_title);
       let result = '';
 
       while (true) {
@@ -180,8 +200,10 @@ export function VideoSummary() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 videoId,
+                video_title,
                 summary: result,
                 input_token_count: input_token_count,
+                fetcher: fetcher,
               }),
             });
 
