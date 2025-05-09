@@ -30,6 +30,8 @@ export async function POST(req: NextRequest) {
     const event = JSON.parse(rawBody);
     const eventName = event.meta?.event_name;
     const attributes = event.data?.attributes;
+    const customData = attributes?.custom_data; // Extract custom_data
+    const userIdFromWebhook = customData?.user_id; // Extract user_id from custom_data
 
     if (eventName === 'subscription_created' || eventName === 'subscription_updated') {
       let userEmail = attributes?.user_email;
@@ -48,38 +50,57 @@ export async function POST(req: NextRequest) {
       // Determine the plan based on status - use 'premium' for active subscriptions
       const planToUpdate = activeStatuses.includes(status) ? 'premium' : 'free';
 
-      console.log(`Webhook: Updating plan for ${userEmail} to '${planToUpdate}'. Event: ${eventName}, Status: ${status}, Variant: ${variantId}, Product: ${productName}`);
+      console.log(`Webhook: Updating plan. Event: ${eventName}, Status: ${status}, Variant: ${variantId}, Product: ${productName}, UserID: ${userIdFromWebhook || 'N/A'}, Email: ${userEmail || 'N/A'}`);
 
-      const { error, data } = await supabase
-        .from('users')
-        .update({ plan: planToUpdate })
-        .eq('email', userEmail)
-        .select();
+      let query = supabase.from('users').update({ plan: planToUpdate });
+
+      if (userIdFromWebhook) {
+        query = query.eq('id', userIdFromWebhook);
+        console.log(`Updating plan for user ID: ${userIdFromWebhook} to '${planToUpdate}'.`);
+      } else if (userEmail) {
+        query = query.eq('email', userEmail.toLowerCase().trim());
+        console.log(`Updating plan for email: ${userEmail} to '${planToUpdate}'.`);
+      } else {
+        console.warn('Webhook received without user_id or user_email.', event.data);
+        return new Response('Missing user identifier.', { status: 400 });
+      }
+      
+      const { error, data } = await query.select();
 
       if (error) {
-        console.error(`Supabase error updating plan for ${userEmail}:`, error.message);
-        // Decide if we should return an error to Lemon Squeezy? Usually no, log and monitor.
+        console.error(`Supabase error updating plan:`, error.message);
       } else {
-        console.log(`Successfully updated plan for ${userEmail} to '${planToUpdate}'.`);
+        console.log(`Successfully updated plan.`);
       }
     } 
     else if (eventName === 'subscription_cancelled' || eventName === 'subscription_payment_failed' ) {
-        const userEmail = attributes?.user_email;
-        if (!userEmail) {
-             return new Response('Missing user email.', { status: 400 });
+        let userEmail = attributes?.user_email;
+        // const userIdFromWebhook is already defined above
+
+        if (!userIdFromWebhook && !userEmail) {
+             console.warn('Webhook received without user_id or user_email for cancellation/failure.', event.data);
+             return new Response('Missing user identifier.', { status: 400 });
         }
 
-        console.log(`Processing ${eventName} for ${userEmail}. Setting plan to 'free'`);
+        console.log(`Processing ${eventName}. UserID: ${userIdFromWebhook || 'N/A'}, Email: ${userEmail || 'N/A'}. Setting plan to 'free'`);
+        
+        let query = supabase.from('users').update({ plan: 'free' });
 
-        const { error } = await supabase
-        .from('users')
-        .update({ plan: 'free' }) 
-        .eq('email', userEmail);
+        if (userIdFromWebhook) {
+          query = query.eq('id', userIdFromWebhook);
+        } else if (userEmail) {
+          // Ensure email is defined before using it
+          query = query.eq('email', userEmail!.toLowerCase().trim());
+        }
+        // No need for an else here, as the initial check for !userIdFromWebhook && !userEmail covers it.
+
+
+        const { error } = await query;
 
          if (error) {
-            console.error(`Supabase error updating plan to 'free' for ${userEmail}:`, error.message);
+            console.error(`Supabase error updating plan to 'free':`, error.message);
         } else {
-            console.log(`Successfully updated plan for ${userEmail} to 'free'`);
+            console.log(`Successfully updated plan to 'free'`);
         }
     }
     

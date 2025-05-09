@@ -2,7 +2,7 @@ export const runtime = 'nodejs';
 import { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest) {
-  const { productId, variantId, locale } = await req.json();
+  const { productId, variantId, locale, userId } = await req.json();
   const apiKey = process.env.LEMONSQUEEZY_API_KEY!;
   const storeId = process.env.LEMONSQUEEZY_STORE_ID!;
   const baseUrl = process.env.NEXTAUTH_URL!; // e.g. https://yourdomain.com
@@ -31,6 +31,9 @@ export async function POST(req: NextRequest) {
             billing_address: {
               country: "KR",
             },
+            custom: {
+              user_id: userId,
+            }
           },
         },
         relationships: {

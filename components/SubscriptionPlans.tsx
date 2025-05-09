@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Check } from 'lucide-react';
 import Image from 'next/image'; // Import Next.js Image component
+import { useSession } from 'next-auth/react';
 
 type Plan = {
   id: string; // Product ID
@@ -36,14 +37,16 @@ export default function SubscriptionPlans({ isOpen, onClose }: SubscriptionPlans
   const [loading, setLoading] = useState(true);
   const [checkingOutId, setCheckingOutId] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'weekly' | 'monthly'>('weekly');
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
 
-  const handleCheckout = async (productId: string, variantId: string) => {
+  const handleCheckout = async (productId: string, variantId: string, userId: string) => {
     setCheckingOutId(variantId); // Track checkout by variantId
     try {
       const res = await fetch('/api/lemonsqueezy/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, variantId, locale }),
+        body: JSON.stringify({ productId, variantId, locale, userId }),
       });
       const data = await res.json();
       if (res.ok && data.url) {
@@ -189,7 +192,7 @@ export default function SubscriptionPlans({ isOpen, onClose }: SubscriptionPlans
                     </span>
                  </p>
                  <button
-                  onClick={() => handleCheckout(currentPlan.id, currentPlan.variant_id)}
+                  onClick={() => handleCheckout(currentPlan.id, currentPlan.variant_id, userId ?? '')}
                   disabled={checkingOutId === currentPlan.variant_id}
                   className="w-full bg-gray-900 text-white font-bold py-2 px-4 rounded hover:bg-gray-700 transition-colors duration-200 text-center block mt-4 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
