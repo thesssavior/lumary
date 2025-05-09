@@ -6,7 +6,6 @@ import { VideoSummary } from "@/components/video-summary";
 import { FullTranscriptViewer } from "@/components/FullTranscriptViewer";
 import { HomeHeader } from "@/components/home-header";
 import { Suspense } from "react";
-import { TranscriptProvider } from "@/components/TranscriptContext";
 
 export default function HomePageContent() {
   const t = useTranslations();
@@ -19,7 +18,6 @@ export default function HomePageContent() {
   // if (isDevMode) {
   //   // Render the original page content for developers
     return (
-      <TranscriptProvider>
         <div className="container mx-auto px-4 max-w-3xl mt-16">
           <div className='mb-4'>
             <HomeHeader locale={locale} />
@@ -28,9 +26,7 @@ export default function HomePageContent() {
             <VideoSummary />
           </Suspense>
           {/* Pass videoIdFromUrl to FullTranscriptViewer */}
-          <FullTranscriptViewer />
         </div>
-      </TranscriptProvider>
     );
   // } else {
   //   // Render the maintenance message for regular users
