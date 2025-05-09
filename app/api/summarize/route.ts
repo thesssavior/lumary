@@ -49,26 +49,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: messages.error }, { status: 400 });
     }
 
-    const isMultiChunk = tokenCount > MAX_CHUNK_INPUT_TOKENS;
-    const transcriptChunks = isMultiChunk ? chunkTranscript(transcriptText, tokenCount) : [transcriptText];
-    let systemPrompt = isMultiChunk ? messages.systemPromptsChunked : messages.systemPrompts;
-    let userPrompt = isMultiChunk ? messages.userPromptsChunked : messages.userPrompts;
-
     // Summarize with OpenAI
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const encoder = new TextEncoder();
     
     const stream = new ReadableStream({
       async start(controller) {
-        for (let i = 0; i < transcriptChunks.length; i++) {
-          console.log("tokenCount: ", tokenCount, "isMultiChunk: ", isMultiChunk);
-          console.log("processing chunk", i, "tokenCount of chunk", calculateTokenCount(transcriptChunks[i]));
-          const chunk = transcriptChunks[i];
-          const completion = await openai.chat.completions.create({
+        const completion = await openai.chat.completions.create({
             model: 'gpt-4.1-mini',
             messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: `${userPrompt}\n\nVideo Title: ${videoTitle}\n\nVideo Description: ${videoDescription}\n\nTranscript:\n${chunk}` }
+              { role: "system", content: messages.systemPrompts },
+              { role: "user", content: `${messages.userPrompts}\n\nVideo Title: ${videoTitle}\n\nVideo Description: ${videoDescription}\n\nTranscript:\n${transcriptText}` }
             ],
             stream: true,
             temperature: 0.3,
@@ -78,11 +69,6 @@ export async function POST(req: Request) {
             if (content) {
               controller.enqueue(encoder.encode(content));
             }
-          }
-          // Add a newline between chunks, but not after the last chunk.
-          if (i < transcriptChunks.length - 1) {
-            controller.enqueue(encoder.encode('\n\n')); 
-          }
         }
         controller.close();
       }

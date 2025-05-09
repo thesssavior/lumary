@@ -13,6 +13,7 @@ import ReactMarkdown from 'react-markdown';
 import { signIn, useSession } from "next-auth/react";
 import { SidebarRefreshContext, useFolder, FolderContext } from './SidebarLayout';
 import { LanguageSwitcher } from './language-switcher';
+import { FullTranscriptViewer } from "./FullTranscriptViewer";
 
 export function VideoSummary() {
   const t = useTranslations();
@@ -150,18 +151,20 @@ export function VideoSummary() {
         ? '/api/yt_long' // Placeholder for your new route for long videos
         : '/api/summarize';
 
+      // destructure the fetchedTranscriptData, except for videoId, locale
+      const {transcript, title, description, tokenCount} = fetchedTranscriptData;
       const summaryResponse = await fetch(summaryApiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          videoId: fetchedTranscriptData.videoId,
-          locale: fetchedTranscriptData.locale,
-          transcriptText: fetchedTranscriptData.transcript,
-          title: fetchedTranscriptData.title,
-          videoDescription: fetchedTranscriptData.description,
-          tokenCount: fetchedTranscriptData.tokenCount,
+          videoId: videoId,
+          locale: locale,
+          transcriptText: transcript,
+          title: title,
+          videoDescription: description,
+          tokenCount: tokenCount,
         }),
       });
 
@@ -203,9 +206,10 @@ export function VideoSummary() {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                videoId: fetchedTranscriptData.videoId,
+                videoId: videoId,
                 summary: result,
-                input_token_count: fetchedTranscriptData.tokenCount,
+                title: title,
+                input_token_count: tokenCount,
               }),
             });
 
@@ -372,6 +376,10 @@ export function VideoSummary() {
               </div>
             </div>
           </Card>
+        )}
+
+        {transcriptInfo && (
+          <FullTranscriptViewer transcript={transcriptInfo.transcript} />
         )}
       </div>
     </>
