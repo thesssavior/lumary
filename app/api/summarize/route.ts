@@ -8,14 +8,9 @@ import { YoutubeTranscript } from 'youtube-transcript';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 
 const proxyUrls = [
-  'http://toehivex:esiwn5hn17xs@p.webshare.io:80/',
+  'http://toehivex-rotate:esiwn5hn17xs@p.webshare.io:80/',
   'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh@geo.iproyal.com:12321',
   'http://brd-customer-hl_414d8129-zone-residential_proxy1:yd55dtlsq03w@brd.superproxy.io:33335',
-  'http://user-sp1d2iv3s7-country-kr-city-seoul:QY0p3ewONhqn92_kau@gate.decodo.com:10001',
-  // 'http://user-sp1d2iv3s7-country-kr-city-seoul:QY0p3ewONhqn92_kau@gate.decodo.com:10002',
-  // 'http://user-sp1d2iv3s7-country-kr-city-seoul:QY0p3ewONhqn92_kau@gate.decodo.com:10003',
-  // 'http://user-sp1d2iv3s7-country-kr-city-seoul:QY0p3ewONhqn92_kau@gate.decodo.com:10004',
-  // 'http://user-sp1d2iv3s7-country-kr-city-seoul:QY0p3ewONhqn92_kau@gate.decodo.com:10005'
 ];
 
 // Fetch YouTube video title and description using YouTube Data API v3
@@ -61,7 +56,7 @@ async function fetchTranscriptWithFallback(videoId: string) {
   throw lastError;
 }
 
-// New helper to fetch transcript from ngrok endpoint
+// New helper to fetch transcript from cloudflare endpoint
 async function fetchTranscriptFromCloudflare(videoId: string) {
   const endpoint = 'https://pi.lumarly.com/fetch-transcript';
   const SECRET_TOKEN = 'Tmdwn123098';
@@ -74,11 +69,11 @@ async function fetchTranscriptFromCloudflare(videoId: string) {
     body: JSON.stringify({ video_id: videoId }),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch transcript from ngrok endpoint');
+    throw new Error('Failed to fetch transcript from cloudflare endpoint');
   }
   const data = await res.json();
   if (!data.transcript || !Array.isArray(data.transcript)) {
-    throw new Error('Transcript not found in ngrok response');
+    throw new Error('Transcript not found in cloudflare response');
   }
   return data.transcript;
 }
@@ -110,35 +105,74 @@ export async function POST(req: Request) {
       console.error('Failed to fetch video info:', e);
     }
 
-    // Fetch transcript: try original, fallback to ngrok
+    // Fetch transcript: try original, fallback to cloudflare
     let transcriptText = '';
-    try {
-      let transcript;
+    let identifiedAsDisabled = false; // Flag to track if "Transcript is disabled" was encountered
+
+    try { // This try covers the entire transcript fetching process
+      let transcriptRawData;
       try {
-        transcript = await fetchTranscriptWithFallback(videoId);
-        transcriptText = transcript.map((item: any, idx: number) =>
+        // Attempt 1: Proxies
+        transcriptRawData = await fetchTranscriptWithFallback(videoId);
+        transcriptText = transcriptRawData.map((item: any, idx: number) =>
           idx % 4 === 0
+            ? formatTime(item.offset) // Assuming formatTime is available and returns string
             ? `[${formatTime(item.offset)}] ${item.text}`
+            : item.text // Fallback if formatTime returns falsy
             : item.text
         ).join('\n');
-      } catch (primaryError) {
-        console.warn('Primary transcript fetch failed, trying cloudflare fallback:', primaryError);
-        transcript = await fetchTranscriptFromCloudflare(videoId);
-        transcriptText = transcript.map((item: any, idx: number) =>
-          idx % 4 === 0
-            ? `[${formatTime(item.start)}] ${item.text}`
-            : item.text
-        ).join('\n');
+      } catch (primaryError: any) {
+        console.warn('Primary transcript fetch failed (proxies), trying cloudflare fallback. Reason:', primaryError.message);
+        if (typeof primaryError.message === 'string' && primaryError.message.includes('Transcript is disabled')) {
+          identifiedAsDisabled = true;
+        }
+        // Attempt 2: Cloudflare
+        transcriptRawData = await fetchTranscriptFromCloudflare(videoId);
+        // Ensure transcriptRawData is an array before mapping
+        if (Array.isArray(transcriptRawData)) {
+            transcriptText = transcriptRawData.map((item: any, idx: number) =>
+              idx % 4 === 0
+                ? formatTime(item.start) // Assuming formatTime is available and returns string
+                ? `[${formatTime(item.start)}] ${item.text}`
+                : item.text // Fallback if formatTime returns falsy
+                : item.text
+            ).join('\n');
+        } else {
+            // If Cloudflare returns non-array (e.g. error object or empty response not caught as error)
+            transcriptText = ""; // Ensure transcriptText is empty
+            console.warn("Cloudflare fallback did not return a valid transcript array.");
+        }
+
+
+        if (transcriptText) { // If Cloudflare succeeded in getting non-empty text
+          identifiedAsDisabled = false; // Clear the flag, as we found a transcript
+        }
+        // If Cloudflare failed and threw an error, this inner catch block's error is propagated to the outer catch.
+        // If Cloudflare succeeded but transcriptText is empty, identifiedAsDisabled (if true from primary) remains true.
       }
-    } catch (error: any) {
-      console.error('Error fetching transcript:', error);
-      if (typeof error.message === 'string' && error.message.includes('Transcript is disabled')) {
+    } catch (errorAfterAllAttempts: any) {
+      // This block is hit if:
+      // 1. fetchTranscriptWithFallback failed AND fetchTranscriptFromCloudflare also failed (error is from CF).
+      // Note: The original code structure implies that if fetchTranscriptWithFallback fails, its error is caught,
+      // and then fetchTranscriptFromCloudflare is attempted. If *that* fails, its error is caught here.
+      console.error('All transcript fetch attempts failed. Last error:', errorAfterAllAttempts.message);
+      if (identifiedAsDisabled) { // If primary attempt (proxies) already flagged it as disabled
         return NextResponse.json({ error: messages.transcriptDisabled }, { status: 400 });
       }
+      // If not flagged by primary, check if the last error itself mentions disabled
+      if (typeof errorAfterAllAttempts.message === 'string' && errorAfterAllAttempts.message.includes('Transcript is disabled')) {
+        return NextResponse.json({ error: messages.transcriptDisabled }, { status: 400 });
+      }
+      // Otherwise, a generic failure from transcript fetching
       return NextResponse.json({ error: messages.error }, { status: 400 });
     }
 
     if (!transcriptText) {
+      if (identifiedAsDisabled) { // If attempts were made, no error was thrown by the final step, but text is empty and was flagged as disabled
+        return NextResponse.json({ error: messages.transcriptDisabled }, { status: 400 });
+      }
+      // Transcript is empty for other reasons
+      console.error('Error fetching transcript: Resulting transcriptText is empty and not flagged as disabled.');
       return NextResponse.json({ error: messages.error }, { status: 400 });
     }
 
