@@ -2,33 +2,11 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import enMessages from '@/messages/en.json';
 import koMessages from '@/messages/ko.json';
-import { calculateTokenCount } from '@/lib/utils';
 
 // Constants
-const MAX_CHUNK_INPUT_TOKENS = 20000; // Maximum tokens per chunk
 const model = 'gpt-4.1-mini';
 
-// Helper function to split transcript into chunks
-function chunkTranscript(transcriptText: string, totalTokens: number, maxTokens: number = MAX_CHUNK_INPUT_TOKENS, overlap: number = 100): string[] {
-  const numChunks = Math.ceil(totalTokens / maxTokens);
-  const approxCharPerChunk = Math.ceil(transcriptText.length / numChunks);
-  const chunks: string[] = [];
-  
-  for (let i = 0; i < numChunks; i++) {
-    // Calculate start position with overlap (except for first chunk)
-    const start = i === 0 ? 0 : i * approxCharPerChunk;
-    // const start = i === 0 ? 0 : i * approxCharPerChunk - overlap;
-    // Calculate end position with overlap (except for last chunk)
-    const end = i === numChunks - 1 
-      ? transcriptText.length 
-      : (i + 1) * approxCharPerChunk;
-    
-    const chunk = transcriptText.slice(start, end);
-    chunks.push(chunk);
-  }
-  return chunks;
-}
-
+// POST request to summarize a video
 export async function POST(req: Request) {
   try {
     console.log("summarize route called");
@@ -56,7 +34,7 @@ export async function POST(req: Request) {
     const stream = new ReadableStream({
       async start(controller) {
         const completion = await openai.chat.completions.create({
-            model: 'gpt-4.1-mini',
+            model: model,
             messages: [
               { role: "system", content: messages.systemPrompts },
               { role: "user", content: `${messages.userPrompts}\n\nVideo Title: ${videoTitle}\n\nVideo Description: ${videoDescription}\n\nTranscript:\n${transcriptText}` }

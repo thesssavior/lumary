@@ -1,6 +1,7 @@
 import { YoutubeTranscript } from 'youtube-transcript';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { formatTime } from '@/lib/utils'; // Assuming formatTime is in @/lib/utils
+import he from 'he'; // Import the 'he' library
 
 // Constants
 const proxyUrls = [
@@ -26,9 +27,7 @@ async function fetchTranscriptWithFallback(videoId: string) {
       // If transcript is empty or undefined, treat it as an error to try next proxy
       throw new Error('Empty transcript received from proxy: ' + proxyUrl);
     } catch (err: any) {
-      lastError = err;
-      console.error(`Proxy failed: ${proxyUrl}`, err && err.message ? err.message : String(err));
-    }
+      lastError = err;    }
   }
   // If all proxies fail and we have a lastError, throw it.
   // If lastError is undefined (e.g., proxyUrls is empty), throw a generic error.
@@ -65,11 +64,12 @@ function formatTranscript(transcript: any[], timeProperty: string = 'offset'): s
   if (!transcript || transcript.length === 0) {
     return ""; // Return empty string if transcript is null, undefined, or empty
   }
-  return transcript.map((item: any, idx: number) =>
-    idx % 4 === 0
-      ? `[${formatTime(item[timeProperty])}] ${item.text}`
-      : item.text
-  ).join('\\n');
+  return transcript.map((item: any, idx: number) => {
+    const text = he.decode(item.text); // Decode text here
+    return idx % 10 === 0
+      ? `[${formatTime(item[timeProperty])}] ${text}`
+      : text;
+  }).join(' ');
 }
 
 // Fetch YouTube video title and description using YouTube Data API v3

@@ -38,7 +38,7 @@ export default function RootLayout({
         </Script>
         <link rel="icon" href="/favicon.png" type="image/png" />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} h-screen flex flex-col`}>
         <Providers>
           <Suspense fallback={null}>
             <PageProgressBar />

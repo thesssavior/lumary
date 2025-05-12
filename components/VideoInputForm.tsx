@@ -1,0 +1,268 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { YoutubeIcon, AlertCircle, X } from "lucide-react";
+import { useTranslations } from 'next-intl';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { signIn, useSession } from "next-auth/react";
+import { useFolder } from './SidebarLayout';
+import { useSummaryGeneration } from '@/contexts/SummaryGenerationContext';
+import { LanguageSwitcher } from './language-switcher';
+
+interface FolderType {
+  id: string;
+  name: string;
+}
+
+export function VideoInputForm() {
+  const t = useTranslations();
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const locale = params.locale as string;
+  const { activeFolder, openSubscriptionModal } = useFolder();
+  const { setGenerationData } = useSummaryGeneration();
+
+  const [url, setUrl] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { data: session } = useSession();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [trialUsed, setTrialUsed] = useState(false);
+  const [inAppBrowser, setInAppBrowser] = useState(false);
+  const [showTokenLimitUpgrade, setShowTokenLimitUpgrade] = useState(false);
+
+  // Check localStorage for trial status on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedTrialUsed = localStorage.getItem('trialUsed');
+      if (storedTrialUsed === 'true') {
+        setTrialUsed(true);
+      }
+    }
+  }, []);
+
+  // Extract video ID from URL passed as query param
+  useEffect(() => {
+    const youtubeParam = searchParams.get('youtube');
+    if (youtubeParam) {
+      try {
+        setUrl(decodeURIComponent(youtubeParam));
+      } catch {
+        setUrl(youtubeParam); // fallback if decoding fails
+      }
+    }
+  }, [searchParams]);
+
+  // Check if the user is using an in-app browser
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const ua = navigator.userAgent || navigator.vendor;
+      if (/KAKAOTALK/i.test(ua)) {
+        setInAppBrowser(true);
+      } else {
+        setInAppBrowser(false);
+      }
+    }
+  }, []);
+
+  const extractVideoId = (url: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/|m\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/, // eslint-disable-line no-useless-escape
+      /^([a-zA-Z0-9_-]{11})$/
+    ];
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+    return null;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setShowTokenLimitUpgrade(false);
+
+    if (!session && trialUsed) {
+      setShowLoginPrompt(true);
+      return;
+    }
+    
+    setIsLoading(true);
+
+    try {
+      const videoId = extractVideoId(url);
+      if (!videoId) {
+        throw new Error(t('error') + ": " + t('invalidUrl'));
+      }
+
+      // Step 1: Call /api/transcript
+      const transcriptResponse = await fetch('/api/transcript', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoId, locale }),
+      });
+
+      if (!transcriptResponse.ok) {
+        const errorData = await transcriptResponse.json();
+        const errorMessage = errorData.error || t('failedToFetchTranscript');
+        if (errorMessage === t('unpaidInputTooLong')) {
+          setShowTokenLimitUpgrade(true);
+          setError(errorMessage);
+          setIsLoading(false);
+          return;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const transcriptDataJSON = await transcriptResponse.json();
+      const {transcript, title, description, tokenCount, fetcher} = transcriptDataJSON;
+      // Ensure all expected fields are present, providing defaults if necessary
+      const data = {
+        videoId: videoId,
+        locale: locale,
+        transcriptText: transcript || '',
+        title: title || 'Untitled Summary',
+        videoDescription: description || '',
+        tokenCount: tokenCount || 0,
+        fetcher: fetcher || 'unknown'
+      };
+      
+      // Store data in context
+      setGenerationData({
+        transcriptData: data,
+        folderForSummary: activeFolder ? { id: activeFolder.id, name: activeFolder.name } : null
+      });
+
+      // Mark trial as used if not logged in
+      if (!session) {
+        setTrialUsed(true);
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('trialUsed', 'true');
+        }
+      }
+      
+      // Redirect to the new summary generation page
+      router.push(`/${locale}/new`);
+
+    } catch (err: any) {
+      if (!showTokenLimitUpgrade) {
+        setError(err.message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-4xl mx-auto py-2 space-y-2">
+      <div className="flex justify-end mb-6">
+        <LanguageSwitcher />
+      </div>
+      {/* Login Modal/Overlay */}
+      {showLoginPrompt && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
+              <h2 className="text-xl font-bold mb-4">{t('signIn')}</h2>
+              <p className="mb-6">{t('trialUsedPrompt')}</p>
+              <Button
+                className="w-full bg-black hover:bg-zinc-800 text-white mb-2"
+                onClick={() => { setShowLoginPrompt(false); signIn("google"); }}
+              >
+                {t('signInWithGoogle')}
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowLoginPrompt(false)}
+              >
+                {t('cancel')}
+              </Button>
+            </div>
+          </div>
+        )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex gap-2 items-center">
+          <div className="relative flex-1">
+            <Input
+              type="url"
+              placeholder={t('videoUrl')}
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="border-zinc-200 bg-white text-black placeholder:text-zinc-400 ring-1 ring-ring ring-offset-2 focus-visible:ring-red-600 focus-visible:ring-offset-white transition-colors pr-10 w-full"
+              required
+              pattern="^https?://(www\.|m\.)?(youtube\.com/(watch\?v=|embed\/|v\/)|youtu\.be\/).+" // eslint-disable-line no-useless-escape
+              // title={t('youtubeUrlHint')}
+            />
+            {url && (
+              <button
+                type="button"
+                onClick={() => setUrl("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-1 text-gray-400 hover:text-red-500 bg-white rounded-full"
+                style={{ boxShadow: '0 0 2px rgba(0,0,0,0.05)' }}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          <Button 
+            type="submit" 
+            disabled={isLoading}
+            className="bg-red-600 hover:bg-red-700 text-white whitespace-nowrap"
+          >
+            <YoutubeIcon className="mr-2 h-4 w-4" />
+            <span className="block sm:hidden">{isLoading ? t('loadingShort') : t('getSummaryShort')}</span>
+            <span className="hidden sm:block">{isLoading ? t('loading') : t('getSummary')}</span>
+          </Button>
+        </div>
+      </form>
+
+      {!session && (
+          <p className="text-sm text-zinc-500 text-center mt-6">{t('trialInfo')}</p>
+      )}
+
+      {inAppBrowser && (
+        <div className="mt-4 bg-red-100 text-red-700 p-4 rounded-md text-base font-semibold flex flex-col items-center mb-4">
+          <p className="text-center">
+            {t('inAppBrowserWarning.line1')} <br />
+            {t('inAppBrowserWarning.line2')}
+          </p>
+          <button
+            className="mt-2 px-3 py-1 bg-red-200 rounded text-red-900 font-bold"
+            onClick={() => navigator.clipboard.writeText(window.location.href)}
+          >
+            {t('copyCurrentUrl')}
+          </button>
+        </div>
+      )}
+
+      {showTokenLimitUpgrade && (
+        <div className="mt-4">
+          <Alert variant="destructive" className="bg-yellow-50 border-yellow-300 text-yellow-800">
+            <AlertCircle className="h-4 w-4 !text-yellow-700" />
+            <AlertDescription>
+              {t('unpaidInputTooLong')}{t('uiPlanCTA')}
+              <button 
+                onClick={openSubscriptionModal}
+                className="ml-2 underline font-bold hover:text-yellow-900"
+              >
+                {t('upgradePlanButton')}
+              </button>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
+      {error && !showTokenLimitUpgrade && (
+        <Alert variant="destructive" className="mt-4 bg-red-50 border-red-200 text-red-600">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+    </div>
+  );
+} 

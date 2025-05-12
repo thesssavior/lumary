@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     try {
       rawTranscript = await fetchTranscriptWithFallback(videoId);
       formattedTranscriptText = formatTranscript(rawTranscript, 'offset');
-      fetcherUsed = "residential";
+      fetcherUsed = "primary";
     } catch (primaryError: any) {
       console.warn(
         `Primary transcript fetch for ${videoId} failed: ${primaryError.message}. Trying fallback.`
@@ -70,8 +70,7 @@ export async function POST(req: Request) {
       title: title, 
       description: description,
       tokenCount: tokenCount,
-      videoId: videoId,
-      locale: locale
+      fetcher: fetcherUsed
     }, { status: 200 });
 
   } catch (error: any) {

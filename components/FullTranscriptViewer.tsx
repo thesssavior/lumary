@@ -18,11 +18,11 @@ export function FullTranscriptViewer({ transcript }: { transcript: string }) {
   }
 
   return (
-    <Card className="p-6 bg-white border-zinc-200 mt-6">
+    <div> 
       <h3 className="text-lg font-medium mb-4 text-zinc-700">{t('fullTranscriptTitle')}</h3>
-      <div className="prose prose-zinc max-w-none text-sm whitespace-pre-line text-gray-700 max-h-96 overflow-y-auto" style={{ lineHeight: '1.6' }}>
+      <div className="text-sm whitespace-pre-line text-gray-700 max-h-96 overflow-y-auto" style={{ lineHeight: '1.6' }}>
         {transcript}
       </div>
-    </Card>
+    </div>
   );
 } 
