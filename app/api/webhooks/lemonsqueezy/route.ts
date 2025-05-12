@@ -30,20 +30,20 @@ export async function POST(req: NextRequest) {
     const event = JSON.parse(rawBody);
     const eventName = event.meta?.event_name;
     const attributes = event.data?.attributes;
-    const customData = attributes?.custom_data; // Extract custom_data
+    const customData = event.meta?.custom_data ?? {};  // ✅ right place
     const userIdFromWebhook = customData?.user_id; // Extract user_id from custom_data
 
     if (eventName === 'subscription_created' || eventName === 'subscription_updated') {
       let userEmail = attributes?.user_email;
       const status = attributes?.status;
-      const variantId = event.data?.relationships?.variant?.data?.id; // Get variant ID
+      const variantId = attributes?.variant_id;
       const productName = attributes?.product_name; // Get product name
 
-      if (!userEmail) {
-        console.warn('Webhook received without user_email.', event.data);
-        return new Response('Missing user email.', { status: 400 });
+      if (!userIdFromWebhook && !userEmail) {
+        console.warn('Webhook received without user_id *or* user_email.', event.data);
+        return new Response('Missing user identifier.', { status: 400 });
       }
-
+        
       userEmail = userEmail.toLowerCase().trim();
 
       const activeStatuses = ['active', 'on_trial', 'paused', 'past_due'];
