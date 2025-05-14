@@ -77,6 +77,28 @@ async function fetchTranscriptFromCloudflare(videoId: string) {
   return data.transcript;
 }
 
+// New helper to fetch transcript from API endpoint
+async function fetchTranscriptFromAPI(videoId: string) {
+  const endpoint = 'https://api.lumarly.com/fetch-transcript';
+  const SECRET_TOKEN = 'Tmdwn123098';
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Auth-Token': SECRET_TOKEN,
+    },
+    body: JSON.stringify({ video_id: videoId }),
+  });
+  if (!res.ok) {
+    throw new Error('Failed to fetch transcript from API endpoint');
+  }
+  const data = await res.json();
+  if (!data.transcript || !Array.isArray(data.transcript)) {
+    throw new Error('Transcript not found in API response');
+  }
+  return data.transcript;
+}
+
 export async function POST(req: Request) {
   try {
     // Get videoId and locale from request
@@ -106,7 +128,7 @@ export async function POST(req: Request) {
       console.error('Failed to fetch video info:', e);
     }
 
-    // Fetch transcript: try original, fallback to cloudflare
+    // Fetch transcript: try original, fallback to cloudflare, then API as last resort
     let transcriptText = '';
     let identifiedAsDisabled = false; // Flag to track if "Transcript is disabled" was encountered
 
@@ -127,30 +149,53 @@ export async function POST(req: Request) {
         if (typeof primaryError.message === 'string' && primaryError.message.includes('Transcript is disabled')) {
           identifiedAsDisabled = true;
         }
-        // Attempt 2: Cloudflare
-        currentFetcher = "cloudflare";
-        transcriptRawData = await fetchTranscriptFromCloudflare(videoId);
-        // Ensure transcriptRawData is an array before mapping
-        if (Array.isArray(transcriptRawData)) {
-            transcriptText = transcriptRawData.map((item: any, idx: number) =>
-              idx % 4 === 0
-                ? formatTime(item.start) // Assuming formatTime is available and returns string
-                ? `[${formatTime(item.start)}] ${item.text}`
-                : item.text // Fallback if formatTime returns falsy
-                : item.text
-            ).join('\n');
-        } else {
-            // If Cloudflare returns non-array (e.g. error object or empty response not caught as error)
-            transcriptText = ""; // Ensure transcriptText is empty
-            console.warn("Cloudflare fallback did not return a valid transcript array.");
-        }
+        
+        try {
+          // Attempt 2: Cloudflare
+          currentFetcher = "cloudflare";
+          transcriptRawData = await fetchTranscriptFromCloudflare(videoId);
+          // Ensure transcriptRawData is an array before mapping
+          if (Array.isArray(transcriptRawData)) {
+              transcriptText = transcriptRawData.map((item: any, idx: number) =>
+                idx % 4 === 0
+                  ? formatTime(item.start) // Assuming formatTime is available and returns string
+                  ? `[${formatTime(item.start)}] ${item.text}`
+                  : item.text // Fallback if formatTime returns falsy
+                  : item.text
+              ).join('\n');
+          } else {
+              // If Cloudflare returns non-array (e.g. error object or empty response not caught as error)
+              transcriptText = ""; // Ensure transcriptText is empty
+              console.warn("Cloudflare fallback did not return a valid transcript array.");
+          }
 
+          if (transcriptText) { // If Cloudflare succeeded in getting non-empty text
+            identifiedAsDisabled = false; // Clear the flag, as we found a transcript
+          }
+        } catch (cloudflareError: any) {
+          // Attempt 3: API as last resort
+          console.warn('Cloudflare transcript fetch failed, trying API as last resort. Reason:', cloudflareError.message);
+          currentFetcher = "api";
+          transcriptRawData = await fetchTranscriptFromAPI(videoId);
+          // Ensure transcriptRawData is an array before mapping
+          if (Array.isArray(transcriptRawData)) {
+              transcriptText = transcriptRawData.map((item: any, idx: number) =>
+                idx % 4 === 0
+                  ? formatTime(item.start) // Assuming formatTime is available and returns string
+                  ? `[${formatTime(item.start)}] ${item.text}`
+                  : item.text // Fallback if formatTime returns falsy
+                  : item.text
+              ).join('\n');
+          } else {
+              // If API returns non-array
+              transcriptText = ""; // Ensure transcriptText is empty
+              console.warn("API fallback did not return a valid transcript array.");
+          }
 
-        if (transcriptText) { // If Cloudflare succeeded in getting non-empty text
-          identifiedAsDisabled = false; // Clear the flag, as we found a transcript
+          if (transcriptText) { // If API succeeded in getting non-empty text
+            identifiedAsDisabled = false; // Clear the flag, as we found a transcript
+          }
         }
-        // If Cloudflare failed and threw an error, this inner catch block's error is propagated to the outer catch.
-        // If Cloudflare succeeded but transcriptText is empty, identifiedAsDisabled (if true from primary) remains true.
       }
     } catch (errorAfterAllAttempts: any) {
       // This block is hit if:
