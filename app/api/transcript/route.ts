@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import {
   fetchTranscriptWithFallback,
   fetchTranscriptFromCloudflare,
+  fetchTranscriptFromApi,
   formatTranscript,
   fetchYoutubeInfo
 } from '@/lib/youtube-utils';
@@ -30,20 +31,31 @@ export async function POST(req: Request) {
       fetcherUsed = "primary";
     } catch (primaryError: any) {
       console.warn(
-        `Primary transcript fetch for ${videoId} failed: ${primaryError.message}. Trying fallback.`
+        `Primary transcript fetch for ${videoId} failed: ${primaryError.message}. Trying cloudflare fallback.`
       );
       try {
         rawTranscript = await fetchTranscriptFromCloudflare(videoId);
         formattedTranscriptText = formatTranscript(rawTranscript, 'start');
         fetcherUsed = "cloudflare";
-      } catch (fallbackError: any) {
-        console.error(
-          `Fallback transcript fetch for ${videoId} also failed: ${fallbackError.message}`
+      } catch (cloudflareError: any) {
+        console.warn(
+          `Cloudflare transcript fetch for ${videoId} failed: ${cloudflareError.message}. Trying API Lumarly fallback.`
         );
-        if (fallbackError.message.includes('Transcript is disabled') || (primaryError.message && primaryError.message.includes('Transcript is disabled'))) {
-          return NextResponse.json({ error: messages.transcriptDisabled }, { status: 400 });
+        try {
+          rawTranscript = await fetchTranscriptFromApi(videoId);
+          formattedTranscriptText = formatTranscript(rawTranscript, 'start');
+          fetcherUsed = "api-lumarly";
+        } catch (apiLumarlyError: any) {
+          console.error(
+            `All transcript fetch methods for ${videoId} failed. Last error: ${apiLumarlyError.message}`
+          );
+          if (apiLumarlyError.message.includes('Transcript is disabled') || 
+              cloudflareError.message.includes('Transcript is disabled') || 
+              (primaryError.message && primaryError.message.includes('Transcript is disabled'))) {
+            return NextResponse.json({ error: messages.transcriptDisabled }, { status: 400 });
+          }
+          return NextResponse.json({ error: messages.error || 'Failed to fetch transcript after multiple attempts' }, { status: 500 });
         }
-        return NextResponse.json({ error: messages.error || 'Failed to fetch transcript after multiple attempts' }, { status: 500 });
       }
     }
     

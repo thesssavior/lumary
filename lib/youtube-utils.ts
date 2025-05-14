@@ -59,6 +59,31 @@ async function fetchTranscriptFromCloudflare(videoId: string) {
   return data.transcript;
 }
 
+// Helper to fetch transcript from api.lumarly.com as a last resort
+async function fetchTranscriptFromApi(videoId: string) {
+  const endpoint = 'https://api.lumarly.com/fetch-transcript';
+  const SECRET_TOKEN = 'Tmdwn123098';
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Auth-Token': SECRET_TOKEN,
+    },
+    body: JSON.stringify({ video_id: videoId }),
+  });
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error('Failed to fetch transcript from API Lumarly:', res.status, errorText);
+    throw new Error(`Failed to fetch transcript from API Lumarly: ${res.status} ${errorText}`);
+  }
+  const data = await res.json();
+  if (!data.transcript || !Array.isArray(data.transcript)) {
+    console.error('Transcript not found or invalid format in API Lumarly response:', data);
+    throw new Error('Transcript not found or invalid format in API Lumarly response');
+  }
+  return data.transcript;
+}
+
 // Helper function to format transcript items
 function formatTranscript(transcript: any[], timeProperty: string = 'offset'): string {
   if (!transcript || transcript.length === 0) {
@@ -101,6 +126,7 @@ export {
   proxyUrls,
   fetchTranscriptWithFallback,
   fetchTranscriptFromCloudflare,
+  fetchTranscriptFromApi,
   formatTranscript,
   fetchYoutubeInfo
 }; 

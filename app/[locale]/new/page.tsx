@@ -119,9 +119,10 @@ export default function NewSummaryPage() {
                 if (done) break;
                 const chunk = decoder.decode(value);
                 content += chunk;
-                setStreamingSummaryContent(prev => prev + chunk);
+                setStreamingSummaryContent(prev => prev + chunk); // Continue progressive display
               }
-              // Call saveSummary with the data that was actually used for this generation
+
+              // Reverted: No special processing after stream. Save the full content.
               saveSummary(content, currentTranscriptData, currentFolderForSummary);
             } catch (err: any) {
               console.error("Streaming error:", err);

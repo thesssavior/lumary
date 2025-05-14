@@ -25,7 +25,7 @@ async function SummaryContent({ summary, folder, locale }: { summary: any; folde
         <span>/</span>
       </div>
 
-      <h1 className="text-6xl font-bold mb-4">{summary.name}</h1>
+      <h1 className="text-4xl font-bold mb-4">{summary.name}</h1>
       <div className="text-gray-500 text-xs">Video ID: {summary.video_id}</div>
       <div className="text-gray-500 text-xs">Created: {new Date(summary.created_at).toLocaleString()}</div>
       
@@ -36,11 +36,11 @@ async function SummaryContent({ summary, folder, locale }: { summary: any; folde
           <TabsTrigger value="transcript">{t('transcriptTab')}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="summary" className="mt-4 p-6 border rounded-md">
-          <div className="prose prose-zinc max-w-none">
-              <div className="text-black [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1:not(:first-child)]:mt-10 [&>h2]:mb-5 [&>h2:not(:first-child)]:mt-8 [&>h3]:mb-4 [&>h3:not(:first-child)]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-black">
-                  <ReactMarkdown>{summary.summary}</ReactMarkdown>
-              </div>
+        <TabsContent value="summary" className="mt-4 p-0 border-0">
+          <div className="prose prose-zinc max-w-none p-6 border rounded-md">
+            <div className="text-black [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1:not(:first-child)]:mt-10 [&>h2]:mb-5 [&>h2:not(:first-child)]:mt-8 [&>h3]:mb-4 [&>h3:not(:first-child)]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-black">
+                <ReactMarkdown>{summary.summary}</ReactMarkdown>
+            </div>
           </div>
         </TabsContent>
 
@@ -48,12 +48,14 @@ async function SummaryContent({ summary, folder, locale }: { summary: any; folde
           <p className="text-gray-500">Mindmap feature coming soon!</p>
         </TabsContent>
 
-        <TabsContent value="transcript" className="mt-4 p-4 border rounded-md">
-          {summary.transcript ? (
-            <FullTranscriptViewer transcript={summary.transcript} />
-          ) : (
-            <p className="text-gray-500">No transcript available for this summary.</p>
-          )}
+        <TabsContent value="transcript" className="mt-4 p-0 border-0">
+          <div className="p-4 border rounded-md">
+            {summary.transcript ? (
+              <FullTranscriptViewer transcript={summary.transcript} />
+            ) : (
+              <p className="text-gray-500">No transcript available for this summary.</p>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>

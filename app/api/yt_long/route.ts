@@ -99,30 +99,6 @@ export async function POST(req: Request) {
             controller.enqueue(encode('\n\n---\n\n')); // separator
           }
         }
-
-        // ── 4. final intro / TOC / outro pass ───────────────────
-        const concatenated = collectedSummaries.join('\n\n');
-        const finalCompletion = await openai.chat.completions.create({
-          model,
-          stream: true,
-          temperature: 0.3,
-          messages: [
-            { role: 'system', content: messages.systemPromptsFinal },
-            {
-              role: 'user',
-              content: `${messages.userPromptsFinal}
-                respond in language: ${locale}
-                Collected Summaries:
-                ${concatenated}`,
-            },
-          ],
-        });
-        controller.enqueue(encode(FINAL_SEPARATOR)); // separator
-        for await (const part of finalCompletion) {
-          const content = part.choices[0]?.delta?.content;
-          if (content) controller.enqueue(encode(content));
-        }
-
         controller.close();
       },
     });
@@ -130,7 +106,7 @@ export async function POST(req: Request) {
     return new Response(stream, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
-        // “chunked” is implicit, but harmless to keep
+        // "chunked" is implicit, but harmless to keep
         'Transfer-Encoding': 'chunked',
         'input_token_count': `${tokenCount}`,
       },
