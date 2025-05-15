@@ -1,10 +1,7 @@
-import { Card } from '@/components/ui/card';
 import { supabase } from '@/lib/supabaseClient';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { Suspense } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowUp } from 'lucide-react';
 import { ScrollToTopButton } from '@/components/ScrollToTopButton';
 import { Folder } from 'lucide-react';
 import Link from 'next/link';
@@ -32,8 +29,8 @@ async function SummaryContent({ summary, folder, locale }: { summary: any; folde
       <Tabs defaultValue="summary" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="summary">{t('summaryTab')}</TabsTrigger>
-          <TabsTrigger value="mindmap">{t('mindmapTab')}</TabsTrigger>
           <TabsTrigger value="transcript">{t('transcriptTab')}</TabsTrigger>
+          <TabsTrigger value="mindmap">{t('mindmapTab')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="summary" className="mt-4 p-0 border-0">
@@ -42,10 +39,6 @@ async function SummaryContent({ summary, folder, locale }: { summary: any; folde
                 <ReactMarkdown>{summary.summary}</ReactMarkdown>
             </div>
           </div>
-        </TabsContent>
-
-        <TabsContent value="mindmap" className="mt-4 p-6 border rounded-md">
-          <p className="text-gray-500">Mindmap feature coming soon!</p>
         </TabsContent>
 
         <TabsContent value="transcript" className="mt-4 p-0 border-0">
@@ -57,6 +50,11 @@ async function SummaryContent({ summary, folder, locale }: { summary: any; folde
             )}
           </div>
         </TabsContent>
+
+        <TabsContent value="mindmap" className="mt-4 p-6 border rounded-md">
+          <p className="text-gray-500">Mindmap coming soon!</p>
+        </TabsContent>
+
       </Tabs>
     </div>
   );

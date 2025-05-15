@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Define a threshold for switching to the long video API
 const TOKEN_THRESHOLD = 20000; // Example value, adjust as needed
+const FINAL_SEPARATOR = ' <<<OVERVIEW_START>>>';
 
 // Assuming FolderType might be used for persistedFolder, define a placeholder if not imported
 type FolderType = any; 
@@ -27,6 +28,8 @@ export default function NewSummaryPage() {
   const { generationData, setGenerationData } = useSummaryGeneration();
   const refreshSidebar = useContext(SidebarRefreshContext);
   
+  const [fullContent, setFullContent] = useState('');
+  const [overviewContent, setOverviewContent] = useState('');
   const [streamingSummaryContent, setStreamingSummaryContent] = useState('');
   // Persisted state for display after context is cleared
   const [persistedTitle, setPersistedTitle] = useState<string | null>(null);
@@ -80,10 +83,11 @@ export default function NewSummaryPage() {
                 videoDescription,
               } = currentTranscriptData;
 
-              const summaryApiEndpoint = tokenCount > TOKEN_THRESHOLD
+              const isLongVideo = tokenCount > TOKEN_THRESHOLD;
+              const summaryApiEndpoint = isLongVideo
                 ? '/api/yt_long'
                 : '/api/summarize';
-              setIsLongVideo(tokenCount > TOKEN_THRESHOLD);
+              setIsLongVideo(isLongVideo);
               console.log(`Using API endpoint: ${summaryApiEndpoint} for token count: ${tokenCount}`);
 
               const response = await fetch(summaryApiEndpoint, {
@@ -110,20 +114,40 @@ export default function NewSummaryPage() {
               const reader = response.body.getReader();
               const decoder = new TextDecoder();
               let content = '';
+              let fullSummary = ''; // Declare fullSummary here
               // The streamingSummaryContent was reset before this operation started.
               // The heuristic check for title !== persistedTitle inside the loop is removed
               // as new video/data handling is now managed by fetchInitiatedForVideoIdRef.
 
+              if (isLongVideo) {
               while (true) {
                 const { done, value } = await reader.read();
-                if (done) break;
+                if (done) {
+                  const separatorIndex = content.indexOf(FINAL_SEPARATOR);
+                  setOverviewContent(content.slice(separatorIndex + FINAL_SEPARATOR.length));
+                  setStreamingSummaryContent(content.slice(0, separatorIndex));
+                  fullSummary = content.slice(separatorIndex + FINAL_SEPARATOR.length) + content.slice(0, separatorIndex); // Assign to the outer scope variable
+                  break;
+                };
+                const chunk = decoder.decode(value);
+                content += chunk;
+                  setStreamingSummaryContent(prev => prev + chunk); // Continue progressive display
+                }
+              } else {
+                while (true) {
+                  const { done, value } = await reader.read();
+                  if (done) {
+                    setStreamingSummaryContent(content);
+                    fullSummary = content;
+                  break;
+                };
                 const chunk = decoder.decode(value);
                 content += chunk;
                 setStreamingSummaryContent(prev => prev + chunk); // Continue progressive display
               }
+              }
 
-              // Reverted: No special processing after stream. Save the full content.
-              saveSummary(content, currentTranscriptData, currentFolderForSummary);
+              saveSummary(fullSummary, currentTranscriptData, currentFolderForSummary);
             } catch (err: any) {
               console.error("Streaming error:", err);
               setError(err.message || t('errorGeneratingSummary'));
@@ -276,11 +300,25 @@ export default function NewSummaryPage() {
           <Tabs defaultValue="summary" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="summary">{t('summaryTab')}</TabsTrigger>
-              <TabsTrigger value="mindmap">{t('mindmapTab')}</TabsTrigger>
               <TabsTrigger value="transcript">{t('transcriptTab')}</TabsTrigger>
+              <TabsTrigger value="mindmap">{t('mindmapTab')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="summary" className="mt-4 p-0 border-0">
+              {isStreaming && !overviewContent ? (
+                <div className="prose prose-zinc max-w-none p-6 border rounded-md bg-gray-50">
+                  <Skeleton className="h-6 w-3/4 mb-6" /> {/* Placeholder for title */}
+                  <Skeleton className="h-4 w-full mb-3" /> {/* Placeholder for text */}
+                  <Skeleton className="h-4 w-full mb-3" /> {/* Placeholder for text */}
+                  <Skeleton className="h-4 w-full mb-3" /> {/* Placeholder for text */}
+                </div>
+              ) : (
+                isLongVideo && overviewContent && (
+                  <div className="text-black [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1:not(:first-child)]:mt-10 [&>h2]:mb-5 [&>h2:not(:first-child)]:mt-8 [&>h3]:mb-4 [&>h3:not(:first-child)]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-black">
+                    <ReactMarkdown>{overviewContent}</ReactMarkdown>
+                  </div>
+                )
+              )}
               {(isStreaming && !streamingSummaryContent) && (
                 <div className="space-y-4 p-6 border rounded-md">
                   <Skeleton className="h-6 w-3/4 mb-6" />
@@ -302,10 +340,6 @@ export default function NewSummaryPage() {
               )}
             </TabsContent>
 
-            <TabsContent value="mindmap" className="mt-4 p-6 border rounded-md">
-              <p className="text-gray-500">Mindmap feature coming soon!</p>
-            </TabsContent>
-
             <TabsContent value="transcript" className="mt-4 p-0 border-0">
               {persistedTranscriptText ? (
                 <div className="p-4 border rounded-md">
@@ -314,6 +348,10 @@ export default function NewSummaryPage() {
               ) : (
                 <p className="text-gray-500 p-6 border rounded-md">No transcript data available.</p>
               )}
+            </TabsContent>
+
+            <TabsContent value="mindmap" className="mt-4 p-0 border-0">
+              <p className="text-gray-500 p-6 border rounded-md">Mindmap coming soon!</p>
             </TabsContent>
           </Tabs>
         </>
