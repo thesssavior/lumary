@@ -93,7 +93,7 @@
     "statusActive": "구독이 활성화되었습니다!",
     "newSummaryButton": "새로운 요약"
   },
-  "transcriptDisabled": "이 영상은 요약할 수 없습니다.\n가능한 이유:\n1. 영상이 업로드된 지 얼마 안 됐어요.\n2. 영상이 너무 길어요.\n3. 영상 조회수가 너무 적어요.\n4. 유튜버가 접근 제한을 두었어요.\n다른 영상을 시도해 주세요.",
+  "transcriptDisabled": "자동 생성된 자막이 없는 영상은 요약할 수 없습니다.",
   "Index": {
   },
   "Errors": {
