@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import enMessages from '@/messages/en.json';
 import koMessages from '@/messages/ko.json';
-import { calculateTokenCount } from '@/lib/utils';
 
 // ────────────────────────────────────────────────────────────────
 // constants & helpers
