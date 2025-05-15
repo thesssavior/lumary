@@ -119,32 +119,24 @@ export default function NewSummaryPage() {
               // The heuristic check for title !== persistedTitle inside the loop is removed
               // as new video/data handling is now managed by fetchInitiatedForVideoIdRef.
 
-              if (isLongVideo) {
               while (true) {
                 const { done, value } = await reader.read();
                 if (done) {
-                  const separatorIndex = content.indexOf(FINAL_SEPARATOR);
-                  setOverviewContent(content.slice(separatorIndex + FINAL_SEPARATOR.length));
-                  setStreamingSummaryContent(content.slice(0, separatorIndex));
-                  fullSummary = content.slice(separatorIndex + FINAL_SEPARATOR.length) + content.slice(0, separatorIndex); // Assign to the outer scope variable
-                  break;
-                };
-                const chunk = decoder.decode(value);
-                content += chunk;
-                  setStreamingSummaryContent(prev => prev + chunk); // Continue progressive display
-                }
-              } else {
-                while (true) {
-                  const { done, value } = await reader.read();
-                  if (done) {
+                  if (isLongVideo) {
+                    const separatorIndex = content.indexOf(FINAL_SEPARATOR);
+                    setOverviewContent(content.slice(separatorIndex + FINAL_SEPARATOR.length));
+                    setStreamingSummaryContent(content.slice(0, separatorIndex));
+                    fullSummary = content.slice(separatorIndex + FINAL_SEPARATOR.length) + content.slice(0, separatorIndex); // Assign to the outer scope variable
+                  } else {
                     setStreamingSummaryContent(content);
+                    setOverviewContent('');
                     fullSummary = content;
+                  }
                   break;
                 };
                 const chunk = decoder.decode(value);
                 content += chunk;
                 setStreamingSummaryContent(prev => prev + chunk); // Continue progressive display
-              }
               }
 
               saveSummary(fullSummary, currentTranscriptData, currentFolderForSummary);
