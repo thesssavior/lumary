@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useContext } from 'react';
 import { useTranslations } from 'next-intl';
-import { Book, Search, Clock, Folder, ChevronDown, ChevronRight, User, Plus, LogOut, MoreHorizontal, Crown, Settings } from 'lucide-react';
+import { Book, Search, Clock, Folder, ChevronDown, ChevronRight, User, Plus, LogOut, MoreHorizontal, Crown, Settings, Home } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
@@ -46,7 +46,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const [folderOpen, setFolderOpen] = useState<{ [folderId: string]: boolean }>({});
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
 
-  // Check session
+  // Check session on mount
   useEffect(() => {
     fetch('/api/auth/session').then(async (res) => {
       if (res.ok) {
@@ -58,7 +58,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
     });
   }, []);
 
-  // Fetch folders
+  // Fetch folders using api/folders
   const fetchFolders = async () => {
     setIsLoadingFolders(true);
     try {
@@ -85,7 +85,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
     }
   };
 
-  // Fetch summaries for active folder
+  // Fetch summaries for active folder using api/folders/${folderId}/summaries
   const fetchSummaries = async (folderId: string) => {
     setLoadingSummaries(prev => ({ ...prev, [folderId]: true }));
     try {
@@ -103,6 +103,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
     }
   };
 
+  // Fetch folders on signin, refreshKey
   useEffect(() => {
     if (isSignedIn) {
       setIsLoadingFolders(true);
@@ -115,6 +116,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
     }
   }, [isSignedIn, refreshKey]);
 
+  // Fetch summaries for active folder on active folder change, refreshKey
   useEffect(() => {
     if (activeFolder) {
       setFolderOpen({ [activeFolder.id]: true });
@@ -127,6 +129,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
     }
   }, [activeFolder, refreshKey]);
 
+  // Fetch recent summaries on signin, refreshKey
   useEffect(() => {
     if (isSignedIn) {
       fetch('/api/folders/recent-summaries')
@@ -203,7 +206,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
     }
   };
 
-  // Example: Detect in-app browsers (client only)
+  // warn kakaotalk in app browser users
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const ua = navigator.userAgent || navigator.vendor;
@@ -273,7 +276,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
           <li>
             <Link href={`/${locale}/`}>
               <div className="flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 font-medium">
-                <Book className="w-4 h-4" /> {t('Sidebar.home', { defaultValue: '홈' })}
+                <Home className="w-4 h-4" /> {t('Sidebar.home', { defaultValue: '홈' })}
               </div>
             </Link>
           </li>

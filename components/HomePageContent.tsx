@@ -1,30 +1,26 @@
 'use client';
 
 import { useSearchParams, useParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import { VideoSummary } from "@/components/video-summary";
 import { HomeHeader } from "@/components/home-header";
 import { Suspense } from "react";
+import { VideoInputForm } from '@/components/VideoInputForm';
 
 export default function HomePageContent() {
-  const t = useTranslations();
   const searchParams = useSearchParams();
   const params = useParams();
-  const isDevMode = searchParams.get('dev') === 'true';
   const locale = params.locale as string || 'ko'; // Get locale from client-side params
+  const isDevMode = searchParams.get('dev') === 'true';
 
   // if (isDevMode) {
   //   // Render the original page content for developers
     return (
-      <div className="container mx-auto px-4 max-w-3xl mt-16">
-        <div className='mb-4'>
+        <div className="container mx-auto px-4 max-w-3xl mt-16">
           <HomeHeader locale={locale} />
+          <Suspense fallback={<div>Loading Summary...</div>}>
+            <VideoInputForm />
+          </Suspense>
+          {/* Pass videoIdFromUrl to FullTranscriptViewer */}
         </div>
-        {/* Wrap VideoSummary in Suspense if it fetches data */}
-        <Suspense fallback={<div>Loading Summary...</div>}>
-          <VideoSummary />
-        </Suspense>
-      </div>
     );
   // } else {
   //   // Render the maintenance message for regular users

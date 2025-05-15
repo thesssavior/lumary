@@ -13,6 +13,8 @@ import ReactMarkdown from 'react-markdown';
 import { signIn, useSession } from "next-auth/react";
 import { SidebarRefreshContext, useFolder, FolderContext } from './SidebarLayout';
 import { LanguageSwitcher } from './language-switcher';
+import { FullTranscriptViewer } from "./FullTranscriptViewer";
+
 export function VideoSummary() {
   const t = useTranslations();
   const params = useParams();
@@ -20,7 +22,16 @@ export function VideoSummary() {
   const locale = params.locale as string;
   const [url, setUrl] = useState("");
   const [summary, setSummary] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoadingTranscript, setIsLoadingTranscript] = useState(false);
+  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+  const [transcriptInfo, setTranscriptInfo] = useState<{
+    transcript: string;
+    title: string;
+    description: string;
+    tokenCount: number;
+    videoId: string;
+    locale: string;
+  } | null>(null);
   const [error, setError] = useState("");
   const [folders, setFolders] = useState<{ id: string; name: string }[]>([]);
   const { activeFolder, setActiveFolder, openSubscriptionModal } = useFolder();
@@ -56,6 +67,7 @@ export function VideoSummary() {
     }
   }, []); // Run only once on mount
 
+  // Extract video ID from URL
   useEffect(() => {
     const youtubeParam = searchParams.get('youtube');
     if (youtubeParam) {
@@ -67,6 +79,7 @@ export function VideoSummary() {
     }
   }, [searchParams]);
 
+  // Check if the user is using an in-app browser
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const ua = navigator.userAgent || navigator.vendor;
@@ -78,6 +91,7 @@ export function VideoSummary() {
     }
   }, []);
 
+  // Extract video ID from URL
   const extractVideoId = (url: string): string | null => {
     const patterns = [
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/|m\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
@@ -95,9 +109,9 @@ export function VideoSummary() {
     e.preventDefault();
     setError("");
     setSummary("");
+    setTranscriptInfo(null);
     setShowTokenLimitUpgrade(false);
     
-    // Check if user needs to log in
     if (!session) {
       if (trialUsed) {
         setShowLoginPrompt(true);
@@ -105,7 +119,7 @@ export function VideoSummary() {
       }
     }
     
-    setLoading(true);
+    setIsLoadingTranscript(true);
 
     try {
       const videoId = extractVideoId(url);
@@ -113,13 +127,45 @@ export function VideoSummary() {
         throw new Error(t('error'));
       }
 
-      // First get the summary
-      const summaryResponse = await fetch('/api/summarize', {
+      // Step 1: Call /api/transcript
+      const transcriptResponse = await fetch('/api/transcript', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoId, locale }),
+      });
+
+      if (!transcriptResponse.ok) {
+        const errorData = await transcriptResponse.json();
+        throw new Error(errorData.error || 'Failed to fetch transcript');
+      }
+
+      const fetchedTranscriptData = await transcriptResponse.json();
+      setTranscriptInfo(fetchedTranscriptData);
+      setIsLoadingTranscript(false);
+      setIsLoadingSummary(true);
+
+      // Step 2: Decide which summarization API to call and then call it
+      const YOUR_TOKEN_THRESHOLD = 20000; 
+
+      const summaryApiEndpoint = fetchedTranscriptData.tokenCount > YOUR_TOKEN_THRESHOLD
+        ? '/api/yt_long' // Placeholder for your new route for long videos
+        : '/api/summarize';
+
+      // destructure the fetchedTranscriptData, except for videoId, locale
+      const {transcript, title, description, tokenCount} = fetchedTranscriptData;
+      const summaryResponse = await fetch(summaryApiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ videoId, locale }),
+        body: JSON.stringify({ 
+          videoId: videoId,
+          locale: locale,
+          transcriptText: transcript,
+          title: title,
+          videoDescription: description,
+          tokenCount: tokenCount,
+        }),
       });
 
       if (!summaryResponse.ok) {
@@ -182,17 +228,13 @@ export function VideoSummary() {
         setSummary(result);
       }
       
-      // If the user is anonymous, mark the trial as used after successful summary
       if (!session) {
         setTrialUsed(true);
-        if (typeof window !== 'undefined') { // Ensure localStorage is available
-            localStorage.setItem('trialUsed', 'true'); // Persist trial usage
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('trialUsed', 'true');
         }
       } else {
-        // Only attempt to save if the user is logged in
-  
-        // Save to the active folder if available and user is logged in
-        if (activeFolder) {
+        if (activeFolder && fetchedTranscriptData) {
           try {
             console.log('Saving summary to folder:', activeFolder);
             const saveResponse = await fetch(`/api/folders/${activeFolder.id}/summaries`, {
@@ -217,22 +259,23 @@ export function VideoSummary() {
             console.error('Error saving summary:', saveError);
           }
         } else {
-          console.log('No active folder available to save summary');
+          console.log('No active folder or transcript data available to save summary');
         }
       }
     } catch (err: any) {
       setError(err.message);
-      // If the error isn't the specific guest token limit error, ensure the banner isn't shown
       if (err.message !== t('unpaidInputTooLong')) {
           setShowTokenLimitUpgrade(false);
       }
     } finally {
-      setLoading(false);
+      setIsLoadingTranscript(false);
+      setIsLoadingSummary(false);
     }
   };
 
   const displaySummary = summary;
-  const showLoadingSkeleton = loading && !displaySummary;
+  const showLoadingSkeleton = (isLoadingTranscript || isLoadingSummary) && !displaySummary;
+  const overallLoading = isLoadingTranscript || isLoadingSummary;
 
   return (
     <>
@@ -259,10 +302,13 @@ export function VideoSummary() {
             </div>
           </div>
         )}
+        {/* Language switcher */}
         <div className="flex justify-end">
           <LanguageSwitcher />
         </div>
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Input field */}
           <div className="flex gap-2 items-center">
             <div className="relative flex-1">
               <Input
@@ -288,14 +334,15 @@ export function VideoSummary() {
                 </button>
               )}
             </div>
+            {/* Submit button */}
             <Button 
               type="submit" 
-              disabled={loading}
+              disabled={overallLoading}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               <YoutubeIcon className="mr-2 h-4 w-4" />
-              <span className="block sm:hidden">{loading ? t('loadingShort') : t('getSummaryShort')}</span>
-              <span className="hidden sm:block">{loading ? t('loading') : t('getSummary')}</span>
+              <span className="block sm:hidden">{overallLoading ? t('loadingShort') : t('getSummaryShort')}</span>
+              <span className="hidden sm:block">{overallLoading ? t('loading') : t('getSummary')}</span>
             </Button>
           </div>
         </form>
@@ -304,6 +351,7 @@ export function VideoSummary() {
         {!session && (
             <p className="text-sm text-zinc-500 text-center mt-2">{t('trialInfo')}</p>
         )}
+
         {/* In-app browser warning */}
         {inAppBrowser && (
           <div className="bg-red-100 text-red-700 p-4 rounded-md text-base font-semibold flex flex-col items-center mb-4">
@@ -320,12 +368,14 @@ export function VideoSummary() {
           </div>
         )}
 
+        {/* Error message */}
         {error && (
           <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-600">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+
         {/* Conditionally render the Premium plan banner for token limits */}
         {/* {showTokenLimitUpgrade && (
           <button
@@ -335,6 +385,7 @@ export function VideoSummary() {
             {t('subCTA')} <span className="underline font-bold">{t('upgrade')}</span>
           </button>
         )} */}
+
         {/* Skeleton loader shown when loading and no summary yet */}
         {showLoadingSkeleton && (
           <Card className="p-6 bg-white border-zinc-200">
@@ -350,6 +401,7 @@ export function VideoSummary() {
           </Card>
         )}
 
+        {/* Display the summary */}
         {summary && (
           <Card className="p-6 bg-white border-zinc-200">
             <div className="prose prose-zinc max-w-none">
@@ -360,6 +412,10 @@ export function VideoSummary() {
               </div>
             </div>
           </Card>
+        )}
+
+        {transcriptInfo && (
+          <FullTranscriptViewer transcript={transcriptInfo.transcript} />
         )}
       </div>
     </>

@@ -41,7 +41,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
   return (
     <FolderContext.Provider value={{ activeFolder, setActiveFolder, openSubscriptionModal }}>
       <SidebarRefreshContext.Provider value={refreshSidebar}>
-        <div className="flex h-full relative">
+        <div className="flex relative flex-1">
           <button
             onClick={() => setOpen((o) => !o)}
             className={`fixed top-24 ${open ? 'left-72' : 'left-4'} z-20 flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded focus:outline-none shadow-md`}
@@ -59,7 +59,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
           </aside>
 
           {/* Main content */}
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1">
             {children}
           </main>
 

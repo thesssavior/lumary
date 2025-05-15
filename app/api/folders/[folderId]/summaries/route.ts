@@ -3,26 +3,6 @@ import { auth } from '@/auth';
 import { supabase } from '@/lib/supabaseClient';
 import { calculateTokenCount } from '@/lib/utils';
 
-const fetchYoutubeTitle = async (videoId: string) => {
-  const apiKey = process.env.YOUTUBE_API_KEY;
-  if (!apiKey) {
-    console.error('YOUTUBE_API_KEY is not set');
-    return null;
-  }
-  const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    console.error('YouTube API response not ok:', res.status, await res.text());
-    return null;
-  }
-  const data = await res.json();
-  if (!data.items || !data.items[0]) {
-    console.error('YouTube API returned no items:', JSON.stringify(data));
-    return null;
-  }
-  return data.items[0].snippet.title;
-}
-
 // GET /api/folders/[folderId]/summaries
 export async function GET(request: Request, { params }: { params: Promise<{ folderId: string }> }) {
   try {
@@ -51,64 +31,67 @@ export async function GET(request: Request, { params }: { params: Promise<{ fold
 export async function POST(req: Request, { params }: { params: Promise<{ folderId: string }> }) {
   try {
     const { folderId } = await params;
-
     const session = await auth();
     
-    if (!session?.user) {
-      console.log('No session found in summaries API');
+    if (!session?.user?.id) {
+      console.log('No session user ID found in summaries API');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    // First verify the folder belongs to the user
-    const { data: folder, error: folderError } = await supabase
-      .from('folders')
-      .select('id')
-      .eq('id', folderId)
-      .eq('user_id', session.user.id)
-      .single();
-
-    if (folderError) {
-      console.error('Folder verification error:', folderError);
-      return NextResponse.json({ error: 'Folder not found or unauthorized' }, { status: 403 });
-    }
+    
     const body = await req.json();
-    const { videoId, video_title, summary, input_token_count, fetcher } = body;
+    const {
+      videoId,
+      summary,
+      title,
+      name,
+      input_token_count,
+      transcript,
+      description,
+      locale,
+      fetcher
+    } = body;
 
-    if (!videoId || !summary) {
-      console.error('Missing required fields:', { videoId, summary });
-      return NextResponse.json({ error: 'Missing videoId or summary' }, { status: 400 });
+    if (!videoId || !summary || !(title || name)) {
+      console.error('Missing required fields:', { videoId, summary, title, name });
+      return NextResponse.json({ error: 'Missing videoId, summary, or title/name' }, { status: 400 });
     }
 
-    // Calculate token count of the summary text
     const output_token_count = calculateTokenCount(summary);
+
+    const insertData = {
+      folder_id: folderId,
+      user_id: session.user.id,
+      video_id: videoId,
+      summary: summary,
+      name: name || title,
+      input_token_count: input_token_count,
+      output_token_count: output_token_count,
+      transcript: transcript,
+      description: description,
+      locale: locale,
+      fetcher: fetcher
+    };
 
     const { data: summaryData, error: summaryError } = await supabase
       .from('summaries')
-      .insert({
-        folder_id: folderId,
-        video_id: videoId,
-        summary: summary,
-        name: video_title,
-        input_token_count: input_token_count,
-        output_token_count: output_token_count,
-        user_id: session.user.id,
-        fetcher: fetcher,
-      })
+      .insert(insertData)
       .select()
       .single();
 
     if (summaryError) {
-      console.error('Summary creation error:', summaryError);
-      return NextResponse.json({ error: summaryError.message }, { status: 500 });
+      console.error('Summary creation error:', summaryError.message, summaryError.details);
+      return NextResponse.json({ error: `Failed to save summary: ${summaryError.message}` }, { status: 500 });
     }
-    // Return the saved summary data along with the token count
-    return NextResponse.json({ ...summaryData, input_token_count, output_token_count });
-  } catch (error) {
-    console.error('Unexpected error in summaries API:', error);
+    
+    return NextResponse.json(summaryData);
+
+  } catch (error: any) {
+    console.error('Unexpected error in POST /api/folders/[folderId]/summaries:', error);
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-  // Fallback: should never reach here, but just in case
-  return NextResponse.json({ error: 'No response generated' }, { status: 500 });
 }
 
 // PATCH /api/folders/[folderId]/summaries
