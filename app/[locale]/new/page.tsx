@@ -272,7 +272,7 @@ export default function NewSummaryPage() {
             )}
             <h1 className="text-4xl font-bold my-4">{currentDisplayTitle}</h1>
             {(isStreaming || isSaving) && !error && (
-              <p className="text-sm text-blue-600">
+              <p className="text-sm text-gray-500">
                 {isStreaming && t('generatingSummaryWait')}
                 {isSaving && !isStreaming && t('savingSummaryWait')}
               </p>
@@ -297,7 +297,7 @@ export default function NewSummaryPage() {
             </TabsList>
 
             <TabsContent value="summary" className="mt-4 p-0 border-0">
-              {isStreaming && !overviewContent ? (
+              {isLongVideo && isStreaming && !overviewContent ? (
                 <div className="prose prose-zinc max-w-none p-6 border rounded-md bg-gray-50">
                   <Skeleton className="h-6 w-3/4 mb-6" /> {/* Placeholder for title */}
                   <Skeleton className="h-4 w-full mb-3" /> {/* Placeholder for text */}
@@ -305,7 +305,7 @@ export default function NewSummaryPage() {
                   <Skeleton className="h-4 w-full mb-3" /> {/* Placeholder for text */}
                 </div>
               ) : (
-                isLongVideo && overviewContent && (
+                overviewContent && (
                   <div className="text-black [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1:not(:first-child)]:mt-10 [&>h2]:mb-5 [&>h2:not(:first-child)]:mt-8 [&>h3]:mb-4 [&>h3:not(:first-child)]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-black">
                     <ReactMarkdown>{overviewContent}</ReactMarkdown>
                   </div>
