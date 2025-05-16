@@ -49,7 +49,7 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
     setIsLoading(true);
     
     try {
-      const response = await fetch('/api/vote', {
+      const response = await fetch('/api/feature-board', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -143,49 +143,39 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
 
 const FeatureBoard = () => {
   const t = useTranslations('FeatureBoard');
+  const [features, setFeatures] = useState<Feature[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const initialFeatures: Feature[] = [
-    {
-      id: "312cd5b3-4fa5-4bbd-82cb-96d206f86dfe",
-      title: "긴 영상 요약",
-      description: "1-2 시간 넘어가도 속도, 퀄리티 유지.",
-      status: "shipped",
-      votes: 10,
-      date: "25.5.16",
-    },
-    {
-      id: "67c603fc-18b5-4935-bad8-fe947d2382d8",
-      title: "자막",
-      description: "영상 전체 자막 확인 가능",
-      status: "shipped",
-      votes: 5,
-      date: "25.5.16",
-    },
-    {
-      id: "d52aece8-1fac-4e29-97cb-77779d4ddc0f",
-      title: "마인드맵",
-      description: "마인드맵으로 한눈에 보이는 내용",
-      status: "in-progress",
-      votes: 8,
-      date: "25.5.20",
-    },
-    {
-      id: "26ece47c-2f57-4538-82ec-8b83e71c29a4",
-      title: "다양한 파일 지원",
-      description: "오디오, PDF, PPT 등 다른 파일도 요약, 설명, 생성 제공",
-      status: "planned",
-      votes: 11,
-      date: "25.5.30",
-    },
-    {
-      id: "0e5301fd-07a2-45ce-b202-d997c64445f2",
-      title: "실시간 대화 AI",
-      description: "오디오, 텍스트 모두 지원",
-      status: "considering",
-      votes: 5,
-      date: null,
-    },
-  ];
+  useEffect(() => {
+    const fetchFeatures = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/feature-board');
+        if (!response.ok) {
+          throw new Error(t('errors.fetchFeaturesFailed'));
+        }
+        const data = await response.json();
+        setFeatures(data);
+      } catch (err: any) {
+        setError(err.message || t('errors.fetchFeaturesFailedUnexpected'));
+        console.error("Fetch features error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFeatures();
+  }, [t]);
+
+
+  if (isLoading) {
+    return <div>{t('loadingFeatures')}</div>; // Or a spinner component
+  }
+
+  if (error) {
+    return <div className="text-red-500">{t('errors.fetchFeaturesError', { error: error })}</div>;
+  }
 
   return (
     <div className="space-y-6 mt-8">
@@ -194,7 +184,7 @@ const FeatureBoard = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="space-y-4">
           <h3 className="font-medium text-base text-gray-700 border-b pb-2 border-gray-200">{t('columnPlanned')}</h3>
-          {initialFeatures
+          {features
             .filter(feature => feature.status === "planned")
             .map(feature => (
               <FeatureCard key={feature.id} feature={feature} />
@@ -203,7 +193,7 @@ const FeatureBoard = () => {
         
         <div className="space-y-4">
           <h3 className="font-medium text-base text-gray-700 border-b pb-2 border-gray-200">{t('columnInProgress')}</h3>
-          {initialFeatures
+          {features
             .filter(feature => feature.status === "in-progress")
             .map(feature => (
               <FeatureCard key={feature.id} feature={feature} />
@@ -212,7 +202,7 @@ const FeatureBoard = () => {
         
         <div className="space-y-4">
           <h3 className="font-medium text-base text-gray-700 border-b pb-2 border-gray-200">{t('columnShipped')}</h3>
-          {initialFeatures
+          {features
             .filter(feature => feature.status === "shipped")
             .map(feature => (
               <FeatureCard key={feature.id} feature={feature} />
@@ -221,7 +211,7 @@ const FeatureBoard = () => {
         
         <div className="space-y-4">
           <h3 className="font-medium text-base text-gray-700 border-b pb-2 border-gray-200">{t('columnConsidering')}</h3>
-          {initialFeatures
+          {features
             .filter(feature => feature.status === "considering")
             .map(feature => (
               <FeatureCard key={feature.id} feature={feature} />

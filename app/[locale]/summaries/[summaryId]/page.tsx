@@ -13,7 +13,7 @@ async function SummaryContent({ summary, folder, locale }: { summary: any; folde
   const t = await getTranslations({locale});
 
   return (
-    <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-6">
+    <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
         <Link href={`/${summary.locale}/folders/${folder.id}`} className="flex items-center gap-1 hover:text-gray-700">
           <Folder className="w-4 h-4" />

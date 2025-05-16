@@ -1,6 +1,38 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 
+// Define the expected structure of a feature, matching the frontend type
+type Status = "planned" | "in-progress" | "shipped" | "considering";
+
+interface Feature {
+  id: string;
+  title: string;
+  description: string;
+  status: Status;
+  votes: number;
+  date: string | null;
+}
+
+export async function GET() {
+  try {
+    const { data, error } = await supabase
+      .from('feature_board')
+      .select('*'); // Select all columns
+
+    if (error) {
+      console.error('Supabase fetch error:', error);
+      return NextResponse.json({ error: 'Failed to fetch features from the database.' }, { status: 500 });
+    }
+
+    const features: Feature[] = data || [];
+    return NextResponse.json(features, { status: 200 });
+
+  } catch (error: any) {
+    console.error('API Route /api/feature-board GET error:', error);
+    return NextResponse.json({ error: 'An unexpected error occurred while fetching features.' }, { status: 500 });
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -34,7 +66,7 @@ export async function POST(req: Request) {
       .from('feature_board')
       .update({ votes: newVotes })
       .eq('id', featureId)
-      .select('id, votes')
+      .select('id, title, description, status, votes, date') // Select all fields to return the updated feature
       .single();
 
     if (updateError) {
@@ -45,7 +77,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, updatedFeature: updateData }, { status: 200 });
 
   } catch (error: any) {
-    console.error('API Route /api/vote error:', error);
+    console.error('API Route /api/feature-board POST error:', error);
     if (error instanceof SyntaxError) {
         return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
     }

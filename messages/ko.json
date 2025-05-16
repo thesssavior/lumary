@@ -150,7 +150,8 @@
     "description": "여러분의 피드백과 아이디어로 Lumary의 미래를 함께 만들어가요.",
     "footerText": "footer",
     "contactTab": "문의",
-    "featureBoardTab": "서비스 로드맵"
+    "featureBoardTab": "서비스 로드맵",
+    "loadingFeatures": "로드맵 로딩 중..."
   },
   "contactSection": {
     "contactFeedbackTitle": "문의 및 피드백",
@@ -184,7 +185,8 @@
     "columnPlanned": "예정",
     "columnInProgress": "진행 중",
     "columnShipped": "출시 완료",
-    "columnConsidering": "검토 중"
+    "columnConsidering": "검토 중",
+    "loadingFeatures": "로드맵 로딩 중..."
   },
   "SettingsPage": {
     "title": "설정",
