@@ -2,15 +2,16 @@
 
 import React, { useEffect, useState, useContext } from 'react';
 import { useTranslations } from 'next-intl';
-import { Book, Search, Clock, Folder, ChevronDown, ChevronRight, User, Plus, LogOut, MoreHorizontal, Crown, Settings, Home } from 'lucide-react';
+import { Book, Search, Clock, Folder, ChevronDown, ChevronRight, User, Plus, LogOut, MoreHorizontal, Crown, Settings, Home, HelpCircle } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { signIn, signOut } from 'next-auth/react';
 import Image from 'next/image';
 import { useSession } from "next-auth/react";
 import { useFolder, FolderContext } from './SidebarLayout';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from './ui/button';
 
 interface FolderType { id: string; name: string; }
 interface SummaryType { id: string; video_id: string; summary: string; name: string; }
@@ -37,7 +38,6 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const [recentOpen, setRecentOpen] = useState(true);
   const [knowledgeOpen, setKnowledgeOpen] = useState(true);
   const [recents, setRecents] = useState<SummaryType[]>([]);
-  const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
   const [inAppBrowser, setInAppBrowser] = useState(false);
@@ -262,12 +262,6 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
             <Image src="/lumary.png" alt="Lumary Logo" width={120} height={120} className="w-full h-auto max-w-[120px]" />
           </Link>
         </span>
-        {/* <button
-          className="mt-4 bg-black text-white px-2 py-2 rounded text-base font-medium hover:bg-zinc-900 transition-colors"
-          onClick={() => router.push(`/${locale}`)}
-        >
-          {t('Sidebar.newNote', { defaultValue: '새로운 노트' })}
-        </button> */}
       </div>
 
       {/* Navigation */}
@@ -445,6 +439,21 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
         </ul>
       </nav>
 
+      <div className="px-4 space-y-3 border-t text-center">
+        <Link href="/community">
+          <Button 
+            variant="ghost" 
+          title={t('helpAndCommunity')}
+          >
+            <span className="sm:hidden"><HelpCircle className="h-5 w-5" /></span>
+            <span className="hidden sm:flex items-center space-x-2 gap-x-1">
+              {t('helpAndCommunity')}
+              <HelpCircle className="h-5 w-5" />
+            </span>
+          </Button>
+        </Link>
+      </div>
+
       {/* --- Footer Area Redesign --- */}
       <div className="px-4 py-3 space-y-3 border-t">
         {/* Upgrade Section */}
@@ -481,9 +490,11 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
             <p className="text-sm font-medium truncate text-gray-800">{session?.user?.name}</p>
             <p className="text-xs truncate text-gray-500">{session?.user?.email}</p>
           </div>
-          <button className="text-gray-400 hover:text-gray-700" title="Settings"> {/* Add functionality later */}
-            <Settings className="w-5 h-5" />
-          </button>
+          <Link href="/settings" className="flex items-center">
+            <button className="text-gray-400 hover:text-gray-700" title="Settings"> {/* Add functionality later */}
+              <Settings className="w-5 h-5" />
+            </button>
+          </Link>
           {/* Add Sign Out Button Here? Or in a dropdown from Settings? */}
            <button onClick={() => signOut()} className="text-gray-400 hover:text-red-600" title="Sign Out">
              <LogOut className="w-5 h-5" />

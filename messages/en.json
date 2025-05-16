@@ -26,10 +26,13 @@
   "inputTooLong": "The video is too long to summarize. Please try a shorter video.",
   "unpaidInputTooLong": "The video is too long to summarize. Please try a shorter video.",
   "guestTokenLimit": "Sign in to use longer videos and more powerful AI features.",
+  "guestInputTooLong": "The video is too long to summarize. Please try a shorter video.",
+  "dailyLimitExceededError": "You have reached your daily limit. Please try again tomorrow.",
   "subCTA": "Upgrade to Premium for unlimited summaries and more features.",
   "upgrade": "Upgrade plan",
   "startForFree": "Start for free",
   "getHelp": "Support",
+  "helpAndCommunity": "Support & Community",
   "transcriptRequiredError": "This video does not have a transcript. Please try another video.",
   "Sidebar": {
     "newNote": "New Note",
@@ -134,5 +137,69 @@
     "errorNoTextExtracted": "No text extracted.",
     "errorUnknown": "An unknown error occurred.",
     "errorExtractionFailed": "Text extraction failed"
+  },
+  "communityPage": {
+    "title": "Community",
+    "description": "Help shape the future of our product by sharing your feedback and ideas.",
+    "footerText": "footer",
+    "contactTab": "Contact & Feedback",
+    "featureBoardTab": "Product Roadmap"
+  },
+  "contactSection": {
+    "contactFeedbackTitle": "Contact & Feedback",
+    "nameLabel": "Name",
+    "namePlaceholder": "Your name",
+    "emailLabel": "Email",
+    "emailPlaceholder": "your.email@example.com",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Share your thoughts, feedback, or questions...",
+    "sendingButton": "Sending...",
+    "sendMessageButton": "Send Message",
+    "toastMessageSentTitle": "Message sent",
+    "toastMessageSentDescription": "Thank you for your feedback! We'll get back to you soon.",
+    "directContactTitle": "Direct Contact",
+    "directContactDescription": "Get the fastest response.",
+    "emailCardTitle": "Email",
+    "emailAddress": "ssaviormessiah@gmail.com",
+    "twitterCardTitle": "Twitter/X",
+    "twitterHandle": "@example",
+    "kakaoCardTitle": "KakaoTalk",
+    "kakaoHandle": "https://open.kakao.com/o/sip4wCwh"
+  },
+  "FeatureBoard": {
+    "statusPlanned": "Planned",
+    "statusInProgress": "In Progress",
+    "statusShipped": "Shipped",
+    "statusConsidering": "Considering",
+    "expectedDate": "Expected: {date}",
+    "shippedDate": "Shipped: {date}",
+    "productRoadmapTitle": "Product Roadmap",
+    "columnPlanned": "Planned",
+    "columnInProgress": "In Progress",
+    "columnShipped": "Shipped",
+    "columnConsidering": "Considering"
+  },
+  "SettingsPage": {
+    "title": "Settings",
+    "mustBeLoggedIn": "You must be logged in to view this page.",
+    "confirmDeleteAccount": "Are you sure you want to delete your account? This action cannot be undone.",
+    "deleteAccountNotImplemented": "Account deletion feature is not yet implemented.",
+    "deleteAccountError": "Failed to delete account: {error}",
+    "accountSection": {
+      "title": "Account",
+      "description": "Manage your account details.",
+      "emailLabel": "Email",
+      "noEmail": "No email associated with this account.",
+      "signOutButton": "Sign Out",
+      "deleteAccountButton": "Delete Account"
+    },
+    "preferencesSection": {
+      "title": "Preferences",
+      "description": "Customize your experience.",
+      "languageLabel": "Language",
+      "selectLanguagePlaceholder": "Select language",
+      "english": "English",
+      "korean": "Korean"
+    }
   }
 } 

@@ -25,7 +25,7 @@ export function VideoInputForm() {
   const locale = params.locale as string;
   const { activeFolder, openSubscriptionModal } = useFolder();
   const { setGenerationData } = useSummaryGeneration();
-
+  
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -34,6 +34,7 @@ export function VideoInputForm() {
   const [trialUsed, setTrialUsed] = useState(false);
   const [inAppBrowser, setInAppBrowser] = useState(false);
   const [showTokenLimitUpgrade, setShowTokenLimitUpgrade] = useState(false);
+  const [dailyLimitExceeded, setDailyLimitExceeded] = useState(false);
 
   // Check localStorage for trial status on mount
   useEffect(() => {
@@ -85,10 +86,24 @@ export function VideoInputForm() {
     e.preventDefault();
     setError("");
     setShowTokenLimitUpgrade(false);
+    setDailyLimitExceeded(false);
 
     if (!session && trialUsed) {
       setShowLoginPrompt(true);
       return;
+    }
+    
+    // Check daily limit for signed-in free users
+    if (session && session.user.plan !== 'premium') {
+      const today = new Date().toDateString();
+      const lastGenerationDate = localStorage.getItem('freeUserLastGenerationDate');
+
+      if (lastGenerationDate === today) {
+        setDailyLimitExceeded(true);
+        setError(t('dailyLimitExceededError'));
+        setIsLoading(false);
+        return;
+      }
     }
     
     setIsLoading(true);
@@ -109,12 +124,6 @@ export function VideoInputForm() {
       if (!transcriptResponse.ok) {
         const errorData = await transcriptResponse.json();
         const errorMessage = errorData.error || t('failedToFetchTranscript');
-        if (errorMessage === t('unpaidInputTooLong')) {
-          setShowTokenLimitUpgrade(true);
-          setError(errorMessage);
-          setIsLoading(false);
-          return;
-        }
         throw new Error(errorMessage);
       }
 
@@ -131,6 +140,19 @@ export function VideoInputForm() {
         fetcher: fetcher || 'unknown'
       };
       
+      if (!session && tokenCount > 32768) {
+        setError(t('guestInputTooLong'));
+        setIsLoading(false);
+        return;
+      }
+
+      if (session?.user?.plan === 'free' && tokenCount > 32768) {
+        setShowTokenLimitUpgrade(true); 
+        setError(t('unpaidInputTooLong'));
+        setIsLoading(false);
+        return;
+      } 
+
       // Store data in context
       setGenerationData({
         transcriptData: data,
@@ -143,13 +165,18 @@ export function VideoInputForm() {
         if (typeof window !== 'undefined') {
             localStorage.setItem('trialUsed', 'true');
         }
+      } else if (session.user.plan !== 'premium') {
+        // Record generation date for free users
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('freeUserLastGenerationDate', new Date().toDateString());
+        }
       }
       
       // Redirect to the new summary generation page
       router.push(`/${locale}/new`);
 
     } catch (err: any) {
-      if (!showTokenLimitUpgrade) {
+      if (!showTokenLimitUpgrade && !dailyLimitExceeded) {
         setError(err.message);
       }
     } finally {
@@ -221,9 +248,11 @@ export function VideoInputForm() {
         </div>
       </form>
 
-      {!session && (
-          <p className="text-sm text-zinc-500 text-center mt-6">{t('trialInfo')}</p>
-      )}
+      <div>
+        {!session && (
+            <p className="text-sm text-zinc-500 text-center mt-4 mb-4">{t('trialInfo')}</p>
+        )}
+      </div>
 
       {inAppBrowser && (
         <div className="mt-4 bg-red-100 text-red-700 p-4 rounded-md text-base font-semibold flex flex-col items-center mb-4">
@@ -240,24 +269,27 @@ export function VideoInputForm() {
         </div>
       )}
 
-      {showTokenLimitUpgrade && (
+      {(showTokenLimitUpgrade || dailyLimitExceeded) && (
         <div className="mt-4">
-          <Alert variant="destructive" className="bg-yellow-50 border-yellow-300 text-yellow-800">
+          <Alert variant="destructive" className="bg-yellow-50 border-yellow-300 text-yellow-800 mt-4">
             <AlertCircle className="h-4 w-4 !text-yellow-700" />
             <AlertDescription>
-              {t('unpaidInputTooLong')}{t('uiPlanCTA')}
+              {showTokenLimitUpgrade ? t('unpaidInputTooLong') : t('dailyLimitExceededError')}
+              <br />
+              {t('subCTA')}
+              <br />
               <button 
                 onClick={openSubscriptionModal}
-                className="ml-2 underline font-bold hover:text-yellow-900"
+                className="underline font-bold hover:text-yellow-900"
               >
-                {t('upgradePlanButton')}
+                {t('upgrade')}
               </button>
             </AlertDescription>
           </Alert>
         </div>
       )}
 
-      {error && !showTokenLimitUpgrade && (
+      {error && !showTokenLimitUpgrade && !dailyLimitExceeded && (
         <Alert variant="destructive" className="mt-4 bg-red-50 border-red-200 text-red-600">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>

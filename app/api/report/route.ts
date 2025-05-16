@@ -10,19 +10,25 @@ export async function POST(req: Request) {
 
     // Parse request body
     const body = await req.json();
-    const { content } = body;
+    const { content, email } = body;
 
     // Validate input
     if (!content || typeof content !== 'string' || content.trim().length === 0) {
       return NextResponse.json({ error: 'Report content cannot be empty.' }, { status: 400 });
     }
+    if (email && typeof email !== 'string') {
+      return NextResponse.json({ error: 'Invalid email format.' }, { status: 400 });
+    }
 
     // Prepare data for Supabase
-    const reportData = {
+    const reportData: { content: string; user_id: string | null; email?: string } = {
       content: content.trim(),
       user_id: userId,
-      // created_at and id will be handled by Supabase defaults
     };
+
+    if (email) {
+      reportData.email = email.trim();
+    }
 
     // Insert into Supabase table
     const { data, error } = await supabase
