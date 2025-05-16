@@ -6,6 +6,12 @@ import { supabase } from '@/lib/supabaseClient'; // Adjust path if needed
 
 const webhookSecret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET!;
 
+/**
+ * Subscription statuses that should retain premium access.
+ * "cancelled" = user turned off auto‑renew but is still inside a grace period.
+ */
+const PREMIUM_STATUSES = ['active', 'on_trial', 'paused', 'past_due', 'cancelled'];
+
 export async function POST(req: NextRequest) {
   if (!webhookSecret) {
     console.error('Lemon Squeezy Webhook Secret not set in environment variables.');
@@ -46,9 +52,8 @@ export async function POST(req: NextRequest) {
         
       userEmail = userEmail.toLowerCase().trim();
 
-      const activeStatuses = ['active', 'on_trial', 'paused', 'past_due'];
       // Determine the plan based on status - use 'premium' for active subscriptions
-      const planToUpdate = activeStatuses.includes(status) ? 'premium' : 'free';
+      const planToUpdate = PREMIUM_STATUSES.includes(status) ? 'premium' : 'free';
 
       console.log(`Webhook: Updating plan. Event: ${eventName}, Status: ${status}, Variant: ${variantId}, Product: ${productName}, UserID: ${userIdFromWebhook || 'N/A'}, Email: ${userEmail || 'N/A'}`);
 
@@ -73,35 +78,35 @@ export async function POST(req: NextRequest) {
         console.log(`Successfully updated plan.`);
       }
     } 
-    else if (eventName === 'subscription_cancelled' || eventName === 'subscription_payment_failed' ) {
-        let userEmail = attributes?.user_email;
-        // const userIdFromWebhook is already defined above
+    else if ( eventName === 'subscription_payment_failed' || eventName === 'subscription_expired' ) {
+      let userEmail = attributes?.user_email;
+      // const userIdFromWebhook is already defined above
 
-        if (!userIdFromWebhook && !userEmail) {
-             console.warn('Webhook received without user_id or user_email for cancellation/failure.', event.data);
-             return new Response('Missing user identifier.', { status: 400 });
-        }
+      if (!userIdFromWebhook && !userEmail) {
+            console.warn('Webhook received without user_id or user_email for cancellation/failure.', event.data);
+            return new Response('Missing user identifier.', { status: 400 });
+      }
 
-        console.log(`Processing ${eventName}. UserID: ${userIdFromWebhook || 'N/A'}, Email: ${userEmail || 'N/A'}. Setting plan to 'free'`);
-        
-        let query = supabase.from('users').update({ plan: 'free' });
+      console.log(`Processing ${eventName}. UserID: ${userIdFromWebhook || 'N/A'}, Email: ${userEmail || 'N/A'}. Setting plan to 'free'`);
+      
+      let query = supabase.from('users').update({ plan: 'free' });
 
-        if (userIdFromWebhook) {
-          query = query.eq('id', userIdFromWebhook);
-        } else if (userEmail) {
-          // Ensure email is defined before using it
-          query = query.eq('email', userEmail!.toLowerCase().trim());
-        }
-        // No need for an else here, as the initial check for !userIdFromWebhook && !userEmail covers it.
+      if (userIdFromWebhook) {
+        query = query.eq('id', userIdFromWebhook);
+      } else if (userEmail) {
+        // Ensure email is defined before using it
+        query = query.eq('email', userEmail!.toLowerCase().trim());
+      }
+      // No need for an else here, as the initial check for !userIdFromWebhook && !userEmail covers it.
 
 
-        const { error } = await query;
+      const { error } = await query;
 
-         if (error) {
-            console.error(`Supabase error updating plan to 'free':`, error.message);
-        } else {
-            console.log(`Successfully updated plan to 'free'`);
-        }
+        if (error) {
+          console.error(`Supabase error updating plan to 'free':`, error.message);
+      } else {
+          console.log(`Successfully updated plan to 'free'`);
+      }
     }
     
     else {
