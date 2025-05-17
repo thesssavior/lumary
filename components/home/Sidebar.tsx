@@ -9,9 +9,9 @@ import { useParams } from 'next/navigation';
 import { signIn, signOut } from 'next-auth/react';
 import Image from 'next/image';
 import { useSession } from "next-auth/react";
-import { useFolder, FolderContext } from './SidebarLayout';
+import { useFolder, FolderContext } from '@/components/home/SidebarLayout';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 
 interface FolderType { id: string; name: string; }
 interface SummaryType { id: string; video_id: string; summary: string; name: string; }

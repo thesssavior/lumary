@@ -76,6 +76,11 @@ const SettingsPage = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
+            <label className="text-sm font-medium text-gray-700">{t('accountSection.nameLabel')}</label>
+            <p className="text-gray-900 break-all">{session.user?.name || t('accountSection.noName')}</p>
+          </div>
+
+          <div>
             <label className="text-sm font-medium text-gray-700">{t('accountSection.emailLabel')}</label>
             <p className="text-gray-900 break-all">{session.user?.email || t('accountSection.noEmail')}</p>
           </div>

@@ -1,19 +1,16 @@
 import { NextIntlClientProvider, useMessages } from 'next-intl';
 import { notFound } from 'next/navigation';
-import { Inter } from 'next/font/google';
 import '../globals.css';
-import { Navbar } from '@/components/navbar';
-import SidebarLayout from '@/components/SidebarLayout';
-import ServerDownModalProvider from '@/components/ServerDownModalProvider';
-import type { Metadata } from "next";
+import { Navbar } from '@/components/home/Navbar';
+import SidebarLayout from '@/components/home/SidebarLayout';
+import ServerDownModalProvider from '@/components/home/ServerDownModalProvider';
+
 // Add react-pdf CSS imports
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import { SummaryGenerationProvider } from '@/contexts/SummaryGenerationContext';
 import { Toaster } from "@/components/ui/sonner";
 import { SessionProvider } from "next-auth/react";
-
-const inter = Inter({ subsets: ['latin'] });
 
 export function generateStaticParams() {
   return [

@@ -2,7 +2,7 @@
 
 import { use, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-
+import { Loader2 } from "lucide-react";
 interface YoutubeCatchAllPageProps {
   params: Promise<{ youtube: string[]; locale: string }>;
 }
@@ -37,5 +37,5 @@ export default function YoutubeCatchAllPage({ params }: YoutubeCatchAllPageProps
     }
   }, [fullYoutubeUrl, locale]);
 
-  return <div>Redirecting...</div>;
+  return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>;
 }

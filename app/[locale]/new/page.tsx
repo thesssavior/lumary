@@ -7,12 +7,12 @@ import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import ReactMarkdown from 'react-markdown';
-import { Folder } from 'lucide-react';
+import { Folder, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SidebarRefreshContext } from '@/components/SidebarLayout';
-import { FullTranscriptViewer } from "@/components/FullTranscriptViewer";
+import { SidebarRefreshContext } from '@/components/home/SidebarLayout';
+import { FullTranscriptViewer } from "@/components/yt_videos/FullTranscriptViewer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollToTopButton } from '@/components/ScrollToTopButton';
+import { ScrollToTopButton } from '@/components/home/ScrollToTopButton';
 
 // Define a threshold for switching to the long video API
 const TOKEN_THRESHOLD = 20000; // Example value, adjust as needed
@@ -248,7 +248,7 @@ export default function NewSummaryPage() {
   if (showLoadingSkeleton) {
     return (
       <div className="flex justify-center items-center h-full">
-        <Skeleton className="w-1/2 h-12" />
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }

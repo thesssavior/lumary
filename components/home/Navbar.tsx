@@ -7,8 +7,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import Image from 'next/image';
 import { HelpCircle, LogIn, LogOut, User } from 'lucide-react';
-import { ReportModal } from './report-modal';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 export function Navbar() {
   const t = useTranslations();
@@ -79,7 +78,6 @@ export function Navbar() {
           </div>
         </div>
       </nav>
-      <ReportModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} />
     </>
   );
 } 

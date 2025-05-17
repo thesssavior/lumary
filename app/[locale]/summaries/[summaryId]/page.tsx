@@ -2,11 +2,11 @@ import { supabase } from '@/lib/supabaseClient';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import { Suspense } from 'react';
-import { ScrollToTopButton } from '@/components/ScrollToTopButton';
+import { ScrollToTopButton } from '@/components/home/ScrollToTopButton';
 import { Folder } from 'lucide-react';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FullTranscriptViewer } from "@/components/FullTranscriptViewer";
+import { FullTranscriptViewer } from "@/components/yt_videos/FullTranscriptViewer";
 import { getTranslations } from 'next-intl/server';
 
 async function SummaryContent({ summary, folder, locale }: { summary: any; folder: any; locale: string }) {

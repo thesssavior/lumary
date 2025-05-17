@@ -8,9 +8,9 @@ import { YoutubeIcon, AlertCircle, X } from "lucide-react";
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { signIn, useSession } from "next-auth/react";
-import { useFolder } from './SidebarLayout';
+import { useFolder } from '../home/SidebarLayout';
 import { useSummaryGeneration } from '@/contexts/SummaryGenerationContext';
-import { LanguageSwitcher } from './language-switcher';
+import { LanguageSwitcher } from '../home/LanguageSwitcher';
 
 interface FolderType {
   id: string;

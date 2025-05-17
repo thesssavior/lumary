@@ -1,8 +1,7 @@
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Check } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from '../ui/button';
 
 export function LanguageSwitcher() {
   const router = useRouter();

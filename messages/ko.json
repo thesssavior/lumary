@@ -198,13 +198,15 @@
       "title": "계정",
       "description": "계정 세부 정보를 관리합니다.",
       "emailLabel": "이메일",
+      "nameLabel": "이름",
       "noEmail": "이 계정에 연결된 이메일이 없습니다.",
+      "noName": "이 계정에 연결된 이름이 없습니다.",
       "signOutButton": "로그아웃",
       "deleteAccountButton": "계정 삭제"
     },
     "preferencesSection": {
       "title": "설정",
-      "description": "사용자 경험을 사용자 정의합니다.",
+      "description": "사용자 경험을 정의합니다.",
       "languageLabel": "언어",
       "selectLanguagePlaceholder": "언어 선택",
       "english": "영어",

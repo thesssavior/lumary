@@ -1,6 +1,5 @@
-import { Card } from "@/components/ui/card";
-import FeatureBoard from "@/components/FeatureBoard";
-import ContactSection from "@/components/ContactSection";
+import FeatureBoard from "@/components/community/FeatureBoard";
+import ContactSection from "@/components/community/ContactSection";
 import { Separator } from "@/components/ui/separator";
 import { useTranslations } from 'next-intl';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
