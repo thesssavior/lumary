@@ -313,7 +313,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                 {t('Sidebar.myKnowledge', { defaultValue: '내 지식' })}
               </button>
               <button
-                className="ml-1 text-xs text-gray-400 hover:text-green-700"
+                className="ml-1 text-xs text-gray-400 hover:text-black"
                 title="새 폴더 만들기"
                 onClick={() => setShowNewFolderInput(true)}
               >
@@ -418,14 +418,14 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                           />
                           <button
                             onClick={handleAddFolder}
-                            className="px-1 py-1 bg-green-100 text-green-700 rounded text-xs shadow hover:bg-green-200 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+                            className="px-1 py-1 bg-gray-300 text-black rounded text-xs shadow hover:bg-zinc-800 hover:text-white transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
                             title="폴더 추가"
                           >
                             <Plus className="w-4 h-4 inline" />
                           </button>
                           <button
                             onClick={() => { setShowNewFolderInput(false); setNewFolderName(''); }}
-                            className="px-2 py-1 bg-gray-300 text-gray-700 rounded text-xs ml-1 hover:bg-gray-400 transition-colors duration-150"
+                            className="px-1 py-1 bg-gray-300 text-black rounded text-xs hover:bg-zinc-800 hover:text-white transition-colors duration-150"
                             title="취소"
                           >취소</button>
                         </li>
