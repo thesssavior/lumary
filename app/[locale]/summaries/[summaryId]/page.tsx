@@ -32,8 +32,8 @@ async function SummaryContent({ summary, folder, locale, mindmap, summaryId }: {
         <TabsList className="grid w-full grid-cols-3">
           {/* <TabsTrigger value="summary" className="data-[state=active]:bg-black data-[state=active]:text-white">{t('summaryTab')}</TabsTrigger> */}
           <TabsTrigger value="summary">{t('summaryTab')}</TabsTrigger>
-          <TabsTrigger value="transcript">{t('transcriptTab')}</TabsTrigger>
           <TabsTrigger value="mindmap">{t('mindmapTab')}</TabsTrigger>
+          <TabsTrigger value="transcript">{t('transcriptTab')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="summary" className="mt-4 p-0 border-0">
@@ -43,6 +43,15 @@ async function SummaryContent({ summary, folder, locale, mindmap, summaryId }: {
             </div>
           </div>
         </TabsContent>
+
+        <TabsContent value="mindmap" forceMount={true} className="data-[state=active]:block hidden mt-4 p-6 border rounded-md">
+          {summary.summary && summary.transcript ? (
+            <Mindmap summary={summary.summary} locale={locale} mindmap={mindmap} summaryId={summaryId}/>
+          ) : (
+            <p className="text-gray-500">Summary or transcript not available for mindmap generation.</p>
+          )}
+        </TabsContent>
+
 
         <TabsContent value="transcript" className="mt-4 p-0 border-0">
           <div className="p-4 border rounded-md">
@@ -54,13 +63,6 @@ async function SummaryContent({ summary, folder, locale, mindmap, summaryId }: {
           </div>
         </TabsContent>
 
-        <TabsContent value="mindmap" forceMount={true} className="data-[state=active]:block hidden mt-4 p-6 border rounded-md">
-          {summary.summary && summary.transcript ? (
-            <Mindmap summary={summary.summary} locale={locale} mindmap={mindmap} summaryId={summaryId}/>
-          ) : (
-            <p className="text-gray-500">Summary or transcript not available for mindmap generation.</p>
-          )}
-        </TabsContent>
 
       </Tabs>
     </div>

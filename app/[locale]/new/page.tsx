@@ -298,8 +298,8 @@ export default function NewSummaryPage() {
           <Tabs defaultValue="summary" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="summary">{t('summaryTab')}</TabsTrigger>
-              <TabsTrigger value="transcript">{t('transcriptTab')}</TabsTrigger>
               <TabsTrigger value="mindmap">{t('mindmapTab')}</TabsTrigger>
+              <TabsTrigger value="transcript">{t('transcriptTab')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="summary" className="mt-6 p-0 border-0">
@@ -340,16 +340,6 @@ export default function NewSummaryPage() {
               )}
             </TabsContent>
 
-            <TabsContent value="transcript" className="mt-4 p-0 border-0">
-              {persistedTranscriptText ? (
-                <div className="p-4 border rounded-md">
-                  <FullTranscriptViewer transcript={persistedTranscriptText} />
-                </div>
-              ) : (
-                <p className="text-gray-500 p-6 border rounded-md">No transcript data available.</p>
-              )}
-            </TabsContent>
-
             <TabsContent value="mindmap" className="mt-4 p-0 border-0">
               {(streamingSummaryContent || (persistedTitle && !isStreaming)) && persistedTranscriptText ? ( // Ensure summary (even partial) and transcript are available
                 <div className="p-0 md:p-0 border rounded-md min-h-[600px]"> 
@@ -366,6 +356,17 @@ export default function NewSummaryPage() {
                 </p>
               )}
             </TabsContent>
+          
+            <TabsContent value="transcript" className="mt-4 p-0 border-0">
+              {persistedTranscriptText ? (
+                <div className="p-4 border rounded-md">
+                  <FullTranscriptViewer transcript={persistedTranscriptText} />
+                </div>
+              ) : (
+                <p className="text-gray-500 p-6 border rounded-md">No transcript data available.</p>
+              )}
+            </TabsContent>
+
           </Tabs>
         </>
       )}

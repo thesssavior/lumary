@@ -52,13 +52,13 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, su
   
   // fitView runs after reactflow mounts and states are updated
   useEffect(() => {
-    if (reactFlowReady && mindmap?.nodes?.length && !hasFit.current) {
+    if (reactFlowReady && nodes.length && !hasFit.current) {
       requestAnimationFrame(() => {
         fitView();
       });
       hasFit.current = true;
     }
-  }, [reactFlowReady, mindmap]);
+  }, [reactFlowReady, nodes]);
   
 
   const generateMindmap = async () => {
