@@ -44,7 +44,7 @@ async function SummaryContent({ summary, folder, locale, mindmap, summaryId }: {
           </div>
         </TabsContent>
 
-        <TabsContent value="mindmap" forceMount={true} className="data-[state=active]:block hidden mt-4 p-6 border rounded-md">
+        <TabsContent value="mindmap" forceMount={true} className="data-[state=active]:block data-[state=inactive]:invisible data-[state=inactive]:pointer-events-none mt-4 p-6 border rounded-md">
           {summary.summary && summary.transcript ? (
             <Mindmap summary={summary.summary} locale={locale} mindmap={mindmap} summaryId={summaryId}/>
           ) : (
