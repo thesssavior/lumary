@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTranslations } from 'next-intl';
+import { Loader2 } from "lucide-react";
 
 type Status = "planned" | "in-progress" | "shipped" | "considering";
 
@@ -170,7 +171,7 @@ const FeatureBoard = () => {
 
 
   if (isLoading) {
-    return <div>{t('loadingFeatures')}</div>; // Or a spinner component
+    return <div><Loader2 className="w-4 h-4 animate-spin" /></div>; // Or a spinner component
   }
 
   if (error) {

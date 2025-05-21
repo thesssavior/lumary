@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useContext } from 'react';
 import { useTranslations } from 'next-intl';
-import { Book, Search, Clock, Folder, ChevronDown, ChevronRight, User, Plus, LogOut, MoreHorizontal, Crown, Settings, Home, HelpCircle } from 'lucide-react';
+import { Book, Search, Clock, Folder, ChevronDown, ChevronRight, User, Plus, LogOut, MoreHorizontal, Crown, Settings, Home, HelpCircle, Trash2, Pencil } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -45,6 +45,8 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const { activeFolder, setActiveFolder, openSubscriptionModal } = useFolder();
   const [folderOpen, setFolderOpen] = useState<{ [folderId: string]: boolean }>({});
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+  const [hoveredSummaryId, setHoveredSummaryId] = useState<string | null>(null);
+  const [hoveredFolderId, setHoveredFolderId] = useState<string | null>(null);
 
   // Check session on mount
   useEffect(() => {
@@ -165,6 +167,33 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
     await fetch(`/api/folders/${id}`, { method: 'DELETE' });
     if (activeFolder?.id === id) setActiveFolder(null);
     fetchFolders();
+  };
+
+  const handleDeleteSummary = async (folderId: string, summaryId: string) => {
+    if (!confirm(t('Sidebar.confirmDeleteSummary', { defaultValue: '파일을 삭제하시겠습니까?' }))) return;
+
+    try {
+      const res = await fetch(`/api/folders/${folderId}/summaries`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ summaryId }),
+      });
+
+      if (res.ok) {
+        // Optimistically update UI or refetch
+        setFolderSummaries(prev => ({
+          ...prev,
+          [folderId]: prev[folderId]?.filter(s => s.id !== summaryId) || [],
+        }));
+      } else {
+        const errorData = await res.json();
+        console.error("Failed to delete summary:", errorData.error);
+        alert(t('Sidebar.deleteSummaryError', { defaultValue: 'Failed to delete summary. Please try again.' }));
+      }
+    } catch (error) {
+      console.error("Error deleting summary:", error);
+      alert(t('Sidebar.deleteSummaryError', { defaultValue: 'An error occurred while deleting the summary.' }));
+    }
   };
 
   // Drag-and-drop handlers
@@ -329,8 +358,10 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                         <Draggable key={f.id} draggableId={f.id} index={idx}>
                           {(dragProvided) => (
                             <li ref={dragProvided.innerRef} {...dragProvided.draggableProps} {...dragProvided.dragHandleProps}>
-                              <div className={`flex items-center gap-1 font-semibold text-gray-800 ${activeFolder?.id===f.id ? 'bg-gray-200 rounded px-1' : ''}`}
+                              <div className={`flex items-center gap-1 font-semibold text-gray-800 group ${activeFolder?.id===f.id ? 'bg-gray-200 rounded px-1' : 'px-1'}`}
                                 onClick={() => setActiveFolder(f)}
+                                onMouseEnter={() => setHoveredFolderId(f.id)}
+                                onMouseLeave={() => setHoveredFolderId(null)}
                               >
                                 <button
                                   className="mr-1"
@@ -341,31 +372,24 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                                 </button>
                                 <Folder className="w-4 h-4" />
                                 <span className="mx-1 flex-1 text-left truncate">{f.name}</span>
-                                <div className="relative ml-auto">
-                                  <button
-                                    className="text-xs text-gray-400 hover:text-gray-700"
-                                    onClick={e => { e.stopPropagation(); setDropdownOpen(dropdownOpen === f.id ? null : f.id); }}
-                                    aria-label={t('Sidebar.folderOptions') || 'Folder options'}
-                                  >
-                                    <MoreHorizontal className="w-4 h-4" />
-                                  </button>
-                                  {dropdownOpen === f.id && (
-                                    <div className="absolute right-0 top-full mt-1 bg-white border rounded shadow-md py-1 w-28 min-w-[7rem] text-sm z-20">
-                                      <button
-                                        className="block w-full text-left px-2 py-2 hover:bg-gray-100"
-                                        onClick={e => { e.stopPropagation(); setDropdownOpen(null); handleRenameFolder(f.id); }}
-                                      >
-                                        ✏️ {t('Sidebar.renameFolder') || 'Edit'}
-                                      </button>
-                                      <button
-                                        className="block w-full text-left px-2 py-2 hover:bg-gray-100 text-red-600"
-                                        onClick={e => { e.stopPropagation(); setDropdownOpen(null); handleDeleteFolder(f.id); }}
-                                      >
-                                        🗑️ {t('Sidebar.deleteFolder') || 'Delete'}
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
+                                {hoveredFolderId === f.id && (
+                                  <div className="flex items-center ml-auto">
+                                    <button
+                                      onClick={e => { e.stopPropagation(); handleRenameFolder(f.id); }}
+                                      className="p-1 text-gray-500 hover:text-gray-700"
+                                      title={t('Sidebar.renameFolder') || 'Rename folder'}
+                                    >
+                                      <Pencil className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      onClick={e => { e.stopPropagation(); handleDeleteFolder(f.id); }}
+                                      className="p-1 text-gray-500 hover:text-red-500"
+                                      title={t('Sidebar.deleteFolder') || 'Delete folder'}
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                               {/* Summaries in folder: only show if expanded */}
                               {folderOpen[f.id] && (
@@ -380,8 +404,29 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                                         folderSummaries[f.id].map((s, sIdx) => (
                                           <Draggable key={s.id} draggableId={s.id} index={sIdx}>
                                             {(summaryDragProvided) => (
-                                              <li ref={summaryDragProvided.innerRef} {...summaryDragProvided.draggableProps} {...summaryDragProvided.dragHandleProps} className="truncate text-sm text-gray-700 hover:underline cursor-pointer">
-                                                <Link href={`/${locale}/summaries/${s.id}`}>{s.name}</Link>
+                                              <li 
+                                                ref={summaryDragProvided.innerRef} 
+                                                {...summaryDragProvided.draggableProps} 
+                                                {...summaryDragProvided.dragHandleProps} 
+                                                className="flex items-center justify-between text-sm text-gray-700 hover:bg-gray-100 rounded group"
+                                                onMouseEnter={() => setHoveredSummaryId(s.id)}
+                                                onMouseLeave={() => setHoveredSummaryId(null)}
+                                              >
+                                                <Link href={`/${locale}/summaries/${s.id}`} className="truncate flex-grow px-1 hover:underline cursor-pointer block">
+                                                  {s.name}
+                                                </Link>
+                                                {hoveredSummaryId === s.id && (
+                                                  <button
+                                                    onClick={(e) => {
+                                                      e.stopPropagation(); // Prevent navigation
+                                                      handleDeleteSummary(f.id, s.id);
+                                                    }}
+                                                    className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    title={t('Sidebar.deleteSummary', { defaultValue: 'Delete summary' })}
+                                                  >
+                                                    <Trash2 className="w-3 h-3" />
+                                                  </button>
+                                                )}
                                               </li>
                                             )}
                                           </Draggable>

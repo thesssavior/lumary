@@ -4,21 +4,21 @@ import ReactMarkdown from 'react-markdown';
 import { Suspense } from 'react';
 import { ScrollToTopButton } from '@/components/home/ScrollToTopButton';
 import { Folder } from 'lucide-react';
-import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FullTranscriptViewer } from "@/components/yt_videos/FullTranscriptViewer";
+import Mindmap from '@/components/yt_videos/Mindmap';
 import { getTranslations } from 'next-intl/server';
 
-async function SummaryContent({ summary, folder, locale }: { summary: any; folder: any; locale: string }) {
+async function SummaryContent({ summary, folder, locale, mindmap, summaryId }: { summary: any; folder: any; locale: string; mindmap: any | null; summaryId: string }) {
   const t = await getTranslations({locale});
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-        <Link href={`/${summary.locale}/folders/${folder.id}`} className="flex items-center gap-1 hover:text-gray-700">
-          <Folder className="w-4 h-4" />
-          <span>{folder.name}</span>
-        </Link>
+        {/* <Link href={`/${summary.locale}/folders/${folder.id}`} className="flex items-center gap-1 hover:text-gray-700"> */}
+        <Folder className="w-4 h-4" />
+        <span>{folder.name}</span>
+        {/* </Link> */}
         <span>/</span>
       </div>
 
@@ -30,6 +30,7 @@ async function SummaryContent({ summary, folder, locale }: { summary: any; folde
       
       <Tabs defaultValue="summary" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
+          {/* <TabsTrigger value="summary" className="data-[state=active]:bg-black data-[state=active]:text-white">{t('summaryTab')}</TabsTrigger> */}
           <TabsTrigger value="summary">{t('summaryTab')}</TabsTrigger>
           <TabsTrigger value="transcript">{t('transcriptTab')}</TabsTrigger>
           <TabsTrigger value="mindmap">{t('mindmapTab')}</TabsTrigger>
@@ -53,8 +54,12 @@ async function SummaryContent({ summary, folder, locale }: { summary: any; folde
           </div>
         </TabsContent>
 
-        <TabsContent value="mindmap" className="mt-4 p-6 border rounded-md">
-          <p className="text-gray-500">Mindmap coming soon!</p>
+        <TabsContent value="mindmap" forceMount={true} className="data-[state=active]:block hidden mt-4 p-6 border rounded-md">
+          {summary.summary && summary.transcript ? (
+            <Mindmap summary={summary.summary} locale={locale} mindmap={mindmap} summaryId={summaryId}/>
+          ) : (
+            <p className="text-gray-500">Summary or transcript not available for mindmap generation.</p>
+          )}
         </TabsContent>
 
       </Tabs>
@@ -94,7 +99,7 @@ export default async function SummaryDetailPage({ params }: { params: Promise<{ 
   
   const { data: summary, error: summaryError } = await supabase
     .from('summaries')
-    .select('id, name, summary, video_id, created_at, folder_id, locale, transcript')
+    .select('id, name, summary, video_id, created_at, folder_id, locale, transcript, mindmap')
     .eq('id', summaryId)
     .single();
 
@@ -116,7 +121,7 @@ export default async function SummaryDetailPage({ params }: { params: Promise<{ 
     <>
       <ScrollToTopButton />
       <Suspense fallback={<SummarySkeleton />}>
-        <SummaryContent summary={summary} folder={folder} locale={locale} />
+        <SummaryContent summary={summary} folder={folder} locale={locale} mindmap={summary.mindmap || null} summaryId={summaryId} />
       </Suspense>
     </>
   );

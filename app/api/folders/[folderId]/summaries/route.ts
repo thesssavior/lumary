@@ -7,10 +7,6 @@ import { calculateTokenCount } from '@/lib/utils';
 export async function GET(request: Request, { params }: { params: Promise<{ folderId: string }> }) {
   try {
     const { folderId } = await params;
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
     const { data, error } = await supabase
       .from('summaries')
       .select('id, folder_id, video_id, summary, created_at, name')
@@ -120,6 +116,45 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ folder
     return NextResponse.json(updated);
   } catch (error) {
     console.error('Error moving summary:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+// DELETE /api/folders/[folderId]/summaries
+export async function DELETE(req: Request, { params }: { params: Promise<{ folderId: string }> }) {
+  try {
+    // const { folderId } = await params; // folderId might not be strictly necessary if summaryId is unique
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { summaryId } = body;
+
+    if (!summaryId) {
+      return NextResponse.json({ error: 'Missing summaryId' }, { status: 400 });
+    }
+
+    // Ensure the summary belongs to the user attempting to delete it
+    const { error: deleteError } = await supabase
+      .from('summaries')
+      .delete()
+      .eq('id', summaryId)
+      .eq('user_id', session.user.id);
+
+    if (deleteError) {
+      console.error('Summary deletion error:', deleteError.message);
+      return NextResponse.json({ error: `Failed to delete summary: ${deleteError.message}` }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: 'Summary deleted successfully' }, { status: 200 });
+
+  } catch (error: any) {
+    console.error('Unexpected error in DELETE /api/folders/[folderId]/summaries:', error);
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 } 

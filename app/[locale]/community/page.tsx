@@ -26,12 +26,12 @@ const CommunityPage = () => {
             <TabsContent value="contact">
               <ContactSection />
             </TabsContent>
-            <TabsContent value="feature-board">
+            <TabsContent value="feature-board" forceMount={true} className="data-[state=active]:block hidden">
               <FeatureBoard />
             </TabsContent>
           </Tabs>
           
-          <Separator className="my-8" />
+          {/* <Separator className="my-8" /> */}
           
           {/* <footer className="text-center text-gray-500 text-sm">
             <p>{t('communityPage.footerText')}</p>

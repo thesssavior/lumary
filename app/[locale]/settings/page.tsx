@@ -100,7 +100,7 @@ const SettingsPage = () => {
         </CardFooter>
       </Card>
 
-      {/* Preferences Section */}
+      {/* language preferences Section */}
       <Card>
         <CardHeader>
           <CardTitle>{t('preferencesSection.title')}</CardTitle>
@@ -122,6 +122,21 @@ const SettingsPage = () => {
             </Select>
             {isPending && <Loader2 className="mt-2 h-4 w-4 animate-spin" />}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Manage Subscription Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('subscriptionSection.title', { defaultValue: 'Manage Subscription' })}</CardTitle>
+          <CardDescription>{t('subscriptionSection.description', { defaultValue: 'View and manage your subscription details.' })}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild>
+            <a href="https://lumary.lemonsqueezy.com/billing" target="_blank" rel="noopener noreferrer">
+              {t('subscriptionSection.manageButton', { defaultValue: 'Go to Billing' })}
+            </a>
+          </Button>
         </CardContent>
       </Card>
 

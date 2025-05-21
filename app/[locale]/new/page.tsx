@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { SidebarRefreshContext } from '@/components/home/SidebarLayout';
 import { FullTranscriptViewer } from "@/components/yt_videos/FullTranscriptViewer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Mindmap from '@/components/yt_videos/Mindmap';
 import { ScrollToTopButton } from '@/components/home/ScrollToTopButton';
 
 // Define a threshold for switching to the long video API
@@ -29,14 +30,14 @@ export default function NewSummaryPage() {
   const { generationData, setGenerationData } = useSummaryGeneration();
   const refreshSidebar = useContext(SidebarRefreshContext);
   
-  const [fullContent, setFullContent] = useState('');
   const [overviewContent, setOverviewContent] = useState('');
   const [streamingSummaryContent, setStreamingSummaryContent] = useState('');
   // Persisted state for display after context is cleared
   const [persistedTitle, setPersistedTitle] = useState<string | null>(null);
   const [persistedFolder, setPersistedFolder] = useState<FolderType | null>(null);
   const [persistedTranscriptText, setPersistedTranscriptText] = useState<string | null>(null);
-
+  
+  const [newSummaryId, setNewSummaryId] = useState<string | null>(null);
   const [isLongVideo, setIsLongVideo] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -222,6 +223,8 @@ export default function NewSummaryPage() {
       }
       const savedSummaryData = await response.json(); 
       const newSummaryId = savedSummaryData.id;
+      setNewSummaryId(newSummaryId);
+
       if (!newSummaryId) throw new Error(t('errorNoSummaryId'));
       
       if (refreshSidebar) refreshSidebar();
@@ -348,7 +351,20 @@ export default function NewSummaryPage() {
             </TabsContent>
 
             <TabsContent value="mindmap" className="mt-4 p-0 border-0">
-              <p className="text-gray-500 p-6 border rounded-md">Mindmap coming soon!</p>
+              {(streamingSummaryContent || (persistedTitle && !isStreaming)) && persistedTranscriptText ? ( // Ensure summary (even partial) and transcript are available
+                <div className="p-0 md:p-0 border rounded-md min-h-[600px]"> 
+                  <Mindmap summary={isLongVideo && overviewContent ? overviewContent + "\n\n" + streamingSummaryContent : streamingSummaryContent} locale={locale} mindmap={null} summaryId={newSummaryId || ''}/>
+                </div>
+              ) : isStreaming ? (
+                <div className="flex items-center justify-center h-[600px] border rounded-md">
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                  <p className="ml-2 text-gray-500">Waiting for summary to generate mind map...</p>
+                </div>
+              ) : (
+                <p className="text-gray-500 p-6 border rounded-md">
+                  {t('mindmapRequiresSummaryAndTranscript')}
+                </p>
+              )}
             </TabsContent>
           </Tabs>
         </>

@@ -40,6 +40,10 @@ export default function SubscriptionPlans({ isOpen, onClose }: SubscriptionPlans
   const { data: session } = useSession();
   const userId = session?.user?.id;
 
+  // Define VAT rate (e.g., 10% for KRW, adjust as needed)
+  // TODO: Make this VAT rate configurable or fetch from an API if it varies.
+  const VAT_RATE = 0.10;
+
   const handleCheckout = async (productId: string, variantId: string, userId: string) => {
     setCheckingOutId(variantId); // Track checkout by variantId
     try {
@@ -188,7 +192,7 @@ export default function SubscriptionPlans({ isOpen, onClose }: SubscriptionPlans
                  </p>
                  <p className="text-3xl font-bold text-gray-900 mb-1">{currentPlan.price_formatted}
                     <span className="text-sm font-normal text-gray-500">
-                       {billingCycle === 'weekly' ? t('pricePerWeek') : t('pricePerMonth')}
+                       {billingCycle === 'weekly' ? t('pricePerWeekVat') : t('pricePerMonthVat')}
                     </span>
                  </p>
                  <button
