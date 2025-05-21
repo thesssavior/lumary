@@ -22,10 +22,11 @@ interface MindmapProps {
   mindmap: any | null;
   locale: string;
   summaryId: string;
+  isActive: boolean | null;
   // transcript: string; // Transcript is not directly used for generation by this component anymore
 }
 
-const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, summaryId }) => {
+const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, summaryId, isActive }) => {
   const t = useTranslations();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -52,7 +53,7 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, su
   
   // fitView runs after reactflow mounts and states are updated
   useEffect(() => {
-    if (reactFlowReady && nodes.length && !hasFit.current) {
+    if (reactFlowReady && nodes.length && !hasFit.current && isActive) {
       requestAnimationFrame(() => {
         fitView();
       });

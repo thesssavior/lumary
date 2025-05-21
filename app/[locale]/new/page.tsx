@@ -343,7 +343,7 @@ export default function NewSummaryPage() {
             <TabsContent value="mindmap" className="mt-4 p-0 border-0">
               {(streamingSummaryContent || (persistedTitle && !isStreaming)) && persistedTranscriptText ? ( // Ensure summary (even partial) and transcript are available
                 <div className="p-0 md:p-0 border rounded-md min-h-[600px]"> 
-                  <Mindmap summary={isLongVideo && overviewContent ? overviewContent + "\n\n" + streamingSummaryContent : streamingSummaryContent} locale={locale} mindmap={null} summaryId={newSummaryId || ''}/>
+                  <Mindmap summary={isLongVideo && overviewContent ? overviewContent + "\n\n" + streamingSummaryContent : streamingSummaryContent} locale={locale} mindmap={null} summaryId={newSummaryId || ''} isActive/>
                 </div>
               ) : isStreaming ? (
                 <div className="flex items-center justify-center h-[600px] border rounded-md">
