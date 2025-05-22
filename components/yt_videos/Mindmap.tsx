@@ -63,7 +63,6 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, su
   
 
   const generateMindmap = async () => {
-    console.log('generateMindmap');
     if (!summary) {
       setError("No summary provided to generate mind map.");
       return;
@@ -98,7 +97,6 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, su
         setIsLoading(false);
         setIsSaving(true);
 
-        console.log("saving mindmap to database");
         // Save the mindmap to the database
         try {
           const saveResponse = await fetch('/api/mindmap', {

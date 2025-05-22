@@ -60,7 +60,6 @@ export async function POST(req: NextRequest) {
 
     try {
       const mindmapData = JSON.parse(resultJsonString);
-      console.log("mindmapData", mindmapData);
       // Basic validation of the structure
       if (!mindmapData.nodes || !mindmapData.edges) {
         console.error("OpenAI response missing nodes or edges:", mindmapData);

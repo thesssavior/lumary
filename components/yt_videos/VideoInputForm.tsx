@@ -146,7 +146,7 @@ export function VideoInputForm() {
         return;
       }
 
-      if (session?.user?.plan === 'free' && tokenCount > 32768) {
+      if (session?.user?.plan === 'free' && tokenCount > 65536) {
         setShowTokenLimitUpgrade(true); 
         setError(t('unpaidInputTooLong'));
         setIsLoading(false);

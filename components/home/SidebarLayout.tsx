@@ -28,8 +28,8 @@ export const SidebarRefreshContext = createContext<() => void>(() => {});
 
 export default function SidebarLayout({ children }: { children: React.ReactNode }) {
 
-  
-  const [open, setOpen] = useState(false);
+  // open by default
+  const [open, setOpen] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
   const refreshSidebar = () => setRefreshKey(k => k + 1);
 

@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { signIn, useSession } from "next-auth/react";
 import { useTranslations, useLocale } from 'next-intl';
 import Link from 'next/link';
 import Image from 'next/image';
-import { HelpCircle, LogIn, LogOut, User } from 'lucide-react';
+import { HelpCircle, LogIn, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 export function Navbar() {
@@ -17,7 +16,7 @@ export function Navbar() {
     <>
       <nav className="border-b border-zinc-200 bg-white">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link href={`/${locale}`} className="flex items-center space-x-2 ml-10 sm:ml-0">
+          <Link href={`/${locale}`} className="flex items-center space-x-2 ml-12 sm:ml-0">
             <Image src="/lumary.png" alt="Lumary Logo" width={100} height={100} />
           </Link>
 
