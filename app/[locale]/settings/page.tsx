@@ -7,7 +7,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Crown } from 'lucide-react';
+import { useFolder } from '@/components/home/SidebarLayout';
 
 const SettingsPage = () => {
   const t = useTranslations('SettingsPage');
@@ -16,6 +17,7 @@ const SettingsPage = () => {
   const locale = useLocale();
   const [isPending, startTransition] = useTransition();
   const [isDeleting, setIsDeleting] = useState(false); // For delete account loading state
+  const { openSubscriptionModal } = useFolder();
 
   const handleLanguageChange = (newLocale: string) => {
     startTransition(() => {
@@ -132,11 +134,19 @@ const SettingsPage = () => {
           <CardDescription>{t('subscriptionSection.description', { defaultValue: 'View and manage your subscription details.' })}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button asChild>
-            <a href="https://lumary.lemonsqueezy.com/billing" target="_blank" rel="noopener noreferrer">
-              {t('subscriptionSection.manageButton', { defaultValue: 'Go to Billing' })}
-            </a>
-          </Button>
+          {/* plan exists: free or premium */}
+          {session?.user?.plan === 'premium' ? (
+            <Button asChild>
+              <a href="https://lumary.lemonsqueezy.com/billing" target="_blank" rel="noopener noreferrer">
+                {t('subscriptionSection.manageButton', { defaultValue: 'Go to Billing' })}
+              </a>
+            </Button>
+          ) : (
+            <Button onClick={openSubscriptionModal}>
+              <Crown className="mr-2 h-4 w-4" />
+              {t('subscriptionSection.upgradeButton', { defaultValue: 'Upgrade to Premium' })}
+            </Button>
+          )}
         </CardContent>
       </Card>
 

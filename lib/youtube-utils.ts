@@ -5,8 +5,8 @@ import he from 'he'; // Import the 'he' library
 
 // Constants
 const proxyUrls = [
-  'http://toehivex-rotate:esiwn5hn17xs@p.webshare.io:80/',
-  'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh@geo.iproyal.com:12321',
+  'http://toehivex-KR-rotate:esiwn5hn17xs@p.webshare.io:80/',
+  'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh_country-kr@geo.iproyal.com:12321',
   'http://brd-customer-hl_414d8129-zone-residential_proxy1:yd55dtlsq03w@brd.superproxy.io:33335',
   'http://user-sp1d2iv3s7-country-kr-city-seoul:QY0p3ewONhqn92_kau@gate.decodo.com:10001',
   // Other proxies can be added here if needed

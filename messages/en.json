@@ -121,6 +121,7 @@
   "summaryTab": "Summary",
   "mindmapTab": "Mindmap",
   "transcriptTab": "Transcript",
+  "quizTab": "Quiz",
   "reportModalTitle": "Report an Issue",
   "reportModalDescription": "Describe the problem you encountered or share your feedback.",
   "reportModalPlaceholder": "Please provide details about the issue...",
@@ -211,7 +212,8 @@
     "subscriptionSection": {
       "title": "Manage Subscription",
       "description": "View and manage your subscription details.",
-      "manageButton": "Go to Billing"
+      "manageButton": "Go to Billing",
+      "upgradeButton": "Upgrade to Premium"
     }
   },
   "Mindmap": {
@@ -223,5 +225,24 @@
     "generateMindmap": "Generate Mindmap",
     "generateMindmapDescription": "Generate a visual mind map of the summary content.",
     "generateMindmapButton": "Generate Mindmap"
+  },
+  "Quiz": {
+    "title": "Quiz",
+    "description": "Quiz to test your knowledge.",
+    "loading": "Loading quiz...",
+    "error": "Error loading quiz.",
+    "noQuiz": "No quiz.",
+    "generateQuiz": "Generate Quiz",
+    "generateDescription": "Generate a quiz of the summary content.",
+    "generateButton": "Generate Quiz",
+    "regenerateButton": "Regenerate Quiz",
+    "question": "Question",
+    "answer": "Answer",
+    "options": "Options",
+    "correctOption": "Correct Option",
+    "incorrectOption": "Incorrect Option",
+    "submit": "Submit",
+    "submitButton": "Submit",
+    "errorNoSummary": "No summary."
   }
 } 

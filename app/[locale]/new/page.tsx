@@ -14,6 +14,7 @@ import { FullTranscriptViewer } from "@/components/yt_videos/FullTranscriptViewe
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Mindmap from '@/components/yt_videos/Mindmap';
 import { ScrollToTopButton } from '@/components/home/ScrollToTopButton';
+import Quiz from '@/components/yt_videos/Quiz';
 
 // Define a threshold for switching to the long video API
 const TOKEN_THRESHOLD = 20000; // Example value, adjust as needed
@@ -299,6 +300,7 @@ export default function NewSummaryPage() {
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="summary">{t('summaryTab')}</TabsTrigger>
               <TabsTrigger value="mindmap">{t('mindmapTab')}</TabsTrigger>
+              {/* <TabsTrigger value="quiz">{t('quizTab')}</TabsTrigger> */}
               <TabsTrigger value="transcript">{t('transcriptTab')}</TabsTrigger>
             </TabsList>
 
@@ -351,7 +353,7 @@ export default function NewSummaryPage() {
                 </div>
               ) : isStreaming ? (
                 <div className="flex items-center justify-center h-[600px] border rounded-md">
-                  <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                  <Loader2 className="h-8 w-8 animate-spin" />
                   <p className="ml-2 text-gray-500">Waiting for summary to generate mind map...</p>
                 </div>
               ) : (
@@ -361,6 +363,10 @@ export default function NewSummaryPage() {
               )}
             </TabsContent>
           
+            {/* <TabsContent value="quiz" className="mt-4 p-0 border-0">  
+              <Quiz summary={streamingSummaryContent} quizData={null} locale={locale} summaryId={newSummaryId || ''} />
+            </TabsContent> */}
+            
             <TabsContent value="transcript" className="mt-4 p-0 border-0">
               {persistedTranscriptText ? (
                 <div className="p-4 border rounded-md">

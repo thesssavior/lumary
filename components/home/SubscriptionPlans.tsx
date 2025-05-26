@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Check } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import Image from 'next/image'; // Import Next.js Image component
 import { useSession } from 'next-auth/react';
 
@@ -26,10 +26,10 @@ type Plan = {
 
 interface SubscriptionPlansProps {
   isOpen: boolean;
-  onClose: () => void;
+  onCloseAction: () => void;
 }
 
-export default function SubscriptionPlans({ isOpen, onClose }: SubscriptionPlansProps) {
+export default function SubscriptionPlans({ isOpen, onCloseAction }: SubscriptionPlansProps) {
   const t = useTranslations('SubscriptionPlans');
   const locale = useLocale();
   const [weeklyPlan, setWeeklyPlan] = useState<Plan | null>(null);
@@ -138,7 +138,7 @@ export default function SubscriptionPlans({ isOpen, onClose }: SubscriptionPlans
   const planFeatures = t.raw('features'); // Get features array
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onCloseAction}>
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
@@ -167,7 +167,9 @@ export default function SubscriptionPlans({ isOpen, onClose }: SubscriptionPlans
 
         <div className="py-4">
           {loading ? (
-            <div>{t('loadingPlans')}</div>
+            <div className="flex justify-center items-center min-h-[120px]">
+              <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
           ) : !currentPlan ? (
             <div>Plan not available for selected cycle.</div> // Handle case where plan isn't found
           ) : (
@@ -198,7 +200,7 @@ export default function SubscriptionPlans({ isOpen, onClose }: SubscriptionPlans
                  <button
                   onClick={() => handleCheckout(currentPlan.id, currentPlan.variant_id, userId ?? '')}
                   disabled={checkingOutId === currentPlan.variant_id}
-                  className="w-full bg-gray-900 text-white font-bold py-2 px-4 rounded hover:bg-gray-700 transition-colors duration-200 text-center block mt-4 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full bg-gray-900 text-white font-bold py-2 px-4 rounded hover:bg-gray-700 transition-colors duration-200 text-center mt-4 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {checkingOutId === currentPlan.variant_id ? t('loading') : t('subscribeButton')}
                     {checkingOutId !== currentPlan.variant_id && <span aria-hidden="true">→</span>}

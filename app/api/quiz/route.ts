@@ -1,0 +1,140 @@
+// Path: app/api/quiz/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabaseClient';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// Placeholder for your OpenAI model, e.g., "gpt-3.5-turbo" or "gpt-4.1-mini"
+const model = "gpt-4.1-mini"; 
+
+interface QuizItem {
+  question: string;
+  answer: string;
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const { summaryText, locale, title } = await req.json();
+
+    if (!summaryText) {
+      return NextResponse.json({ error: 'Summary text is required' }, { status: 400 });
+    }
+    if (!locale) {
+      return NextResponse.json({ error: 'Locale is required' }, { status: 400 });
+    }
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 });
+    }
+
+    const systemPrompt = `
+        You are an AI assistant tasked with generating a quiz from a video summary.
+        Create 5 distinct question and answer pairs that test understanding of the core ideas in the summary.
+        Return these pairs as a valid JSON array of objects. Each object in the array must have a "question" key and an "answer" key.
+        Ensure the questions are thought-provoking and the answers are concise and accurate.
+        Generate the quiz in the language: ${locale}.
+        The summary is for a video possibly titled: "${title}".
+        `;
+
+    const userPrompt = `
+        Video Summary:
+        ---
+        ${summaryText}
+        ---
+
+        JSON Output (array of question-answer objects):
+        `;
+
+    const completion = await openai.chat.completions.create({
+      model: model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.5, // Adjust temperature as needed for creativity vs. determinism
+    });
+
+    const resultJsonString = completion.choices[0]?.message?.content;
+
+    if (!resultJsonString) {
+      console.error("OpenAI response was empty for quiz generation.");
+      return NextResponse.json({ error: 'Failed to generate quiz from OpenAI: Empty response' }, { status: 500 });
+    }
+
+    try {
+      const parsedResult = JSON.parse(resultJsonString);
+      // The prompt asks for an array directly, but sometimes models wrap it in a root key.
+      // Check if the result is an array, or if it has a common root key like "quiz" or "questions".
+      let quizData: QuizItem[];
+
+      if (Array.isArray(parsedResult)) {
+        quizData = parsedResult;
+      } else if (parsedResult.quiz && Array.isArray(parsedResult.quiz)) {
+        quizData = parsedResult.quiz;
+      } else if (parsedResult.questions && Array.isArray(parsedResult.questions)) {
+        quizData = parsedResult.questions;
+      } else {
+        console.error("OpenAI response for quiz was not in the expected array format:", parsedResult);
+        return NextResponse.json({ error: 'Invalid quiz structure from OpenAI: Expected an array of questions or an object with a "quiz" or "questions" array.' }, { status: 500 });
+      }
+      
+      // Further validation of items in the array
+      if (!quizData.every(item => typeof item.question === 'string' && typeof item.answer === 'string')) {
+        console.error("Invalid item structure in quiz data from OpenAI:", quizData);
+        return NextResponse.json({ error: 'Invalid item structure in quiz data: Each item must have a question and answer string.' }, { status: 500 });
+      }
+
+      return NextResponse.json({ quiz: quizData }, { status: 200 });
+    } catch (parseError) {
+      console.error("Failed to parse OpenAI quiz response:", parseError, "Raw response:", resultJsonString);
+      return NextResponse.json({ error: 'Failed to parse quiz data from OpenAI' }, { status: 500 });
+    }
+
+  } catch (error: any) {
+    console.error('Error generating quiz:', error);
+    // Check for OpenAI specific errors if possible
+    if (error.response && error.response.data && error.response.data.error) {
+        console.error('OpenAI API Error:', error.response.data.error.message);
+        return NextResponse.json({ error: `OpenAI API Error: ${error.response.data.error.message}` }, { status: 500 });
+    }
+    return NextResponse.json({ error: error.message || 'Internal server error generating quiz' }, { status: 500 });
+  }
+}
+
+export async function PUT(req: NextRequest) {
+  try {
+    const { summaryId, quiz } = await req.json();
+
+    if (!summaryId) {
+      return NextResponse.json({ error: 'Summary ID is required for saving the quiz' }, { status: 400 });
+    }
+    if (!quiz || !Array.isArray(quiz) || !quiz.every(item => typeof item.question === 'string' && typeof item.answer === 'string')) {
+      return NextResponse.json({ error: 'Valid quiz data (array of question/answer objects) is required' }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+      .from('summaries')
+      .update({ quiz: quiz }) // Ensure 'quiz' is the correct column name in your Supabase table
+      .eq('id', summaryId)
+      .select('id')
+      .single();
+
+    if (error) {
+      console.error('Supabase error saving quiz:', error);
+      return NextResponse.json({ error: error.message || 'Failed to save quiz data to database' }, { status: 500 });
+    }
+
+    if (!data) {
+        return NextResponse.json({ error: 'Failed to update summary with quiz, or summary not found.' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Quiz saved successfully', summaryId: data.id }, { status: 200 });
+
+  } catch (error: any) {
+    console.error('Error processing request to save quiz:', error);
+    return NextResponse.json({ error: error.message || 'Internal server error while saving quiz' }, { status: 500 });
+  }
+}

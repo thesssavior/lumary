@@ -1,4 +1,5 @@
 import requests
+import time # Import the time module for latency testing
 
 # def fetch_youtube_info(video_id, api_key):
 #     url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={api_key}"
@@ -17,7 +18,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 
 # Replace with your actual YouTube video ID
 # Example video_id known to have ko/en transcripts: "a_ZOXIikA30"
-video_id = "a_ZOXIikA30" 
+video_id = "dQw4w9WgXcQ" 
 
 # Proxies from your TypeScript file, with webshare.io updated
 proxy_config = [
@@ -26,13 +27,25 @@ proxy_config = [
         "note": "Webshare with -rotate username"
     },
     {
+        "url": 'http://toehivex-KR-rotate:esiwn5hn17xs@p.webshare.io:80/',
+        "note": "Webshare with -KR-rotate username"
+    },
+    {
+        "url": 'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh_country-kr@geo.iproyal.com:12321',
+        "note": "iProyal"
+    },
+    {
         "url": 'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh@geo.iproyal.com:12321',
         "note": "iProyal"
     },
     {
-        "url": 'http://brd-customer-hl_414d8129-zone-residential_proxy1:yd55dtlsq03w@brd.superproxy.io:33335',
-        "note": "Superproxy"
-    }
+        "url": 'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh_country-kr_city-seoul@geo.iproyal.com:12321',
+        "note": "iProyal"
+    },
+    # {
+    #     "url": 'http://brd-customer-hl_414d8129-zone-residential_proxy1:yd55dtlsq03w@brd.superproxy.io:33335',
+    #     "note": "Superproxy"
+    # }
 ]
 
 transcript_data = None
@@ -48,27 +61,22 @@ for config in proxy_config:
         "http": proxy_url,
         "https": proxy_url,
     }
+
     print(f"Attempting to fetch transcript with proxy: {proxy_url} ({note})")
+    start_time = time.time()
     try:
         transcript_list = YouTubeTranscriptApi.get_transcript(
             video_id, proxies=proxies, languages=['ko', 'en']
         )
         transcript_data = "\n".join([item['text'] for item in transcript_list])
         successful_proxy = proxy_url
+        end_time = time.time()
+        latency = end_time - start_time
+        print(f"Latency for {proxy_url}: {latency:.4f} seconds")
         print(f"Successfully fetched transcript using {proxy_url}")
-        break  # Exit loop if successful
     except Exception as e:
         last_error_message = str(e)
         print(f"Failed to fetch transcript using {proxy_url}: {e}")
-
-if transcript_data:
-    print("\n--- Transcript ---")
-    print(transcript_data)
-    print(f"--- End of Transcript (fetched with {successful_proxy}) ---")
-else:
-    print("\n--- Failed to retrieve transcript after trying all proxies ---")
-    if last_error_message:
-        print(f"Last error: {last_error_message}")
 
 print("\nScript finished.")
 

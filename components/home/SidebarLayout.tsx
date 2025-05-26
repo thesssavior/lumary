@@ -63,7 +63,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
             {children}
           </main>
 
-          <SubscriptionPlans isOpen={isPlansModalOpen} onClose={() => setIsPlansModalOpen(false)} />
+          <SubscriptionPlans isOpen={isPlansModalOpen} onCloseAction={() => setIsPlansModalOpen(false)} />
         </div>
       </SidebarRefreshContext.Provider>
     </FolderContext.Provider>

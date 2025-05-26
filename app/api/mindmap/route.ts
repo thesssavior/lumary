@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 import OpenAI from 'openai';
+
 const model = "gpt-4.1-mini";
 
 const openai = new OpenAI({
@@ -20,7 +21,9 @@ export async function POST(req: NextRequest) {
     }
 
     const system = `
-    You are a JSON generator for a mind-map API.
+    You are an API that returns **only** valid JSON for a React-Flow mind-map.
+    Goal → Give learners a concise, birds-eye structure of the content so they can comprehend the main points at a glance.
+
     Return only valid JSON (no markdown).
     Schema: {
       "nodes": RFNode[],
@@ -29,6 +32,7 @@ export async function POST(req: NextRequest) {
     Each RFNode must have unique "id" and a "position".
     Each RFEdge must reference existing node ids.
     Return 1-3 top-level nodes plus their children.
+    The deepest level of nodes (leaf nodes) for any branch should be limited to 3-4 items.
     Example:
     {"nodes":[{"id":"root","data":{"label":"Central"},"position":{"x":0,"y":0},"type":"input"}],"edges":[]}
     `;
@@ -36,7 +40,6 @@ export async function POST(req: NextRequest) {
     const prompt = `
       provide the mindmap in language of ${locale}
 
-      ${system} 
       Summary Text:
       --- --- --- --- ---
       ${summaryText}
@@ -46,8 +49,11 @@ export async function POST(req: NextRequest) {
     `;
 
     const completion = await openai.chat.completions.create({
-      model: model, // Or your preferred model like gpt-4.1-mini if available
-      messages: [{ role: "user", content: prompt }],
+      model: model,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: prompt }
+      ],
       response_format: { type: "json_object" }, // Ensure JSON output
       temperature: 0.3, // Lower temperature for more deterministic output
     });

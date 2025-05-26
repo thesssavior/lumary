@@ -147,7 +147,8 @@
   "summarySavedSuccess": "요약이 성공적으로 저장되었습니다!",
   "summaryTab": "요약",
   "mindmapTab": "마인드맵",
-  "transcriptTab": "전체 대본",
+  "transcriptTab": "자막",
+  "quizTab": "퀴즈",
   "communityPage": {
     "title": "커뮤니티",
     "description": "여러분의 피드백과 아이디어로 Lumary의 미래를 함께 만들어가요.",
@@ -218,7 +219,8 @@
     "subscriptionSection": {
       "title": "구독 관리",
       "description": "구독 세부 정보를 관리합니다.",
-      "manageButton": "구독 관리로 이동"
+      "manageButton": "구독 관리로 이동",
+      "upgradeButton": "플랜 업그레이드"
     }
   },
   "Mindmap": {
@@ -228,7 +230,29 @@
     "error": "마인드맵 로딩 오류",
     "noMindmap": "마인드맵이 없습니다.",
     "generateMindmap": "마인드맵 생성",
-    "generateMindmapDescription": "한눈에 보이는 지식"  ,
+    "generateMindmapDescription": "한눈에 보이는 지식,\n생각의 지도"  ,
     "generateMindmapButton": "마인드맵 생성"
+  },
+  "Quiz": {
+    "title": "퀴즈",
+    "description": "퀴즈를 풀며 핵심 개념을 확인해 보세요.",
+    "loading": "퀴즈 로딩 중...",
+    "error": "퀴즈 로딩 오류",
+    "noQuiz": "퀴즈가 없습니다.",
+    "generateQuiz": "퀴즈 생성",
+    "generateDescription": "퀴즈를 풀며 핵심 개념을 확인해 보세요.",
+    "generateButton": "퀴즈 생성",
+    "regenerateButton": "퀴즈 다시 생성",
+    "question": "질문",
+    "answer": "정답",
+    "options": "선택지",
+    "correctOption": "정답",
+    "incorrectOption": "오답",
+    "submit": "제출",
+    "submitButton": "제출",
+    "errorNoSummary": "요약이 없습니다.",
+    "generatingQuiz": "퀴즈 생성 중...",
+    "showAnswerButton": "정답 보기",
+    "hideAnswerButton": "정답 숨기기"
   }
 } 

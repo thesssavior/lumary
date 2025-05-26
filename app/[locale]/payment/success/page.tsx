@@ -16,7 +16,8 @@ export default function PaymentSuccess() {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (session?.user?.email && plan === 'free') {
+    // plan !== premium instead of plan === free, covering null case
+    if (session?.user?.email && plan !== 'free') {
       interval = setInterval(async () => {
         try {
             const res = await fetch(`/api/user/plan?email=${session.user.email}`);

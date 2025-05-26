@@ -134,15 +134,14 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, su
 
   if (!isGenerated && !isLoading && !error && !isSaving) {
     return (
-      <div style={{ height: '600px', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '1px solid #eee', borderRadius: '8px', gap: '1rem' }}>
-        <Brain className="h-16 w-16 text-gray-400" />
-        {/* <h3 className="text-xl font-semibold text-gray-700">{t('generateMindmap')}</h3> */}
-        <p className="text-sm text-gray-500 text-center max-w-md">
+      <div className="flex flex-col items-center justify-center h-full min-h-[300px] p-10 text-center border rounded-md">
+        <Brain className="h-12 w-12 my-6" />
+        <h3 className="text-xl font-semibold mb-2">{t('Mindmap.title')}</h3>
+        <p className="text-sm text-gray-500 text-center max-w-md mb-6">
           {t('Mindmap.generateMindmapDescription')}
         </p>
         <Button 
           onClick={generateMindmap}
-          className="mt-2"
           size="lg"
         >
           {t('Mindmap.generateMindmapButton')}
@@ -154,7 +153,7 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, su
   if (isLoading) {
     return (
       <div style={{ height: '600px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #eee', borderRadius: '8px' }}>
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }

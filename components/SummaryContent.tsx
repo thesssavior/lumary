@@ -7,8 +7,9 @@ import { FullTranscriptViewer } from "@/components/yt_videos/FullTranscriptViewe
 import Mindmap from '@/components/yt_videos/Mindmap';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import Quiz from './yt_videos/Quiz';
 
-export default function SummaryContent({ summary, folder, locale, mindmap, summaryId }: { summary: any; folder: any; locale: string; mindmap: any | null; summaryId: string }) {
+export default function SummaryContent({ summary, folder, locale, mindmap, summaryId, quiz }: { summary: any; folder: any; locale: string; mindmap: any | null; summaryId: string; quiz: any | null }) {
     const t = useTranslations();
     const [activetab, setActivetab] = useState("summary");
   
@@ -31,9 +32,10 @@ export default function SummaryContent({ summary, folder, locale, mindmap, summa
         <Tabs defaultValue="summary" value={activetab} onValueChange={setActivetab} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             {/* <TabsTrigger value="summary" className="data-[state=active]:bg-black data-[state=active]:text-white">{t('summaryTab')}</TabsTrigger> */}
-            <TabsTrigger value="summary">{t('summaryTab')}</TabsTrigger>
-            <TabsTrigger value="mindmap">{t('mindmapTab')}</TabsTrigger>
-            <TabsTrigger value="transcript">{t('transcriptTab')}</TabsTrigger>
+            <TabsTrigger value="summary" >{t('summaryTab')}</TabsTrigger>
+            <TabsTrigger value="mindmap" >{t('mindmapTab')}</TabsTrigger>
+            {/* <TabsTrigger value="quiz" className="data-[state=active]:bg-black data-[state=active]:text-white">{t('quizTab')}</TabsTrigger> */}
+            <TabsTrigger value="transcript" >{t('transcriptTab')}</TabsTrigger>
           </TabsList>
   
           <TabsContent value="summary" className="mt-4 p-0 border-0">
@@ -47,9 +49,9 @@ export default function SummaryContent({ summary, folder, locale, mindmap, summa
           <TabsContent 
             value="mindmap" 
             forceMount={true} 
-            className="data-[state=active]:block hidden mt-4 p-6 border rounded-md"
+            className="data-[state=active]:block hidden mt-4 p-0"
             >
-            {summary.summary && summary.transcript ? (
+            {summary.summary ? (
               <Mindmap 
                 summary={summary.summary} 
                 locale={locale} 
@@ -58,10 +60,22 @@ export default function SummaryContent({ summary, folder, locale, mindmap, summa
                 isActive={activetab === "mindmap"}
               />
             ) : (
-              <p className="text-gray-500">Summary or transcript not available for mindmap generation.</p>
+              <p className="text-gray-500">Summary not available for mindmap generation.</p>
             )}
           </TabsContent>
   
+          {/* <TabsContent 
+            value="quiz" 
+            forceMount={true} 
+            className="data-[state=active]:block hidden mt-4 p-0"
+          >
+            <Quiz 
+              summary={summary.summary} 
+              quizData={quiz} 
+              locale={locale} 
+              summaryId={summaryId} 
+            />
+          </TabsContent> */}
   
           <TabsContent value="transcript" className="mt-4 p-0 border-0">
             <div className="p-4 border rounded-md">

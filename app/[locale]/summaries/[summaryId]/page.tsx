@@ -11,7 +11,7 @@ export default async function SummaryDetailPage({ params }: { params: Promise<{ 
   
   const { data: summary, error: summaryError } = await supabase
     .from('summaries')
-    .select('id, name, summary, video_id, created_at, folder_id, locale, transcript, mindmap')
+    .select('id, name, summary, video_id, created_at, folder_id, locale, transcript, mindmap, quiz')
     .eq('id', summaryId)
     .single();
 
@@ -33,7 +33,7 @@ export default async function SummaryDetailPage({ params }: { params: Promise<{ 
     <>
       <ScrollToTopButton />
       <Suspense fallback={<Loader2 className="h-16 w-16 animate-spin" />}>
-        <SummaryContent summary={summary} folder={folder} locale={locale} mindmap={summary.mindmap || null} summaryId={summaryId} />
+        <SummaryContent summary={summary} folder={folder} locale={locale} mindmap={summary.mindmap || null} summaryId={summaryId} quiz={summary.quiz || null} />
       </Suspense>
     </>
   );
