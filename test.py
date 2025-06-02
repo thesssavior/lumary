@@ -16,75 +16,96 @@ import time # Import the time module for latency testing
 
 from youtube_transcript_api import YouTubeTranscriptApi
 
-# Replace with your actual YouTube video ID
-# Example video_id known to have ko/en transcripts: "a_ZOXIikA30"
-video_id = "dQw4w9WgXcQ" 
+# YouTube Shorts video ID from youtube.com/shorts/LXU5ajbcWFY
+video_id = "LXU5ajbcWFY" 
 
-# Proxies from your TypeScript file, with webshare.io updated
-proxy_config = [
-    {
-        "url": 'http://toehivex-rotate:esiwn5hn17xs@p.webshare.io:80/',
-        "note": "Webshare with -rotate username"
-    },
-    {
-        "url": 'http://toehivex-KR-rotate:esiwn5hn17xs@p.webshare.io:80/',
-        "note": "Webshare with -KR-rotate username"
-    },
-    {
-        "url": 'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh_country-kr@geo.iproyal.com:12321',
-        "note": "iProyal"
-    },
-    {
-        "url": 'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh@geo.iproyal.com:12321',
-        "note": "iProyal"
-    },
-    {
-        "url": 'http://pUUJm81Z0iLPUl2t:G8MtlvbQ73fGcsxh_country-kr_city-seoul@geo.iproyal.com:12321',
-        "note": "iProyal"
-    },
-    # {
-    #     "url": 'http://brd-customer-hl_414d8129-zone-residential_proxy1:yd55dtlsq03w@brd.superproxy.io:33335',
-    #     "note": "Superproxy"
-    # }
-]
+print(f"Testing transcript retrieval for YouTube Shorts video ID: {video_id}\n")
 
 transcript_data = None
-successful_proxy = None
 last_error_message = ""
 
-print(f"Testing transcript retrieval for video ID: {video_id}\n")
+print(f"Attempting to fetch auto-generated transcript locally (no proxy)")
+start_time = time.time()
 
-for config in proxy_config:
-    proxy_url = config["url"]
-    note = config["note"]
-    proxies = {
-        "http": proxy_url,
-        "https": proxy_url,
-    }
-
-    print(f"Attempting to fetch transcript with proxy: {proxy_url} ({note})")
-    start_time = time.time()
-    try:
-        transcript_list = YouTubeTranscriptApi.get_transcript(
-            video_id, proxies=proxies, languages=['ko', 'en']
-        )
-        transcript_data = "\n".join([item['text'] for item in transcript_list])
-        successful_proxy = proxy_url
-        end_time = time.time()
-        latency = end_time - start_time
-        print(f"Latency for {proxy_url}: {latency:.4f} seconds")
-        print(f"Successfully fetched transcript using {proxy_url}")
-    except Exception as e:
-        last_error_message = str(e)
-        print(f"Failed to fetch transcript using {proxy_url}: {e}")
+try:
+    # First, let's see what transcripts are available
+    print("Checking available transcripts...")
+    transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+    available_transcripts = []
+    
+    for transcript in transcript_list:
+        available_transcripts.append({
+            'language': transcript.language,
+            'language_code': transcript.language_code,
+            'is_generated': transcript.is_generated,
+            'is_translatable': transcript.is_translatable
+        })
+    
+    print(f"Available transcripts: {available_transcripts}")
+    
+    if available_transcripts:
+        # Try each available transcript
+        for transcript_info in available_transcripts:
+            lang_code = transcript_info['language_code']
+            print(f"\nTrying to fetch {transcript_info['language']} transcript...")
+            
+            try:
+                transcript = transcript_list.find_transcript([lang_code])
+                transcript_data_list = transcript.fetch()
+                
+                # Debug: Check what we actually get
+                print(f"Fetched {len(transcript_data_list)} transcript segments")
+                if transcript_data_list:
+                    print(f"First segment type: {type(transcript_data_list[0])}")
+                    print(f"First segment content: {transcript_data_list[0]}")
+                
+                # Handle the transcript data properly
+                if hasattr(transcript_data_list[0], 'text'):
+                    # If segments have text attribute
+                    transcript_data = "\n".join([segment.text for segment in transcript_data_list])
+                else:
+                    # If segments are dictionaries
+                    transcript_data = "\n".join([segment['text'] for segment in transcript_data_list])
+                
+                end_time = time.time()
+                latency = end_time - start_time
+                print(f"Latency: {latency:.4f} seconds")
+                print(f"Successfully fetched {transcript_info['language']} transcript!")
+                print(f"Number of transcript segments: {len(transcript_data_list)}")
+                print(f"Full transcript length: {len(transcript_data)} characters")
+                print(f"\nTranscript preview (first 500 characters):")
+                print(transcript_data[:500] + "..." if len(transcript_data) > 500 else transcript_data)
+                break  # Success, exit the loop
+                
+            except Exception as transcript_error:
+                print(f"Failed to fetch {transcript_info['language']} transcript: {transcript_error}")
+                continue
+    else:
+        print("No transcripts found for this video.")
+        
+except Exception as e:
+    last_error_message = str(e)
+    print(f"Failed to access video transcripts: {e}")
+    
+    # Let's try a more direct approach for common languages
+    print("\nTrying direct language approach...")
+    for lang in ['en', 'ko']:
+        try:
+            print(f"Trying {lang}...")
+            transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=[lang])
+            transcript_data = "\n".join([item['text'] for item in transcript_list])
+            print(f"Successfully fetched transcript in {lang}!")
+            print(f"Transcript length: {len(transcript_data)} characters")
+            print(f"Preview: {transcript_data[:300]}...")
+            break
+        except Exception as lang_error:
+            print(f"Failed for {lang}: {lang_error}")
 
 print("\nScript finished.")
 
 # To run this script:
-# 1. Make sure you have the library installed: pip install youtube-transcript-api requests
-#    (requests is usually a dependency but good to ensure it's there for proxy handling)
-# 2. Replace "YOUR_VIDEO_ID_HERE" with an actual YouTube video ID (e.g., "a_ZOXIikA30").
-# 3. Execute the script: python test.py
+# 1. Make sure you have the library installed: pip install youtube-transcript-api
+# 2. Execute the script: python test.py
 
 # Replace with your actual API key and a real YouTube video ID
 api_key = "AIzaSyBtwQQNW6Bm0mP0VLcRMS4jWDriYgopyVM"

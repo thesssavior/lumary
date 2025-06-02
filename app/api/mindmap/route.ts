@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 });
     }
 
+    // left to right. sometimes spits out radially, gotta fix
     const system = `
     You are an API that returns **only** valid JSON for a React-Flow mind-map.
     Goal → Give learners a concise, birds-eye structure of the content so they can comprehend the main points at a glance.
@@ -32,7 +33,10 @@ export async function POST(req: NextRequest) {
     Each RFNode must have unique "id" and a "position".
     Each RFEdge must reference existing node ids.
     Return 1-3 top-level nodes plus their children.
-    The deepest level of nodes (leaf nodes) for any branch should be limited to 3-4 items.
+    The deepest level of nodes (leaf nodes) for any branch should be limited to 3 items.
+    Use emojis and concise labels (max 6 words)
+    Maximum 16 total nodes (including root)
+    Left to right layout: top node at the left, children to the right
     Example:
     {"nodes":[{"id":"root","data":{"label":"Central"},"position":{"x":0,"y":0},"type":"input"}],"edges":[]}
     `;

@@ -6,6 +6,10 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: { unoptimized: true },
+  experimental: {
+    // Helps prevent hydration issues
+    optimizePackageImports: ['@/components', '@/hooks'],
+  },
   webpack: (config, { isServer }) => {
     config.resolve.alias.canvas = false;
 

@@ -23,10 +23,11 @@ interface MindmapProps {
   locale: string;
   summaryId: string;
   isActive: boolean | null;
+  isStreaming?: boolean;
   // transcript: string; // Transcript is not directly used for generation by this component anymore
 }
 
-const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, summaryId, isActive }) => {
+const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, summaryId, isActive, isStreaming = false }) => {
   const t = useTranslations();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -127,12 +128,12 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, su
   if (!summary) {
     return (
       <div style={{ height: '600px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #eee', borderRadius: '8px' }}>
-        <p className="text-gray-500">No summary available to generate a mind map.</p>
+        <p className="text-gray-500">{t('Mindmap.noSummaryAvailable')}</p>
       </div>
     );
   }
 
-  if (!isGenerated && !isLoading && !error && !isSaving) {
+  if (!isGenerated && !isLoading && !error && !isSaving && !isStreaming) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[300px] p-10 text-center border rounded-md">
         <Brain className="h-12 w-12 my-6" />
@@ -146,6 +147,19 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, su
         >
           {t('Mindmap.generateMindmapButton')}
         </Button>
+      </div>
+    );
+  }
+
+  // Show loading state when streaming
+  if (isStreaming) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full min-h-[300px] p-10 text-center border rounded-md">
+        <Loader2 className="h-8 w-8 animate-spin mb-4" />
+        <h3 className="text-xl font-semibold mb-2">Summary in Progress</h3>
+        <p className="text-sm text-gray-500 text-center max-w-md">
+          Please wait for the summary to complete before generating the mind map.
+        </p>
       </div>
     );
   }

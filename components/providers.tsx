@@ -1,7 +1,20 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
+import { useState, useEffect } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <SessionProvider>{children}</SessionProvider>;
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  return (
+    <SessionProvider>
+      <div suppressHydrationWarning={true}>
+        {children}
+      </div>
+    </SessionProvider>
+  );
 } 

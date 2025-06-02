@@ -231,7 +231,8 @@
     "noMindmap": "마인드맵이 없습니다.",
     "generateMindmap": "마인드맵 생성",
     "generateMindmapDescription": "한눈에 보이는 지식,\n생각의 지도"  ,
-    "generateMindmapButton": "마인드맵 생성"
+    "generateMindmapButton": "마인드맵 생성",
+    "noSummaryAvailable": "마인드맵 생성을 위해 완성된 요약이 필요합니다."
   },
   "Quiz": {
     "title": "퀴즈",

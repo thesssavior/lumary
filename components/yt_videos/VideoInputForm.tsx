@@ -11,6 +11,7 @@ import { signIn, useSession } from "next-auth/react";
 import { useFolder } from '../home/SidebarLayout';
 import { useSummaryGeneration } from '@/contexts/SummaryGenerationContext';
 import { LanguageSwitcher } from '../home/LanguageSwitcher';
+import { useHydration } from '@/hooks/useHydration';
 
 interface FolderType {
   id: string;
@@ -25,6 +26,7 @@ export function VideoInputForm() {
   const locale = params.locale as string;
   const { activeFolder, openSubscriptionModal } = useFolder();
   const { setGenerationData } = useSummaryGeneration();
+  const isHydrated = useHydration();
   
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -36,15 +38,15 @@ export function VideoInputForm() {
   const [showTokenLimitUpgrade, setShowTokenLimitUpgrade] = useState(false);
   const [dailyLimitExceeded, setDailyLimitExceeded] = useState(false);
 
-  // Check localStorage for trial status on mount
+  // Check localStorage for trial status on mount - only after hydration
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (isHydrated && typeof window !== 'undefined') {
       const storedTrialUsed = localStorage.getItem('trialUsed');
       if (storedTrialUsed === 'true') {
         setTrialUsed(true);
       }
     }
-  }, []);
+  }, [isHydrated]);
 
   // Extract video ID from URL passed as query param
   useEffect(() => {
@@ -58,9 +60,9 @@ export function VideoInputForm() {
     }
   }, [searchParams]);
 
-  // Check if the user is using an in-app browser
+  // Check if the user is using an in-app browser - only after hydration
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (isHydrated && typeof window !== 'undefined') {
       const ua = navigator.userAgent || navigator.vendor;
       if (/KAKAOTALK/i.test(ua)) {
         setInAppBrowser(true);
@@ -68,11 +70,12 @@ export function VideoInputForm() {
         setInAppBrowser(false);
       }
     }
-  }, []);
+  }, [isHydrated]);
 
   const extractVideoId = (url: string): string | null => {
     const patterns = [
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/|m\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/, // eslint-disable-line no-useless-escape
+      /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/, // YouTube Shorts support
       /^([a-zA-Z0-9_-]{11})$/
     ];
     for (const pattern of patterns) {
@@ -93,8 +96,8 @@ export function VideoInputForm() {
       return;
     }
     
-    // Check daily limit for signed-in free users
-    if (session && session.user.plan !== 'premium') {
+    // Check daily limit for signed-in free users - only after hydration
+    if (session && session.user.plan !== 'premium' && isHydrated && typeof window !== 'undefined') {
       const today = new Date().toDateString();
       const lastGenerationDate = localStorage.getItem('freeUserLastGenerationDate');
 
@@ -159,14 +162,14 @@ export function VideoInputForm() {
         folderForSummary: activeFolder ? { id: activeFolder.id, name: activeFolder.name } : null
       });
 
-      // Mark trial as used if not logged in
-      if (!session) {
+      // Mark trial as used if not logged in - only after hydration
+      if (!session && isHydrated) {
         setTrialUsed(true);
         if (typeof window !== 'undefined') {
             localStorage.setItem('trialUsed', 'true');
         }
-      } else if (session.user.plan !== 'premium') {
-        // Record generation date for free users
+      } else if (session && session.user.plan !== 'premium' && isHydrated) {
+        // Record generation date for free users - only after hydration
         if (typeof window !== 'undefined') {
           localStorage.setItem('freeUserLastGenerationDate', new Date().toDateString());
         }
@@ -222,7 +225,7 @@ export function VideoInputForm() {
               onChange={(e) => setUrl(e.target.value)}
               className="border-zinc-200 bg-white text-black placeholder:text-zinc-400 ring-1 ring-ring ring-offset-2 focus-visible:ring-red-600 focus-visible:ring-offset-white transition-colors pr-10 w-full"
               required
-              pattern="^https?://(www\.|m\.)?(youtube\.com/(watch\?v=|embed\/|v\/)|youtu\.be\/).+" // eslint-disable-line no-useless-escape
+              pattern="^https?://(www\.|m\.)?(youtube\.com/(watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/).+" // eslint-disable-line no-useless-escape
               // title={t('youtubeUrlHint')}
             />
             {url && (

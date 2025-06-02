@@ -48,17 +48,11 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const [hoveredSummaryId, setHoveredSummaryId] = useState<string | null>(null);
   const [hoveredFolderId, setHoveredFolderId] = useState<string | null>(null);
 
-  // Check session on mount
+  // Needs test
+  // Use session from useSession hook instead of redundant fetch
   useEffect(() => {
-    fetch('/api/auth/session').then(async (res) => {
-      if (res.ok) {
-        const session = await res.json();
-        setIsSignedIn(!!session?.user);
-      } else {
-        setIsSignedIn(false);
-      }
-    });
-  }, []);
+    setIsSignedIn(!!session?.user);
+  }, [session]);
 
   // Fetch folders using api/folders
   const fetchFolders = async () => {

@@ -304,7 +304,7 @@ export default function NewSummaryPage() {
               <TabsTrigger value="transcript">{t('transcriptTab')}</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="summary" className="mt-6 p-0 border-0">
+            <TabsContent value="summary" className="mt-4 p-0 border-0">
               {isLongVideo && isStreaming && !overviewContent ? (
                 <div className="prose prose-zinc max-w-none p-6 border rounded-md bg-gray-50">
                   <Skeleton className="h-6 w-3/4 mb-6" /> {/* Placeholder for title */}
@@ -347,14 +347,21 @@ export default function NewSummaryPage() {
               forceMount={true}
               className="data-[state=active]:block hidden mt-4 p-0 border-0"
             >
-              {(streamingSummaryContent || (persistedTitle && !isStreaming)) && persistedTranscriptText ? ( // Ensure summary (even partial) and transcript are available
+              {(streamingSummaryContent && !isStreaming) && persistedTranscriptText ? ( // Block mindmap when streaming
                 <div className="p-0 md:p-0 border rounded-md min-h-[600px]"> 
-                  <Mindmap summary={isLongVideo && overviewContent ? overviewContent + "\n\n" + streamingSummaryContent : streamingSummaryContent} locale={locale} mindmap={null} summaryId={newSummaryId || ''} isActive/>
+                  <Mindmap 
+                    summary={isLongVideo && overviewContent ? overviewContent + "\n\n" + streamingSummaryContent : streamingSummaryContent} 
+                    locale={locale} 
+                    mindmap={null} 
+                    summaryId={newSummaryId || ''} 
+                    isActive
+                    isStreaming={isStreaming}
+                  />
                 </div>
               ) : isStreaming ? (
                 <div className="flex items-center justify-center h-[600px] border rounded-md">
                   <Loader2 className="h-8 w-8 animate-spin" />
-                  <p className="ml-2 text-gray-500">Waiting for summary to generate mind map...</p>
+                  <p className="ml-2 text-gray-500">Waiting for summary to complete before generating mind map...</p>
                 </div>
               ) : (
                 <p className="text-gray-500 p-6 border rounded-md">

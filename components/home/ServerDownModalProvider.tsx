@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import ServerDownModal from './ServerDownModal';
 import { useServerState } from '@/store/serverState';
+import { useHydration } from '@/hooks/useHydration';
 
 export default function ServerDownModalProvider({ 
   children 
@@ -10,24 +11,22 @@ export default function ServerDownModalProvider({
   children: React.ReactNode 
 }) {
   const { isServerDown, setServerDown } = useServerState();
-  
-  // Function to be called when API errors occur
-  const handleServerError = () => {
-    setServerDown(true);
-  };
+  const isHydrated = useHydration();
 
-  // Expose the error handler to window for global access
+  // Expose the error handler to window for global access - only after hydration
   useEffect(() => {
-    // @ts-ignore - Adding a global handler
-    window.showServerMaintenanceModal = () => {
-      setServerDown(true);
-    };
-    
-    return () => {
-      // @ts-ignore - Cleanup
-      window.showServerMaintenanceModal = undefined;
-    };
-  }, [setServerDown]);
+    if (isHydrated && typeof window !== 'undefined') {
+      // @ts-ignore - Adding a global handler
+      window.showServerMaintenanceModal = () => {
+        setServerDown(true);
+      };
+      
+      return () => {
+        // @ts-ignore - Cleanup
+        window.showServerMaintenanceModal = undefined;
+      };
+    }
+  }, [setServerDown, isHydrated]);
 
   return (
     <>

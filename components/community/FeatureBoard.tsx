@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useTranslations } from 'next-intl';
-import { Loader2 } from "lucide-react";
+import { Loader2, Check, ThumbsUp } from 'lucide-react';
+import { useHydration } from '@/hooks/useHydration';
 
 type Status = "planned" | "in-progress" | "shipped" | "considering";
 
@@ -37,12 +39,13 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
   const [votes, setVotes] = useState(feature.votes);
   const [hasVoted, setHasVoted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const isHydrated = useHydration();
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (isHydrated && typeof window !== 'undefined') {
       setHasVoted(getVotedFeatures().includes(feature.id));
     }
-  }, [feature.id]);
+  }, [feature.id, isHydrated]);
   
   const handleVote = async () => {
     if (hasVoted || isLoading) return;
