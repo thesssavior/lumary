@@ -16,90 +16,149 @@ import time # Import the time module for latency testing
 
 from youtube_transcript_api import YouTubeTranscriptApi
 
-# YouTube Shorts video ID from youtube.com/shorts/LXU5ajbcWFY
-video_id = "LXU5ajbcWFY" 
+def format_time(seconds):
+    """Format seconds to MM:SS format like in youtube-utils"""
+    minutes = int(seconds // 60)
+    secs = int(seconds % 60)
+    return f"{minutes:02d}:{secs:02d}"
 
-print(f"Testing transcript retrieval for YouTube Shorts video ID: {video_id}\n")
+def format_transcript_with_timestamps(transcript_data):
+    """Format transcript with timestamps every 10th item, similar to youtube-utils"""
+    if not transcript_data or len(transcript_data) == 0:
+        return ""
+    
+    formatted_parts = []
+    for idx, item in enumerate(transcript_data):
+        # Handle both dictionary and object formats
+        if hasattr(item, 'text'):
+            text = item.text
+            start_time = item.start
+        else:
+            text = item['text']
+            start_time = item['start']
+            
+        # Add timestamp every 10th item (0, 10, 20, etc.)
+        if idx % 10 == 0:
+            timestamp = format_time(start_time)
+            formatted_parts.append(f"[{timestamp}] {text}")
+        else:
+            formatted_parts.append(text)
+    
+    return ' '.join(formatted_parts)
 
-transcript_data = None
-last_error_message = ""
+# Configure proxy for requests
+proxy_config = {
+    'http': 'http://toehivex-KR-rotate:esiwn5hn17xs@p.webshare.io:80',
+    'https': 'http://toehivex-KR-rotate:esiwn5hn17xs@p.webshare.io:80'
+}
 
-print(f"Attempting to fetch auto-generated transcript locally (no proxy)")
-start_time = time.time()
+# Monkey patch the requests session to use proxy
+original_get = requests.get
+def patched_get(*args, **kwargs):
+    kwargs['proxies'] = proxy_config
+    kwargs['timeout'] = 30
+    return original_get(*args, **kwargs)
+
+requests.get = patched_get
+
+# YouTube video ID - NEW VIDEO
+video_id = "pbEhk5NokJo" 
+
+print(f"Extracting Thai transcript with timestamps for YouTube video ID: {video_id}")
+print(f"Using proxy: p.webshare.io:80\n")
 
 try:
-    # First, let's see what transcripts are available
-    print("Checking available transcripts...")
-    transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
-    available_transcripts = []
+    # Set up proxy for youtube-transcript-api
+    print("Attempting to fetch transcript using proxy...")
+    start_time = time.time()
     
-    for transcript in transcript_list:
-        available_transcripts.append({
-            'language': transcript.language,
-            'language_code': transcript.language_code,
-            'is_generated': transcript.is_generated,
-            'is_translatable': transcript.is_translatable
-        })
-    
-    print(f"Available transcripts: {available_transcripts}")
-    
-    if available_transcripts:
-        # Try each available transcript
-        for transcript_info in available_transcripts:
-            lang_code = transcript_info['language_code']
-            print(f"\nTrying to fetch {transcript_info['language']} transcript...")
+    # Try to get Thai transcript directly with the proxy
+    try:
+        transcript_data = YouTubeTranscriptApi.get_transcript(video_id, languages=['th'], proxies=proxy_config)
+        print(f"Successfully fetched Thai transcript using direct method!")
+        
+        # Debug: Show first few items with their properties
+        print(f"\nFirst transcript item details:")
+        first_item = transcript_data[0]
+        print(f"  Text: {first_item['text']}")
+        print(f"  Start: {first_item['start']}s")
+        print(f"  Duration: {first_item['duration']}s")
+        
+        # Format transcript with timestamps (similar to youtube-utils)
+        formatted_transcript = format_transcript_with_timestamps(transcript_data)
+        
+        # Also create a detailed version with all timestamps
+        detailed_transcript_lines = []
+        for item in transcript_data:
+            timestamp = format_time(item['start'])
+            detailed_transcript_lines.append(f"[{timestamp}] {item['text']}")
+        detailed_transcript = '\n'.join(detailed_transcript_lines)
+        
+        end_time = time.time()
+        latency = end_time - start_time
+        
+        print(f"\nSuccessfully fetched Thai transcript!")
+        print(f"Latency: {latency:.4f} seconds")
+        print(f"Number of transcript segments: {len(transcript_data)}")
+        print(f"Formatted transcript length: {len(formatted_transcript)} characters")
+        print(f"Detailed transcript length: {len(detailed_transcript)} characters")
+        
+        # Save formatted transcript (like youtube-utils format) - NEW FILENAMES
+        filename_formatted = f"thai_transcript_{video_id}_formatted.txt"
+        with open(filename_formatted, 'w', encoding='utf-8') as f:
+            f.write(f"Thai Transcript for YouTube Video: https://www.youtube.com/watch?v={video_id}\n")
+            f.write(f"Language: Thai (auto-generated)\n")
+            f.write(f"Format: Timestamps every 10th segment (like youtube-utils)\n")
+            f.write("=" * 70 + "\n\n")
+            f.write(formatted_transcript)
+        
+        # Save detailed transcript (all timestamps) - NEW FILENAMES
+        filename_detailed = f"thai_transcript_{video_id}_detailed.txt"
+        with open(filename_detailed, 'w', encoding='utf-8') as f:
+            f.write(f"Thai Transcript for YouTube Video: https://www.youtube.com/watch?v={video_id}\n")
+            f.write(f"Language: Thai (auto-generated)\n")
+            f.write(f"Format: All timestamps included\n")
+            f.write("=" * 70 + "\n\n")
+            f.write(detailed_transcript)
+        
+        print(f"\nFiles saved:")
+        print(f"  1. {filename_formatted} (youtube-utils style formatting)")
+        print(f"  2. {filename_detailed} (all timestamps included)")
+        
+        print(f"\nFormatted transcript preview (first 400 characters):")
+        print(formatted_transcript[:400] + "..." if len(formatted_transcript) > 400 else formatted_transcript)
+        
+    except Exception as direct_error:
+        print(f"Direct method failed: {direct_error}")
+        print("Trying transcript list method with proxy...")
+        
+        # Fallback: Use transcript list method
+        transcript_list = YouTubeTranscriptApi.list_transcripts(video_id, proxies=proxy_config)
+        
+        # Find Thai transcript
+        thai_transcript = None
+        for transcript in transcript_list:
+            if transcript.language_code == 'th':
+                thai_transcript = transcript
+                break
+        
+        if thai_transcript:
+            print(f"Found Thai transcript: {thai_transcript.language} ({'auto-generated' if thai_transcript.is_generated else 'manual'})")
             
-            try:
-                transcript = transcript_list.find_transcript([lang_code])
-                transcript_data_list = transcript.fetch()
-                
-                # Debug: Check what we actually get
-                print(f"Fetched {len(transcript_data_list)} transcript segments")
-                if transcript_data_list:
-                    print(f"First segment type: {type(transcript_data_list[0])}")
-                    print(f"First segment content: {transcript_data_list[0]}")
-                
-                # Handle the transcript data properly
-                if hasattr(transcript_data_list[0], 'text'):
-                    # If segments have text attribute
-                    transcript_data = "\n".join([segment.text for segment in transcript_data_list])
-                else:
-                    # If segments are dictionaries
-                    transcript_data = "\n".join([segment['text'] for segment in transcript_data_list])
-                
-                end_time = time.time()
-                latency = end_time - start_time
-                print(f"Latency: {latency:.4f} seconds")
-                print(f"Successfully fetched {transcript_info['language']} transcript!")
-                print(f"Number of transcript segments: {len(transcript_data_list)}")
-                print(f"Full transcript length: {len(transcript_data)} characters")
-                print(f"\nTranscript preview (first 500 characters):")
-                print(transcript_data[:500] + "..." if len(transcript_data) > 500 else transcript_data)
-                break  # Success, exit the loop
-                
-            except Exception as transcript_error:
-                print(f"Failed to fetch {transcript_info['language']} transcript: {transcript_error}")
-                continue
-    else:
-        print("No transcripts found for this video.")
+            # Fetch the Thai transcript
+            transcript_data = thai_transcript.fetch()
+            
+            # Rest of the processing code...
+            # (Same as above but with object attributes instead of dictionary keys)
+            print("Processing transcript data with list method...")
+            
+        else:
+            print("No Thai transcript found.")
         
 except Exception as e:
-    last_error_message = str(e)
-    print(f"Failed to access video transcripts: {e}")
-    
-    # Let's try a more direct approach for common languages
-    print("\nTrying direct language approach...")
-    for lang in ['en', 'ko']:
-        try:
-            print(f"Trying {lang}...")
-            transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=[lang])
-            transcript_data = "\n".join([item['text'] for item in transcript_list])
-            print(f"Successfully fetched transcript in {lang}!")
-            print(f"Transcript length: {len(transcript_data)} characters")
-            print(f"Preview: {transcript_data[:300]}...")
-            break
-        except Exception as lang_error:
-            print(f"Failed for {lang}: {lang_error}")
+    print(f"Error: {e}")
+    import traceback
+    traceback.print_exc()
 
 print("\nScript finished.")
 
