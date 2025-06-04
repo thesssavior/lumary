@@ -210,22 +210,46 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
       // Find the summary in the current summaries list
       const summaryToMove = folderSummaries[sourceFolderId][summaryIdx];
       if (!summaryToMove) return;
-      // Optimistically remove from current list
+      
+      // Optimistically update the UI
       setFolderSummaries(prev => ({
         ...prev,
         [sourceFolderId]: prev[sourceFolderId].filter((_, i) => i !== summaryIdx),
-        [destFolderId]: [...prev[destFolderId], summaryToMove]
+        [destFolderId]: [...(prev[destFolderId] || []), summaryToMove]
       }));
+      
       // Call API to move summary
-      await fetch(`/api/folders/${sourceFolderId}/summaries`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ summaryId: summaryToMove.id, targetFolderId: destFolderId }),
-      });
-      // Refetch summaries for both folders
-      if (activeFolder?.id === sourceFolderId) fetchSummaries(sourceFolderId);
-      if (activeFolder?.id === destFolderId) fetchSummaries(destFolderId);
-      // Optionally, you could optimistically add to dest folder if you keep all summaries in state
+      try {
+        const response = await fetch(`/api/folders/${sourceFolderId}/summaries`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ summaryId: summaryToMove.id, targetFolderId: destFolderId }),
+        });
+        
+        if (!response.ok) {
+          // Revert optimistic update on error
+          setFolderSummaries(prev => ({
+            ...prev,
+            [sourceFolderId]: [...prev[sourceFolderId], summaryToMove],
+            [destFolderId]: prev[destFolderId].filter(s => s.id !== summaryToMove.id)
+          }));
+          console.error('Failed to move summary');
+        } else {
+          // Refetch summaries for both folders to ensure consistency
+          fetchSummaries(sourceFolderId);
+          if (folderSummaries[destFolderId] || folderOpen[destFolderId]) {
+            fetchSummaries(destFolderId);
+          }
+        }
+      } catch (error) {
+        // Revert optimistic update on error
+        setFolderSummaries(prev => ({
+          ...prev,
+          [sourceFolderId]: [...prev[sourceFolderId], summaryToMove],
+          [destFolderId]: prev[destFolderId].filter(s => s.id !== summaryToMove.id)
+        }));
+        console.error('Error moving summary:', error);
+      }
     }
   };
 
@@ -352,85 +376,93 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                         <Draggable key={f.id} draggableId={f.id} index={idx}>
                           {(dragProvided) => (
                             <li ref={dragProvided.innerRef} {...dragProvided.draggableProps} {...dragProvided.dragHandleProps}>
-                              <div className={`flex items-center gap-1 font-semibold text-gray-800 group ${activeFolder?.id===f.id ? 'bg-gray-200 rounded px-1' : 'px-1'}`}
-                                onClick={() => setActiveFolder(f)}
-                                onMouseEnter={() => setHoveredFolderId(f.id)}
-                                onMouseLeave={() => setHoveredFolderId(null)}
-                              >
-                                <button
-                                  className="mr-1"
-                                  onClick={e => { e.stopPropagation(); toggleFolder(f.id); }}
-                                  aria-label={folderOpen[f.id] ? t('Sidebar.collapseFolder') || 'Collapse folder' : t('Sidebar.expandFolder') || 'Expand folder'}
-                                >
-                                  {folderOpen[f.id] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                                </button>
-                                <Folder className="w-4 h-4" />
-                                <span className="mx-1 flex-1 text-left truncate">{f.name}</span>
-                                {hoveredFolderId === f.id && (
-                                  <div className="flex items-center ml-auto">
-                                    <button
-                                      onClick={e => { e.stopPropagation(); handleRenameFolder(f.id); }}
-                                      className="p-1 text-gray-500 hover:text-gray-700"
-                                      title={t('Sidebar.renameFolder') || 'Rename folder'}
+                              {/* Make folder header droppable for summaries */}
+                              <Droppable droppableId={f.id} type="summary">
+                                {(folderDropProvided, folderDropSnapshot) => (
+                                  <div>
+                                    <div 
+                                      ref={folderDropProvided.innerRef}
+                                      {...folderDropProvided.droppableProps}
+                                      className={`flex items-center gap-1 font-semibold text-gray-800 group ${activeFolder?.id===f.id || folderDropSnapshot.isDraggingOver ? 'bg-gray-200 rounded px-1' : 'px-1'}`}
+                                      onClick={() => setActiveFolder(f)}
+                                      onMouseEnter={() => setHoveredFolderId(f.id)}
+                                      onMouseLeave={() => setHoveredFolderId(null)}
                                     >
-                                      <Pencil className="w-3.5 h-3.5" />
-                                    </button>
-                                    <button
-                                      onClick={e => { e.stopPropagation(); handleDeleteFolder(f.id); }}
-                                      className="p-1 text-gray-500 hover:text-red-500"
-                                      title={t('Sidebar.deleteFolder') || 'Delete folder'}
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5" />
-                                    </button>
+                                      <button
+                                        className="mr-1"
+                                        onClick={e => { e.stopPropagation(); toggleFolder(f.id); }}
+                                        aria-label={folderOpen[f.id] ? t('Sidebar.collapseFolder') || 'Collapse folder' : t('Sidebar.expandFolder') || 'Expand folder'}
+                                      >
+                                        {folderOpen[f.id] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                                      </button>
+                                      <Folder className="w-4 h-4" />
+                                      <span className="mx-1 flex-1 text-left truncate">{f.name}</span>
+                                      {hoveredFolderId === f.id && (
+                                        <div className="flex items-center ml-auto">
+                                          <button
+                                            onClick={e => { e.stopPropagation(); handleRenameFolder(f.id); }}
+                                            className="p-1 text-gray-500 hover:text-gray-700"
+                                            title={t('Sidebar.renameFolder') || 'Rename folder'}
+                                          >
+                                            <Pencil className="w-3.5 h-3.5" />
+                                          </button>
+                                          <button
+                                            onClick={e => { e.stopPropagation(); handleDeleteFolder(f.id); }}
+                                            className="p-1 text-gray-500 hover:text-red-500"
+                                            title={t('Sidebar.deleteFolder') || 'Delete folder'}
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                    
+                                    {/* Summaries in folder: only show if expanded */}
+                                    {folderOpen[f.id] && (
+                                      <div className="ml-5 mt-1 space-y-1">
+                                        {loadingSummaries[f.id] ? (
+                                          <div className="text-xs text-gray-400">{t('Sidebar.loadingSummaries') || 'Loading summaries...'}</div>
+                                        ) : folderSummaries[f.id]?.length === 0 ? (
+                                          <div className="text-xs text-gray-400">{t('Sidebar.noSummaries') || 'No summaries'}</div>
+                                        ) : (
+                                          folderSummaries[f.id].map((s, sIdx) => (
+                                            <Draggable key={s.id} draggableId={s.id} index={sIdx}>
+                                              {(summaryDragProvided) => (
+                                                <div 
+                                                  ref={summaryDragProvided.innerRef} 
+                                                  {...summaryDragProvided.draggableProps} 
+                                                  {...summaryDragProvided.dragHandleProps} 
+                                                  className="flex items-center justify-between text-sm text-gray-700 hover:bg-gray-100 rounded group"
+                                                  onMouseEnter={() => setHoveredSummaryId(s.id)}
+                                                  onMouseLeave={() => setHoveredSummaryId(null)}
+                                                >
+                                                  <Link href={`/${locale}/summaries/${s.id}`} className="truncate flex-grow px-1 hover:underline cursor-pointer block">
+                                                    {s.name}
+                                                  </Link>
+                                                  {hoveredSummaryId === s.id && (
+                                                    <button
+                                                      onClick={(e) => {
+                                                        e.stopPropagation(); // Prevent navigation
+                                                        handleDeleteSummary(f.id, s.id);
+                                                      }}
+                                                      className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                      title={t('Sidebar.deleteSummary', { defaultValue: 'Delete summary' })}
+                                                    >
+                                                      <Trash2 className="w-3 h-3" />
+                                                    </button>
+                                                  )}
+                                                </div>
+                                              )}
+                                            </Draggable>
+                                          ))
+                                        )}
+                                      </div>
+                                    )}
+                                    
+                                    {folderDropProvided.placeholder}
                                   </div>
                                 )}
-                              </div>
-                              {/* Summaries in folder: only show if expanded */}
-                              {folderOpen[f.id] && (
-                                <Droppable droppableId={f.id} type="summary">
-                                  {(summaryProvided) => (
-                                    <ul className="ml-5 mt-1 space-y-1" ref={summaryProvided.innerRef} {...summaryProvided.droppableProps}>
-                                      {loadingSummaries[f.id] ? (
-                                        <li className="text-xs text-gray-400">{t('Sidebar.loadingSummaries') || 'Loading summaries...'}</li>
-                                      ) : folderSummaries[f.id]?.length === 0 ? (
-                                        <li className="text-xs text-gray-400">{t('Sidebar.noSummaries') || 'No summaries'}</li>
-                                      ) : (
-                                        folderSummaries[f.id].map((s, sIdx) => (
-                                          <Draggable key={s.id} draggableId={s.id} index={sIdx}>
-                                            {(summaryDragProvided) => (
-                                              <li 
-                                                ref={summaryDragProvided.innerRef} 
-                                                {...summaryDragProvided.draggableProps} 
-                                                {...summaryDragProvided.dragHandleProps} 
-                                                className="flex items-center justify-between text-sm text-gray-700 hover:bg-gray-100 rounded group"
-                                                onMouseEnter={() => setHoveredSummaryId(s.id)}
-                                                onMouseLeave={() => setHoveredSummaryId(null)}
-                                              >
-                                                <Link href={`/${locale}/summaries/${s.id}`} className="truncate flex-grow px-1 hover:underline cursor-pointer block">
-                                                  {s.name}
-                                                </Link>
-                                                {hoveredSummaryId === s.id && (
-                                                  <button
-                                                    onClick={(e) => {
-                                                      e.stopPropagation(); // Prevent navigation
-                                                      handleDeleteSummary(f.id, s.id);
-                                                    }}
-                                                    className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    title={t('Sidebar.deleteSummary', { defaultValue: 'Delete summary' })}
-                                                  >
-                                                    <Trash2 className="w-3 h-3" />
-                                                  </button>
-                                                )}
-                                              </li>
-                                            )}
-                                          </Draggable>
-                                        ))
-                                      )}
-                                      {summaryProvided.placeholder}
-                                    </ul>
-                                  )}
-                                </Droppable>
-                              )}
+                              </Droppable>
                             </li>
                           )}
                         </Draggable>

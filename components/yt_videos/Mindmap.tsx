@@ -17,6 +17,8 @@ import 'reactflow/dist/style.css';
 import { Loader2, AlertTriangle, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from 'next-intl';
+import { authOptions } from '@/auth';
+import { useSession } from 'next-auth/react';
 interface MindmapProps {
   summary: string;
   mindmap: any | null;
@@ -38,6 +40,7 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, su
   const [reactFlowReady, setReactFlowReady] = useState(false);
   const { fitView } = useReactFlow();
   const hasFit = useRef(false);
+  const { data: session } = useSession();
 
   const onConnect = useCallback(
     (params: any) => setEdges((eds) => addEdge(params, eds)),
@@ -96,9 +99,16 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, su
         setEdges(data.edges);
         setIsGenerated(true);
         setIsLoading(false);
-        setIsSaving(true);
+
+        // Save only when the user is logged in
+        if (!session) {
+          setIsSaving(false);
+          return;
+        }
 
         // Save the mindmap to the database
+        setIsSaving(true);
+
         try {
           const saveResponse = await fetch('/api/mindmap', {
             method: 'PUT',

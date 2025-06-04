@@ -93,7 +93,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
 // PATCH /api/folders/[folderId]/summaries
 export async function PATCH(req: Request, { params }: { params: Promise<{ folderId: string }> }) {
   try {
-    const { folderId } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
