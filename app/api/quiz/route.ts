@@ -17,7 +17,7 @@ interface QuizItem {
 
 export async function POST(req: NextRequest) {
   try {
-    const { summaryText, locale, title } = await req.json();
+    const { summaryText, locale, contentLanguage, title } = await req.json();
 
     if (!summaryText) {
       return NextResponse.json({ error: 'Summary text is required' }, { status: 400 });
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         Create 5 distinct question and answer pairs that test understanding of the core ideas in the summary.
         Return these pairs as a valid JSON array of objects. Each object in the array must have a "question" key and an "answer" key.
         Ensure the questions are thought-provoking and the answers are concise and accurate.
-        Generate the quiz in the language: ${locale}.
+        IMPORTANT: Generate the quiz in ${contentLanguage} language.
         The summary is for a video possibly titled: "${title}".
         `;
 
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       model: model,
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
+        { role: "user", content: `${userPrompt} in ${contentLanguage} language.` }
       ],
       response_format: { type: "json_object" },
       temperature: 0.5, // Adjust temperature as needed for creativity vs. determinism

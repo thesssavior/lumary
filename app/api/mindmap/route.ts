@@ -10,7 +10,7 @@ const openai = new OpenAI({
 
 export async function POST(req: NextRequest) {
   try {
-    const { summaryText, locale } = await req.json();
+    const { summaryText, contentLanguage } = await req.json();
 
     if (!summaryText) {
       return NextResponse.json({ error: 'Summary text is required' }, { status: 400 });
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     `;
     
     const prompt = `
-      provide the mindmap in language of ${locale}
+      IMPORTANT: Provide the mindmap in ${contentLanguage} language
 
       Summary Text:
       --- --- --- --- ---

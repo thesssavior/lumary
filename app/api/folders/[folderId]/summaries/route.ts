@@ -44,6 +44,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
       transcript,
       description,
       locale,
+      contentLanguage,
       fetcher
     } = body;
 
@@ -65,6 +66,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
       transcript: transcript,
       description: description,
       locale: locale,
+      content_language: contentLanguage,
       fetcher: fetcher
     };
 

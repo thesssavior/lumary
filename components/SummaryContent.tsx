@@ -9,7 +9,17 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import Quiz from './yt_videos/Quiz';
 
-export default function SummaryContent({ summary, folder, locale, mindmap, summaryId, quiz }: { summary: any; folder: any; locale: string; mindmap: any | null; summaryId: string; quiz: any | null }) {
+type Props = {
+    summary: any;
+    folder: any;
+    locale: string;
+    mindmap: any | null;
+    summaryId: string;
+    quiz: any | null;
+    contentLanguage: string;
+}
+
+export default function SummaryContent({ summary, folder, locale, mindmap, summaryId, quiz, contentLanguage }: Props) {
     const t = useTranslations();
     const [activetab, setActivetab] = useState("summary");
   
@@ -55,6 +65,7 @@ export default function SummaryContent({ summary, folder, locale, mindmap, summa
               <Mindmap 
                 summary={summary.summary} 
                 locale={locale} 
+                contentLanguage={contentLanguage}
                 mindmap={mindmap} 
                 summaryId={summaryId}
                 isActive={activetab === "mindmap"}

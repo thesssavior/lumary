@@ -5,6 +5,7 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 interface TranscriptData {
   videoId: string;
   locale: string;
+  contentLanguage: string;
   transcriptText: string;
   title: string;
   videoDescription?: string;

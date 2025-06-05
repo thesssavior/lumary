@@ -13,12 +13,17 @@ const proxyUrls = [
 ];
 
 // Helper to try proxies in order
-async function fetchTranscriptWithFallback(videoId: string) {
+async function fetchTranscriptWithFallback(videoId: string, contentLanguage: string = 'ko') {
   let lastError;
+  
+  // Create fallback language array: contentLanguage, ko, en (fixed order)
+  const languageOptions = [contentLanguage, 'ko', 'en'];
+  
   for (const proxyUrl of proxyUrls) {
     try {
       const agent = new HttpsProxyAgent(proxyUrl);
       const transcript = await YoutubeTranscript.fetchTranscript(videoId, {
+        lang: languageOptions, // Tries in order until successful
         fetchOptions: { agent } as any
       } as any);
       if (transcript && transcript.length > 0) {
@@ -35,7 +40,7 @@ async function fetchTranscriptWithFallback(videoId: string) {
 }
 
 // Helper to fetch transcript from a cloudflare/custom endpoint
-async function fetchTranscriptFromCloudflare(videoId: string) {
+async function fetchTranscriptFromCloudflare(videoId: string, contentLanguage: string = 'ko') {
   const endpoint = 'https://pi.lumarly.com/fetch-transcript'; // Centralized endpoint
   const SECRET_TOKEN = 'Tmdwn123098'; // Securely manage this token
   const res = await fetch(endpoint, {
@@ -44,7 +49,7 @@ async function fetchTranscriptFromCloudflare(videoId: string) {
       'Content-Type': 'application/json',
       'X-Auth-Token': SECRET_TOKEN,
     },
-    body: JSON.stringify({ video_id: videoId }),
+    body: JSON.stringify({ video_id: videoId, content_language: contentLanguage }), // Match Flask parameter
   });
   if (!res.ok) {
     const errorText = await res.text();
@@ -60,7 +65,7 @@ async function fetchTranscriptFromCloudflare(videoId: string) {
 }
 
 // Helper to fetch transcript from api.lumarly.com as a last resort
-async function fetchTranscriptFromApi(videoId: string) {
+async function fetchTranscriptFromApi(videoId: string, contentLanguage: string = 'ko') {
   const endpoint = 'https://api.lumarly.com/fetch-transcript';
   const SECRET_TOKEN = 'Tmdwn123098';
   const res = await fetch(endpoint, {
@@ -69,7 +74,7 @@ async function fetchTranscriptFromApi(videoId: string) {
       'Content-Type': 'application/json',
       'X-Auth-Token': SECRET_TOKEN,
     },
-    body: JSON.stringify({ video_id: videoId }),
+    body: JSON.stringify({ video_id: videoId, content_language: contentLanguage }), // Match Flask parameter
   });
   if (!res.ok) {
     const errorText = await res.text();

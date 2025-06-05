@@ -80,7 +80,8 @@ export default function NewSummaryPage() {
               const {
                 tokenCount, 
                 videoId,
-                locale: videoLocale, 
+                locale: videoLocale,
+                contentLanguage, 
                 transcriptText, 
                 title, 
                 videoDescription,
@@ -101,6 +102,7 @@ export default function NewSummaryPage() {
                   title: title,
                   videoDescription: videoDescription,
                   locale: videoLocale,
+                  contentLanguage: contentLanguage,
                   tokenCount: tokenCount,
                   videoId: videoId,
                 }),
@@ -199,7 +201,7 @@ export default function NewSummaryPage() {
       setIsSaving(false); // Ensure saving is false
       return; 
     }
-    const {tokenCount, videoId, locale: videoLocale, transcriptText, title, videoDescription, fetcher} = dataToSave;
+    const {tokenCount, videoId, locale: videoLocale, contentLanguage, transcriptText, title, videoDescription, fetcher} = dataToSave;
     setIsSaving(true);
     setError(null);
     try {
@@ -214,6 +216,7 @@ export default function NewSummaryPage() {
           transcript: transcriptText,
           description: videoDescription,
           locale: videoLocale,
+          contentLanguage: contentLanguage,
           fetcher: fetcher,
           name: title
         }),

@@ -34,6 +34,7 @@ export async function POST(req: Request) {
     const {
       videoId,
       locale = 'ko',
+      contentLanguage = 'ko',
       transcriptText,
       title,
       videoDescription,
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
           {
             role: 'user',
             content: `${messages.userPromptsChunked}
-              respond in language: ${locale}
+              respond in language: ${contentLanguage}
               Video Title: ${videoTitle}
               Video Description: ${videoDescription}
               Transcript:
@@ -113,7 +114,7 @@ export async function POST(req: Request) {
             {
               role: 'user',
               content: `${messages.userPromptsFinal}
-                respond in language: ${locale}
+                respond in language: ${contentLanguage}
                 Collected Summaries:
                 ${concatenated}`,
             },

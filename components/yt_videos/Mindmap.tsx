@@ -23,13 +23,14 @@ interface MindmapProps {
   summary: string;
   mindmap: any | null;
   locale: string;
+  contentLanguage?: string; // Content language for mindmap generation
   summaryId: string;
   isActive: boolean | null;
   isStreaming?: boolean;
   // transcript: string; // Transcript is not directly used for generation by this component anymore
 }
 
-const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, summaryId, isActive, isStreaming = false }) => {
+const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, contentLanguage, summaryId, isActive, isStreaming = false }) => {
   const t = useTranslations();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -79,7 +80,7 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, su
       const response = await fetch('/api/mindmap', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ summaryText: summary, locale: locale }),
+        body: JSON.stringify({ summaryText: summary, locale: locale, contentLanguage: contentLanguage }),
       });
 
       if (!response.ok) {

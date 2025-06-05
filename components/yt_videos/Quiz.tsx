@@ -16,12 +16,13 @@ interface QuizProps {
   summary: string | null;
   quizData: QuizItem[] | null; // Pre-loaded quiz from DB
   locale: string;
+  contentLanguage?: string; // Content language for quiz generation
   summaryId: string | null; // summaryId might be null initially on /new page
   title?: string | null;
   // isActive: boolean; // To trigger generation, or for other conditional logic if needed
 }
 
-const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData, locale, summaryId, title }) => {
+const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData, locale, contentLanguage, summaryId, title }) => {
   const t = useTranslations();
 
   const [quizItems, setQuizItems] = useState<QuizItem[]>(initialQuizData || []);
@@ -58,7 +59,12 @@ const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData
       const response = await fetch('/api/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ summaryText: summary, locale, title: title }),
+        body: JSON.stringify({ 
+          summaryText: summary, 
+          locale, 
+          contentLanguage: contentLanguage || locale,
+          title: title 
+        }),
       });
 
       if (!response.ok) {

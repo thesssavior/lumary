@@ -14,6 +14,7 @@ export async function POST(req: Request) {
     const { 
       videoId, 
       locale = 'ko', 
+      contentLanguage = 'ko',
       transcriptText, 
       title, 
       videoDescription,
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
             model: model,
             messages: [
               { role: "system", content: messages.systemPrompts },
-              { role: "user", content: `${messages.userPrompts}\n\nVideo Title: ${videoTitle}\n\nVideo Description: ${videoDescription}\n\nTranscript:\n${transcriptText}` }
+              { role: "user", content: `${messages.userPrompts} Respond in ${contentLanguage} language. \n\nVideo Title: ${videoTitle}\n\nVideo Description: ${videoDescription}\n\nTranscript:\n${transcriptText}` }
             ],
             stream: true,
             temperature: 0.3,

@@ -117,11 +117,16 @@ export function VideoInputForm() {
         throw new Error(t('error') + ": " + t('invalidUrl'));
       }
 
+      // Get content language from LanguageSwitcher (localStorage), fallback to UI locale
+      const contentLanguage = typeof window !== 'undefined' 
+        ? localStorage.getItem('contentLanguage') || locale 
+        : locale;
+
       // Step 1: Call /api/transcript
       const transcriptResponse = await fetch('/api/transcript', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId, locale }),
+        body: JSON.stringify({ videoId, locale, contentLanguage }),
       });
 
       if (!transcriptResponse.ok) {
@@ -136,6 +141,7 @@ export function VideoInputForm() {
       const data = {
         videoId: videoId,
         locale: locale,
+        contentLanguage: contentLanguage,
         transcriptText: transcript || '',
         title: title || 'Untitled Summary',
         videoDescription: description || '',
