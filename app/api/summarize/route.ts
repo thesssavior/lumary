@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       currentFetcher
     } = await req.json();
     
-    const messages = locale === 'ko' ? koMessages : enMessages;
+    const messages = contentLanguage === 'ko' ? koMessages : enMessages;
     const videoTitle = title || ''; 
 
     if (!videoId || !transcriptText) { 
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
             model: model,
             messages: [
               { role: "system", content: messages.systemPrompts },
-              { role: "user", content: `${messages.userPrompts} Respond in ${contentLanguage} language. \n\nVideo Title: ${videoTitle}\n\nVideo Description: ${videoDescription}\n\nTranscript:\n${transcriptText}` }
+              { role: "user", content: `Important: Respond in ${contentLanguage} language. ${messages.userPrompts} \n\nVideo Title: ${videoTitle}\n\nVideo Description: ${videoDescription}\n\nTranscript:\n${transcriptText}` }
             ],
             stream: true,
             temperature: 0.3,
