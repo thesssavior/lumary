@@ -2,9 +2,12 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import enMessages from '@/messages/en.json';
 import koMessages from '@/messages/ko.json';
+import jaMessages from '@/messages/ja.json';
+import frMessages from '@/messages/fr.json';
+import thMessages from '@/messages/th.json';
 
 // Constants
-const model = 'gpt-4.1-mini';
+const model = 'gpt-4.1-mini'; 
 
 // POST request to summarize a video
 export async function POST(req: Request) {
@@ -22,11 +25,20 @@ export async function POST(req: Request) {
       currentFetcher
     } = await req.json();
     
-    const messages = contentLanguage === 'ko' ? koMessages : enMessages;
+    let messages;
+    switch (contentLanguage) {
+      case 'ko': messages = koMessages; break;
+      case 'th': messages = thMessages; break;
+      case 'ja': messages = jaMessages; break;
+      case 'fr': messages = frMessages; break;
+      default:   messages = enMessages;
+    }
+    console.log(contentLanguage, messages);
+    
     const videoTitle = title || ''; 
 
     if (!videoId || !transcriptText) { 
-      return NextResponse.json({ error: messages.error }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
 
     // Summarize with OpenAI
@@ -38,8 +50,8 @@ export async function POST(req: Request) {
         const completion = await openai.chat.completions.create({
             model: model,
             messages: [
-              { role: "system", content: messages.systemPrompts },
-              { role: "user", content: `Important: Respond in ${contentLanguage} language. ${messages.userPrompts} \n\nVideo Title: ${videoTitle}\n\nVideo Description: ${videoDescription}\n\nTranscript:\n${transcriptText}` }
+              { role: "system", content: `Important: Respond in ${contentLanguage} language. ${messages.systemPrompts}` },
+              { role: "user", content: `${messages.userPrompts} \n\nVideo Title: ${videoTitle}\n\nVideo Description: ${videoDescription}\n\nTranscript:\n${transcriptText}` }
             ],
             stream: true,
             temperature: 0.3,
