@@ -17,7 +17,8 @@ async function fetchTranscriptWithFallback(videoId: string, contentLanguage: str
   let lastError;
   
   // Create fallback language array: contentLanguage, ko, en (fixed order)
-  const languageOptions = [contentLanguage, 'ko', 'en'];
+  // Remove duplicates
+  const languageOptions = [contentLanguage, 'ko', 'en'].filter((lang, index, self) => self.indexOf(lang) === index);
   
   for (const proxyUrl of proxyUrls) {
     try {
