@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import enMessages from '@/messages/en.json';
 import koMessages from '@/messages/ko.json';
+import thMessages from '@/messages/th.json';
+import jaMessages from '@/messages/ja.json';
+import frMessages from '@/messages/fr.json';
 
 // ────────────────────────────────────────────────────────────────
 // constants & helpers
@@ -41,12 +44,19 @@ export async function POST(req: Request) {
       tokenCount,
     } = await req.json();
 
-    if (!videoId || !transcriptText) {
-      const messages = locale === 'ko' ? koMessages : enMessages;
-      return NextResponse.json({ error: messages.error }, { status: 400 });
+    let messages;
+    switch (contentLanguage) {
+      case 'ko': messages = koMessages; break;
+      case 'th': messages = thMessages; break;
+      case 'ja': messages = jaMessages; break;
+      case 'fr': messages = frMessages; break;
+      default:   messages = enMessages;
     }
 
-    const messages   = locale === 'ko' ? koMessages : enMessages;
+    if (!videoId || !transcriptText) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    }
+
     const videoTitle = title || '';
 
     // ── 1. split transcript ────────────────────────────────────
@@ -61,11 +71,10 @@ export async function POST(req: Request) {
         stream: true,
         temperature: 0.3,
         messages: [
-          { role: 'system', content: messages.systemPromptsChunked },
+          { role: 'system', content: `Important: Respond in ${contentLanguage} language. ${messages.systemPromptsChunked}` },
           {
             role: 'user',
             content: `${messages.userPromptsChunked}
-              respond in language: ${contentLanguage}
               Video Title: ${videoTitle}
               Video Description: ${videoDescription}
               Transcript:
@@ -110,11 +119,10 @@ export async function POST(req: Request) {
           stream: false, // Reverted: This call is streaming again
           temperature: 0.3,
           messages: [
-            { role: 'system', content: messages.systemPromptsFinal },
+            { role: 'system', content: `Important: Respond in ${contentLanguage} language. ${messages.systemPromptsFinal}` },
             {
               role: 'user',
               content: `${messages.userPromptsFinal}
-                respond in language: ${contentLanguage}
                 Collected Summaries:
                 ${concatenated}`,
             },

@@ -33,7 +33,6 @@ export async function POST(req: Request) {
       case 'fr': messages = frMessages; break;
       default:   messages = enMessages;
     }
-    console.log(contentLanguage, messages);
     
     const videoTitle = title || ''; 
 
