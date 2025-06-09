@@ -12,7 +12,7 @@ import { calculateTokenCount } from '@/lib/utils';
 
 export async function POST(req: Request) {
   try {
-    const { videoId, locale = 'ko', contentLanguage = 'ko' } = await req.json();
+    const { videoId, locale = 'ko' } = await req.json();
     const messages = locale === 'ko' ? koMessages : enMessages;
 
     if (!videoId) {
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
 
     try {
       // Attempt 1: Cloudflare
-      rawTranscript = await fetchTranscriptFromCloudflare(videoId, contentLanguage);
+      rawTranscript = await fetchTranscriptFromCloudflare(videoId);
       formattedTranscriptText = formatTranscript(rawTranscript, 'start');
       fetcherUsed = "cloudflare";
     } catch (cloudflareError: any) {
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       );
       try {
         // Attempt 2: Primary (youtube-transcript with proxies)
-        rawTranscript = await fetchTranscriptWithFallback(videoId, contentLanguage);
+        rawTranscript = await fetchTranscriptWithFallback(videoId);
         formattedTranscriptText = formatTranscript(rawTranscript, 'offset');
         fetcherUsed = "primary";
       } catch (primaryError: any) {
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
         );
         try {
           // Attempt 3: API Lumarly
-          rawTranscript = await fetchTranscriptFromApi(videoId, contentLanguage);
+          rawTranscript = await fetchTranscriptFromApi(videoId);
           formattedTranscriptText = formatTranscript(rawTranscript, 'start');
           fetcherUsed = "api-lumarly";
         } catch (apiLumarlyError: any) {

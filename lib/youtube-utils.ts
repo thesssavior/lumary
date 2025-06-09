@@ -13,7 +13,7 @@ const proxyUrls = [
 ];
 
 // Helper to try proxies in order
-async function fetchTranscriptWithFallback(videoId: string, contentLanguage: string = 'ko') {
+async function fetchTranscriptWithFallback(videoId: string) {
   let lastError;
   
   // First try without specifying language - let youtube-transcript pick the first available
@@ -40,7 +40,7 @@ async function fetchTranscriptWithFallback(videoId: string, contentLanguage: str
 }
 
 // Helper to fetch transcript from a cloudflare/custom endpoint
-async function fetchTranscriptFromCloudflare(videoId: string, contentLanguage: string = 'ko') {
+async function fetchTranscriptFromCloudflare(videoId: string) {
   const endpoint = 'https://pi.lumarly.com/fetch-transcript'; // Centralized endpoint
   const SECRET_TOKEN = 'Tmdwn123098'; // Securely manage this token
   const res = await fetch(endpoint, {
@@ -49,7 +49,7 @@ async function fetchTranscriptFromCloudflare(videoId: string, contentLanguage: s
       'Content-Type': 'application/json',
       'X-Auth-Token': SECRET_TOKEN,
     },
-    body: JSON.stringify({ video_id: videoId, content_language: contentLanguage }), // Match Flask parameter
+    body: JSON.stringify({ video_id: videoId }), // Match Flask parameter
   });
   if (!res.ok) {
     const errorText = await res.text();
@@ -65,7 +65,7 @@ async function fetchTranscriptFromCloudflare(videoId: string, contentLanguage: s
 }
 
 // Helper to fetch transcript from api.lumarly.com as a last resort
-async function fetchTranscriptFromApi(videoId: string, contentLanguage: string = 'ko') {
+async function fetchTranscriptFromApi(videoId: string) {
   const endpoint = 'https://api.lumarly.com/fetch-transcript';
   const SECRET_TOKEN = 'Tmdwn123098';
   const res = await fetch(endpoint, {
@@ -74,7 +74,7 @@ async function fetchTranscriptFromApi(videoId: string, contentLanguage: string =
       'Content-Type': 'application/json',
       'X-Auth-Token': SECRET_TOKEN,
     },
-    body: JSON.stringify({ video_id: videoId, content_language: contentLanguage }), // Match Flask parameter
+    body: JSON.stringify({ video_id: videoId }), // Match Flask parameter
   });
   if (!res.ok) {
     const errorText = await res.text();
