@@ -21,23 +21,29 @@ async function fetchTranscriptWithFallback(videoId: string, contentLanguage: str
   const languageOptions = [contentLanguage, 'ko', 'en'].filter((lang, index, self) => self.indexOf(lang) === index);
   
   for (const proxyUrl of proxyUrls) {
-    try {
-      const agent = new HttpsProxyAgent(proxyUrl);
-      const transcript = await YoutubeTranscript.fetchTranscript(videoId, {
-        lang: languageOptions, // Tries in order until successful
-        fetchOptions: { agent } as any
-      } as any);
-      if (transcript && transcript.length > 0) {
-        return transcript;
+    const agent = new HttpsProxyAgent(proxyUrl);
+    
+    // Try each language individually instead of passing an array
+    for (const lang of languageOptions) {
+      try {
+        const transcript = await YoutubeTranscript.fetchTranscript(videoId, {
+          lang: lang, // Try one language at a time
+          fetchOptions: { agent } as any
+        } as any);
+        if (transcript && transcript.length > 0) {
+          return transcript;
+        }
+      } catch (err: any) {
+        lastError = err;
+        // Continue to next language for this proxy
+        console.warn(`Failed to fetch transcript for ${videoId} with language ${lang} using proxy ${proxyUrl}: ${err.message}`);
       }
-      // If transcript is empty or undefined, treat it as an error to try next proxy
-      throw new Error('Empty transcript received from proxy: ' + proxyUrl);
-    } catch (err: any) {
-      lastError = err;    }
+    }
   }
-  // If all proxies fail and we have a lastError, throw it.
+  
+  // If all proxies and languages fail and we have a lastError, throw it.
   // If lastError is undefined (e.g., proxyUrls is empty), throw a generic error.
-  throw lastError || new Error('All proxies failed to fetch transcript and no specific error was caught.');
+  throw lastError || new Error('All proxies and languages failed to fetch transcript and no specific error was caught.');
 }
 
 // Helper to fetch transcript from a cloudflare/custom endpoint
