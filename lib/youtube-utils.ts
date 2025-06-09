@@ -16,32 +16,25 @@ const proxyUrls = [
 async function fetchTranscriptWithFallback(videoId: string, contentLanguage: string = 'ko') {
   let lastError;
   
-  // Create fallback language array: contentLanguage, ko, en (fixed order)
-  // Remove duplicates
-  const languageOptions = [contentLanguage, 'ko', 'en'].filter((lang, index, self) => self.indexOf(lang) === index);
-  
-  // Try each language first, then each proxy for that language
-  for (const lang of languageOptions) {
-    for (const proxyUrl of proxyUrls) {
-      try {
-        const agent = new HttpsProxyAgent(proxyUrl);
-        const transcript = await YoutubeTranscript.fetchTranscript(videoId, {
-          lang: lang, // Try one language at a time
-          fetchOptions: { agent } as any
-        } as any);
-        if (transcript && transcript.length > 0) {
-          console.log(`Successfully fetched transcript for ${videoId} with language ${lang} using proxy ${proxyUrl}`);
-          return transcript;
-        }
-      } catch (err: any) {
-        lastError = err;
-        // Continue to next proxy for this language
-        console.warn(`Failed to fetch transcript for ${videoId} with language ${lang} using proxy ${proxyUrl}: ${err.message}`);
+  // First try without specifying language - let youtube-transcript pick the first available
+  console.log(`[DEBUG] Trying default language (auto-select) for video ${videoId}`);
+  for (const proxyUrl of proxyUrls) {
+    try {
+      const agent = new HttpsProxyAgent(proxyUrl);
+      const transcript = await YoutubeTranscript.fetchTranscript(videoId, {
+        // No lang specified - uses first available transcript
+        fetchOptions: { agent } as any
+      } as any);
+      if (transcript && transcript.length > 0) {
+        console.log(`Successfully fetched transcript for ${videoId} with auto-selected language using proxy ${proxyUrl}`);
+        return transcript;
       }
+    } catch (err: any) {
+      lastError = err;
+      console.warn(`Failed to fetch transcript for ${videoId} with auto-selected language using proxy ${proxyUrl}: ${err.message}`);
     }
   }
   
-  // If all proxies and languages fail and we have a lastError, throw it.
   // If lastError is undefined (e.g., proxyUrls is empty), throw a generic error.
   throw lastError || new Error('All proxies and languages failed to fetch transcript and no specific error was caught.');
 }
