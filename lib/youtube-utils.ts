@@ -20,22 +20,22 @@ async function fetchTranscriptWithFallback(videoId: string, contentLanguage: str
   // Remove duplicates
   const languageOptions = [contentLanguage, 'ko', 'en'].filter((lang, index, self) => self.indexOf(lang) === index);
   
-  for (const proxyUrl of proxyUrls) {
-    const agent = new HttpsProxyAgent(proxyUrl);
-    
-    // Try each language individually instead of passing an array
-    for (const lang of languageOptions) {
+  // Try each language first, then each proxy for that language
+  for (const lang of languageOptions) {
+    for (const proxyUrl of proxyUrls) {
       try {
+        const agent = new HttpsProxyAgent(proxyUrl);
         const transcript = await YoutubeTranscript.fetchTranscript(videoId, {
           lang: lang, // Try one language at a time
           fetchOptions: { agent } as any
         } as any);
         if (transcript && transcript.length > 0) {
+          console.log(`Successfully fetched transcript for ${videoId} with language ${lang} using proxy ${proxyUrl}`);
           return transcript;
         }
       } catch (err: any) {
         lastError = err;
-        // Continue to next language for this proxy
+        // Continue to next proxy for this language
         console.warn(`Failed to fetch transcript for ${videoId} with language ${lang} using proxy ${proxyUrl}: ${err.message}`);
       }
     }
