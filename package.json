@@ -42,6 +42,7 @@
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.2",
     "@supabase/supabase-js": "^2.49.4",
+    "@supadata/js": "^1.1.1",
     "@types/node": "20.6.2",
     "@types/nprogress": "^0.2.3",
     "@vercel/analytics": "^1.5.0",
