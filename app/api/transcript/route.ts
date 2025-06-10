@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { Supadata, Transcript } from '@supadata/js'
 import {
   fetchTranscriptWithFallback,
-  fetchTranscriptFromCloudflare,
-  fetchTranscriptFromApi,
   formatTranscript,
   fetchYoutubeInfo
 } from '@/lib/youtube-utils';
@@ -43,44 +41,18 @@ export async function POST(req: Request) {
       fetcherUsed = "supadata";
     } catch (supadataError: any) {
       console.warn(
-        `Supadata transcript fetch for ${videoId} failed: ${supadataError.message}. Trying Cloudflare fallback.`
+        `Supadata transcript fetch for ${videoId} failed: ${supadataError.message}. Trying primary fallback.`
       );
       try {
-        // Attempt 1: Cloudflare
-        rawTranscript = await fetchTranscriptFromCloudflare(videoId);
-        formattedTranscriptText = formatTranscript(rawTranscript, 'start');
-        fetcherUsed = "cloudflare";
-      } catch (cloudflareError: any) {
-        console.warn(
-          `Cloudflare transcript fetch for ${videoId} failed: ${cloudflareError.message}. Trying primary fallback.`
+        // Primary fallback: youtube-transcript with proxies
+        rawTranscript = await fetchTranscriptWithFallback(videoId);
+        formattedTranscriptText = formatTranscript(rawTranscript, 'offset');
+        fetcherUsed = "primary";
+      } catch (primaryError: any) {
+        console.error(
+          `All transcript fetch methods for ${videoId} failed. Last error: ${primaryError.message}`
         );
-        try {
-          // Attempt 2: Primary (youtube-transcript with proxies)
-          rawTranscript = await fetchTranscriptWithFallback(videoId);
-          formattedTranscriptText = formatTranscript(rawTranscript, 'offset');
-          fetcherUsed = "primary";
-        } catch (primaryError: any) {
-          console.warn(
-            `Primary transcript fetch for ${videoId} failed: ${primaryError.message}. Trying API Lumarly fallback.`
-          );
-          try {
-            // Attempt 3: API Lumarly
-            rawTranscript = await fetchTranscriptFromApi(videoId);
-            formattedTranscriptText = formatTranscript(rawTranscript, 'start');
-            fetcherUsed = "api-lumarly";
-          } catch (apiLumarlyError: any) {
-            console.error(
-              `All transcript fetch methods for ${videoId} failed. Last error: ${apiLumarlyError.message}`
-            );
-            // Check messages from all attempts for "Transcript is disabled"
-            if (apiLumarlyError.message.includes('Transcript is disabled') ||
-                (primaryError && primaryError.message && primaryError.message.includes('Transcript is disabled')) ||
-                (cloudflareError && cloudflareError.message && cloudflareError.message.includes('Transcript is disabled'))) {
-              return NextResponse.json({ error: messages.transcriptDisabled }, { status: 400 });
-            }
-            return NextResponse.json({ error: messages.error || 'Failed to fetch transcript after multiple attempts' }, { status: 500 });
-          }
-        }
+        return NextResponse.json({ error: messages.error || 'Failed to fetch transcript after multiple attempts' }, { status: 500 });
       }
     }
     
