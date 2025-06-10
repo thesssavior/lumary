@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       supadataTranscript = transcript;
       // Convert Supadata transcript format to standard format
       const standardTranscript = Array.isArray(supadataTranscript.content) ? supadataTranscript.content : [];
-      formattedTranscriptText = formatTranscript(standardTranscript, 'start');
+      formattedTranscriptText = formatTranscript(standardTranscript, 'offset');
       fetcherUsed = "supadata";
     } catch (supadataError: any) {
       console.warn(
