@@ -40,11 +40,11 @@ export default function SummaryContent({ summary, folder, locale, mindmap, summa
         </div>
         
         <Tabs defaultValue="summary" value={activetab} onValueChange={setActivetab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             {/* <TabsTrigger value="summary" className="data-[state=active]:bg-black data-[state=active]:text-white">{t('summaryTab')}</TabsTrigger> */}
             <TabsTrigger value="summary" >{t('summaryTab')}</TabsTrigger>
             <TabsTrigger value="mindmap" >{t('mindmapTab')}</TabsTrigger>
-            {/* <TabsTrigger value="quiz" className="data-[state=active]:bg-black data-[state=active]:text-white">{t('quizTab')}</TabsTrigger> */}
+            <TabsTrigger value="quiz" >{t('quizTab')}</TabsTrigger>
             <TabsTrigger value="transcript" >{t('transcriptTab')}</TabsTrigger>
           </TabsList>
   
@@ -75,7 +75,7 @@ export default function SummaryContent({ summary, folder, locale, mindmap, summa
             )}
           </TabsContent>
   
-          {/* <TabsContent 
+          <TabsContent 
             value="quiz" 
             forceMount={true} 
             className="data-[state=active]:block hidden mt-4 p-0"
@@ -86,7 +86,7 @@ export default function SummaryContent({ summary, folder, locale, mindmap, summa
               locale={locale} 
               summaryId={summaryId} 
             />
-          </TabsContent> */}
+          </TabsContent>
   
           <TabsContent value="transcript" className="mt-4 p-0 border-0">
             <div className="p-4 border rounded-md">

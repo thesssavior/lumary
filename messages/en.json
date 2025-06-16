@@ -63,6 +63,17 @@
     "deleteSummary": "Delete Summary File",
     "confirmDeleteSummary": "Are you sure you want to delete this summary file?"
   },
+  "SearchModal": {
+    "placeholder": "Search summaries and folders...",
+    "searching": "Searching...",
+    "noResults": "No results found",
+    "tryDifferent": "Try different keywords or check spelling",
+    "folders": "Folders",
+    "summaries": "Summaries",
+    "startTyping": "Start typing to search",
+    "searchDescription": "Search through your summaries and folders",
+    "tips": "Tip: Press Escape to close"
+  },
   "PaymentPage": {
     "title": "Upgrade Your Plan",
     "description_line1": "Unlock premium features and get the most out of our service.",
@@ -170,6 +181,12 @@
     "twitterHandle": "@example",
     "kakaoCardTitle": "KakaoTalk",
     "kakaoHandle": "https://open.kakao.com/o/sip4wCwh"
+  },
+  "Footer": {
+    "businessInfo": "Business Information",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy", 
+    "businessDetails": "Business Registration Details"
   },
   "FeatureBoard": {
     "statusPlanned": "Planned",

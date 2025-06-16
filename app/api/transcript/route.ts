@@ -35,9 +35,30 @@ export async function POST(req: Request) {
         videoId: videoId,
       });
       supadataTranscript = transcript;
+      
+      // Debug logging to understand Supadata response
+      // console.log(`[DEBUG] Supadata response for ${videoId}:`, {
+      //   hasContent: !!supadataTranscript?.content,
+      //   contentLength: Array.isArray(supadataTranscript?.content) ? supadataTranscript.content.length : 'not array',
+      //   contentType: typeof supadataTranscript?.content,
+      //   lang: supadataTranscript?.lang,
+      //   availableLangs: supadataTranscript?.availableLangs,
+      //   firstItem: Array.isArray(supadataTranscript?.content) && supadataTranscript.content.length > 0 ? supadataTranscript.content[0] : 'no first item'
+      // });
+      
       // Convert Supadata transcript format to standard format
       const standardTranscript = Array.isArray(supadataTranscript.content) ? supadataTranscript.content : [];
+      // console.log(`[DEBUG] Standard transcript length for ${videoId}: ${standardTranscript.length}`);
+      
       formattedTranscriptText = formatTranscript(standardTranscript, 'offset');
+      // console.log(`[DEBUG] Formatted transcript text length for ${videoId}: ${formattedTranscriptText.length}`);
+      
+      // Check if Supadata returned empty content
+      if (standardTranscript.length === 0) {
+        console.warn(`[DEBUG] Supadata returned empty content for ${videoId}, falling back to primary method`);
+        throw new Error('Supadata returned empty transcript content');
+      }
+      
       fetcherUsed = "supadata";
     } catch (supadataError: any) {
       console.warn(

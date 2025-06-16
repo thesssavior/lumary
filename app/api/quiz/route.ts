@@ -76,9 +76,11 @@ export async function POST(req: NextRequest) {
         quizData = parsedResult.quiz;
       } else if (parsedResult.questions && Array.isArray(parsedResult.questions)) {
         quizData = parsedResult.questions;
+      } else if (parsedResult.result && Array.isArray(parsedResult.result)) {
+        quizData = parsedResult.result;
       } else {
         console.error("OpenAI response for quiz was not in the expected array format:", parsedResult);
-        return NextResponse.json({ error: 'Invalid quiz structure from OpenAI: Expected an array of questions or an object with a "quiz" or "questions" array.' }, { status: 500 });
+        return NextResponse.json({ error: 'Invalid quiz structure from OpenAI: Expected an array of questions or an object with a "quiz", "questions", or "result" array.' }, { status: 500 });
       }
       
       // Further validation of items in the array

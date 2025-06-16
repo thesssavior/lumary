@@ -63,6 +63,17 @@
     "deleteSummary": "파일 삭제",
     "confirmDeleteSummary": "이 파일을 삭제하시겠습니까?"
   },
+  "SearchModal": {
+    "placeholder": "파일일과 폴더를 검색하세요...",
+    "searching": "검색 중...",
+    "noResults": "검색 결과가 없습니다",
+    "tryDifferent": "다른 키워드를 시도하거나 철자를 확인해주세요",
+    "folders": "폴더",
+    "summaries": "요약",
+    "startTyping": "검색을 시작하려면 입력하세요",
+    "searchDescription": "파일과 폴더를 검색할 수 있습니다",
+    "tips": "팁: ESC를 눌러 닫을 수 있습니다"
+  },
   "PaymentPage": {
     "title": "플랜 업그레이드",
     "description_line1": "프리미엄 기능으로 더 많은 혜택을 누려보세요.",
@@ -177,6 +188,12 @@
     "twitterHandle": "@example",
     "kakaoCardTitle": "카카오톡",
     "kakaoHandle": "https://open.kakao.com/o/sip4wCwh"
+  },
+  "Footer": {
+    "businessInfo": "사업자 정보",
+    "terms": "이용약관",
+    "privacy": "개인정보처리방침",
+    "businessDetails": "사업자정보확인"
   },
   "FeatureBoard": {
     "statusPlanned": "예정",

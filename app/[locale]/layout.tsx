@@ -4,6 +4,7 @@ import '../globals.css';
 import { Navbar } from '@/components/home/Navbar';
 import SidebarLayout from '@/components/home/SidebarLayout';
 import ServerDownModalProvider from '@/components/home/ServerDownModalProvider';
+import Footer from '@/components/Footer';
 
 // Add react-pdf CSS imports
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -11,6 +12,8 @@ import 'react-pdf/dist/Page/TextLayer.css';
 import { SummaryGenerationProvider } from '@/contexts/SummaryGenerationContext';
 import { Toaster } from "@/components/ui/sonner";
 import { SessionProvider } from "next-auth/react";
+import SearchProvider from '@/contexts/SearchContext';
+import GlobalSearchModal from '@/components/GlobalSearchModal';
 
 export function generateStaticParams() {
   return [
@@ -40,16 +43,20 @@ export default async function LocaleLayout({
     <>
       <NextIntlClientProvider locale={locale} messages={messages}>
         <SessionProvider>
-          <SummaryGenerationProvider>
-            <ServerDownModalProvider>
-              <Navbar />
-              <SidebarLayout>
-                <div className="container mx-auto px-4 py-8 bg-white h-full">
-                  {children}
-                </div>
-              </SidebarLayout>
-            </ServerDownModalProvider>
-          </SummaryGenerationProvider>
+          <SearchProvider>
+            <SummaryGenerationProvider>
+              <ServerDownModalProvider>
+                <Navbar />
+                <SidebarLayout>
+                  <div className="container mx-auto px-4 py-8 bg-white min-h-screen">
+                    {children}
+                  </div>
+                </SidebarLayout>
+                <Footer />
+                <GlobalSearchModal />
+              </ServerDownModalProvider>
+            </SummaryGenerationProvider>
+          </SearchProvider>
         </SessionProvider>
         <Toaster />
       </NextIntlClientProvider>

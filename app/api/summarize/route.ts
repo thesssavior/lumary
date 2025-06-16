@@ -16,7 +16,6 @@ export async function POST(req: Request) {
     // Get videoId, locale, transcriptText, title, and videoDescription from request
     const { 
       videoId, 
-      locale = 'ko', 
       contentLanguage = 'ko',
       transcriptText, 
       title, 

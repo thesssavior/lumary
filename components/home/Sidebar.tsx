@@ -12,6 +12,7 @@ import { useSession } from "next-auth/react";
 import { useFolder, FolderContext } from '@/components/home/SidebarLayout';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from '@/components/ui/button';
+import { useSearch } from '@/contexts/SearchContext';
 
 interface FolderType { id: string; name: string; }
 interface SummaryType { id: string; video_id: string; summary: string; name: string; }
@@ -47,6 +48,8 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [hoveredSummaryId, setHoveredSummaryId] = useState<string | null>(null);
   const [hoveredFolderId, setHoveredFolderId] = useState<string | null>(null);
+  const [isMac, setIsMac] = useState(false);
+  const { openSearchModal } = useSearch();
 
   // Needs test
   // Use session from useSession hook instead of redundant fetch
@@ -260,8 +263,12 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
       if (/KAKAOTALK/i.test(ua)) {
         setInAppBrowser(true);
       }
+      // Detect platform for keyboard shortcut
+      setIsMac(navigator.platform.toUpperCase().indexOf('MAC') >= 0);
     }
   }, []);
+
+
 
   // Helper to toggle folder open/close
   const toggleFolder = (folderId: string) => {
@@ -322,9 +329,18 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
             </Link>
           </li>
           <li>
-            <a href="#" className="flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 font-medium">
-              <Search className="w-4 h-4" /> {t('Sidebar.search', { defaultValue: '검색' })}
-            </a>
+            <button 
+              onClick={openSearchModal}
+              className="flex items-center justify-between w-full px-2 py-2 rounded hover:bg-gray-100 font-medium text-left"
+              title="Search (Ctrl+K)"
+            >
+              <div className="flex items-center gap-2">
+                <Search className="w-4 h-4" /> {t('Sidebar.search', { defaultValue: '검색' })}
+              </div>
+              <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded font-mono">
+                {isMac ? '⌘K' : 'Ctrl+K'}
+              </span>
+            </button>
           </li>
           {/* Recent */}
           <li>

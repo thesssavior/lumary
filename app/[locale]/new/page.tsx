@@ -300,11 +300,11 @@ export default function NewSummaryPage() {
           )}
 
           <Tabs defaultValue="summary" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="summary">{t('summaryTab')}</TabsTrigger>
-              <TabsTrigger value="mindmap">{t('mindmapTab')}</TabsTrigger>
-              {/* <TabsTrigger value="quiz">{t('quizTab')}</TabsTrigger> */}
-              <TabsTrigger value="transcript">{t('transcriptTab')}</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="summary" >{t('summaryTab')}</TabsTrigger>
+              <TabsTrigger value="mindmap" >{t('mindmapTab')}</TabsTrigger>
+              <TabsTrigger value="quiz" >{t('quizTab')}</TabsTrigger>
+              <TabsTrigger value="transcript" >{t('transcriptTab')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="summary" className="mt-4 p-0 border-0">
@@ -373,9 +373,16 @@ export default function NewSummaryPage() {
               )}
             </TabsContent>
           
-            {/* <TabsContent value="quiz" className="mt-4 p-0 border-0">  
-              <Quiz summary={streamingSummaryContent} quizData={null} locale={locale} summaryId={newSummaryId || ''} />
-            </TabsContent> */}
+            <TabsContent value="quiz" className="mt-4 p-0 border-0">  
+              <Quiz 
+                summary={isLongVideo && overviewContent ? overviewContent + "\n\n" + streamingSummaryContent : streamingSummaryContent} 
+                quizData={null} 
+                locale={locale} 
+                contentLanguage={generationData.transcriptData?.contentLanguage || locale}
+                summaryId={newSummaryId} 
+                title={persistedTitle}
+              />
+            </TabsContent>
             
             <TabsContent value="transcript" className="mt-4 p-0 border-0">
               {persistedTranscriptText ? (
