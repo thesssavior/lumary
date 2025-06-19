@@ -5,7 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Mail, MessageCircle, Send } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Mail, MessageCircle, Send, HelpCircle } from "lucide-react";
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 
@@ -50,6 +51,29 @@ const ContactSection = () => {
 
   return (
     <div className="space-y-10 mt-8">
+      
+      {/* FAQ Section */}
+      <div className="space-y-6">
+        <div className="flex items-center space-x-2">
+          <HelpCircle className="h-6 w-6 text-gray-700" />
+          <h2 className="text-xl font-semibold text-gray-900">{t('faq.title')}</h2>
+        </div>
+        
+        <Card className="p-6 notion-card">
+          <Accordion type="single" collapsible className="w-full">
+            {t.raw('faq.questions').map((item: any, index: number) => (
+              <AccordionItem key={index} value={`item-${index}`}>
+                <AccordionTrigger className="text-left text-gray-800 hover:text-gray-900">
+                  {item.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-gray-600 whitespace-pre-line">
+                  {item.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </Card>
+      </div>
       
       <div className="space-y-4">
         <div>

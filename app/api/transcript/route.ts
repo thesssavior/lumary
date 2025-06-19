@@ -62,19 +62,19 @@ export async function POST(req: Request) {
       fetcherUsed = "supadata";
     } catch (supadataError: any) {
       console.warn(
-        `Supadata transcript fetch for ${videoId} failed: ${supadataError.message}. Trying primary fallback.`
+        `Supadata transcript fetch for ${videoId} failed: ${supadataError.message}.`
       );
-      try {
-        // Primary fallback: youtube-transcript with proxies
-        rawTranscript = await fetchTranscriptWithFallback(videoId);
-        formattedTranscriptText = formatTranscript(rawTranscript, 'offset');
-        fetcherUsed = "primary";
-      } catch (primaryError: any) {
-        console.error(
-          `All transcript fetch methods for ${videoId} failed. Last error: ${primaryError.message}`
-        );
-        return NextResponse.json({ error: messages.error || 'Failed to fetch transcript after multiple attempts' }, { status: 500 });
-      }
+      // try {
+      //   // Primary fallback: youtube-transcript with proxies
+      //   rawTranscript = await fetchTranscriptWithFallback(videoId);
+      //   formattedTranscriptText = formatTranscript(rawTranscript, 'offset');
+      //   fetcherUsed = "primary";
+      // } catch (primaryError: any) {
+      //   console.error(
+      //     `All transcript fetch methods for ${videoId} failed. Last error: ${primaryError.message}`
+      //   );
+      //   return NextResponse.json({ error: messages.error || 'Failed to fetch transcript after multiple attempts' }, { status: 500 });
+      // }
     }
     
     try {

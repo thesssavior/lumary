@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import NaverProvider from "next-auth/providers/naver";
 import { supabase } from './lib/supabaseClient';
 import crypto from 'crypto';
 import type { JWT } from "next-auth/jwt";
@@ -38,11 +37,7 @@ const baseAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       // Use GOOGLE_CLIENT_SECRET or fallback to legacy AUTH_GOOGLE_SECRET
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || process.env.AUTH_GOOGLE_SECRET!,
-    }),
-    // NaverProvider({
-    //   clientId: process.env.NAVER_CLIENT_ID!,
-    //   clientSecret: process.env.NAVER_CLIENT_SECRET || process.env.AUTH_NAVER_SECRET!,
-    // }),
+    })
   ],
   callbacks: {
     async jwt({ token, user, account, profile, trigger, isNewUser, session }: {

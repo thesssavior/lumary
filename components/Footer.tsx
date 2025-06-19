@@ -11,13 +11,7 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
           <div className="flex flex-wrap justify-center sm:justify-start gap-6 text-sm text-gray-600">
             <Link href="/business-info" className="hover:text-gray-900 font-medium">
-              {t('Footer.businessInfo', { defaultValue: '사업자 정보' })}
-            </Link>
-            <Link href="/terms" className="hover:text-gray-900">
-              {t('Footer.terms', { defaultValue: '이용약관' })}
-            </Link>
-            <Link href="/privacy" className="hover:text-gray-900">
-              {t('Footer.privacy', { defaultValue: '개인정보처리방침' })}
+              {t('Footer.businessInfo', { defaultValue: '사업자 정보 및 약관' })}
             </Link>
           </div>
           <p className="text-sm text-gray-500">

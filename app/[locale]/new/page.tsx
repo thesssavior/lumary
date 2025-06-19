@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import ReactMarkdown from 'react-markdown';
-import { Folder, Loader2 } from 'lucide-react';
+import { Folder, Loader2, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SidebarRefreshContext } from '@/components/home/SidebarLayout';
 import { FullTranscriptViewer } from "@/components/yt_videos/FullTranscriptViewer";
@@ -44,8 +44,25 @@ export default function NewSummaryPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [copiedOverview, setCopiedOverview] = useState(false);
+  const [copiedSummary, setCopiedSummary] = useState(false);
 
   const fetchInitiatedForVideoIdRef = useRef<string | null>(null);
+
+  const copyToClipboard = async (content: string, type: 'overview' | 'summary') => {
+    try {
+      await navigator.clipboard.writeText(content);
+      if (type === 'overview') {
+        setCopiedOverview(true);
+        setTimeout(() => setCopiedOverview(false), 2000);
+      } else {
+        setCopiedSummary(true);
+        setTimeout(() => setCopiedSummary(false), 2000);
+      }
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
   useEffect(() => {
     const currentTranscriptData = generationData.transcriptData;
@@ -317,7 +334,20 @@ export default function NewSummaryPage() {
                 </div>
               ) : (
                 overviewContent && (
-                  <div className="prose prose-zinc max-w-none p-6 border rounded-md">
+                  <div className="prose prose-zinc max-w-none p-6 pr-16 border rounded-md relative">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyToClipboard(overviewContent, 'overview')}
+                      className="absolute top-4 right-4 h-8 w-8 p-0 hover:bg-gray-100"
+                      title={copiedOverview ? t('copiedToClipboard') : t('copySummary')}
+                    >
+                      {copiedOverview ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
                     <div className="text-black [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1:not(:first-child)]:mt-10 [&>h2]:mb-5 [&>h2:not(:first-child)]:mt-8 [&>h3]:mb-4 [&>h3:not(:first-child)]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-black">
                       <ReactMarkdown>{overviewContent}</ReactMarkdown>
                     </div>
@@ -333,7 +363,20 @@ export default function NewSummaryPage() {
                 </div>
               )}
               {streamingSummaryContent && (
-                <div className="prose prose-zinc max-w-none p-6 border rounded-md">
+                <div className="prose prose-zinc max-w-none p-6 pr-16 border rounded-md relative">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyToClipboard(isLongVideo && overviewContent ? overviewContent + "\n\n" + streamingSummaryContent : streamingSummaryContent, 'summary')}
+                    className="absolute top-4 right-4 h-8 w-8 p-0 hover:bg-gray-100"
+                    title={copiedSummary ? t('copiedToClipboard') : t('copySummary')}
+                  >
+                    {copiedSummary ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
                    <div className="text-black [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1:not(:first-child)]:mt-10 [&>h2]:mb-5 [&>h2:not(:first-child)]:mt-8 [&>h3]:mb-4 [&>h3:not(:first-child)]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-black">
                       <ReactMarkdown>{streamingSummaryContent}</ReactMarkdown>
                   </div>

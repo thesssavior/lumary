@@ -32,7 +32,21 @@ export async function POST(req: NextRequest) {
     const systemPrompt = `
         You are an AI assistant tasked with generating a quiz from a video summary.
         Create 5 distinct question and answer pairs that test understanding of the core ideas in the summary.
-        Return these pairs as a valid JSON array of objects. Each object in the array must have a "question" key and an "answer" key.
+        
+        CRITICAL: You must return a valid JSON object with a "quiz" property containing an array of 5 objects.
+        Each object in the array must have exactly these two properties: "question" (string) and "answer" (string).
+        
+        Expected JSON format:
+        {
+          "quiz": [
+            {"question": "Question 1?", "answer": "Answer 1"},
+            {"question": "Question 2?", "answer": "Answer 2"},
+            {"question": "Question 3?", "answer": "Answer 3"},
+            {"question": "Question 4?", "answer": "Answer 4"},
+            {"question": "Question 5?", "answer": "Answer 5"}
+          ]
+        }
+        
         Ensure the questions are thought-provoking and the answers are concise and accurate.
         IMPORTANT: Generate the quiz in ${contentLanguage} language.
         The summary is for a video possibly titled: "${title}".

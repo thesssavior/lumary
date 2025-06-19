@@ -4,7 +4,7 @@ import '../globals.css';
 import { Navbar } from '@/components/home/Navbar';
 import SidebarLayout from '@/components/home/SidebarLayout';
 import ServerDownModalProvider from '@/components/home/ServerDownModalProvider';
-import Footer from '@/components/Footer';
+import ConditionalFooter from '@/components/ConditionalFooter';
 
 // Add react-pdf CSS imports
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -52,7 +52,7 @@ export default async function LocaleLayout({
                     {children}
                   </div>
                 </SidebarLayout>
-                <Footer />
+                <ConditionalFooter />
                 <GlobalSearchModal />
               </ServerDownModalProvider>
             </SummaryGenerationProvider>
