@@ -19,6 +19,7 @@
   "signIn": "Sign In",
   "signOut": "Sign Out",
   "signInWithGoogle": "Sign in with Google",
+  "signInWithNaver": "Sign in with Naver",
   "signInDescription": "Sign in to access summaries",
   "noFolder": "No folder selected",
   "trialUsedPrompt": "You have used your one trial. Please sign in to generate more summaries.",

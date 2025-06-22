@@ -19,6 +19,7 @@
   "signIn": "로그인",
   "signOut": "로그아웃",
   "signInWithGoogle": "Google로 로그인",
+  "signInWithNaver": "네이버로 로그인",
   "signInDescription": "로그인하여 요약을 확인하세요",
   "noFolder": "선택된 폴더가 없습니다",
   "trialUsedPrompt": "1회 체험을 사용하셨습니다. 더 많은 요약을 생성하려면 로그인해주세요.",
@@ -64,7 +65,7 @@
     "confirmDeleteSummary": "이 파일을 삭제하시겠습니까?"
   },
   "SearchModal": {
-    "placeholder": "파일일과 폴더를 검색하세요...",
+    "placeholder": "파일과 폴더를 검색하세요...",
     "searching": "검색 중...",
     "noResults": "검색 결과가 없습니다",
     "tryDifferent": "다른 키워드를 시도하거나 철자를 확인해주세요",

@@ -74,6 +74,14 @@ export default function SignIn() {
         >
           {t('signInWithGoogle')}
         </Button>
+        
+        {/* Naver Sign In */}
+        <Button
+          onClick={() => signIn("naver")}
+          className="w-full bg-green-600 hover:bg-green-700 text-white"
+        >
+          {t('signInWithNaver') || 'Sign in with Naver'}
+        </Button>
       </div>
     </div>
   );

@@ -310,10 +310,10 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   return (
     <div className="flex flex-col h-full bg-[#f8fafc]">
       {/* Header */}
-      <div className="flex flex-col items-center justify-center px-4 py-6 border-b">
+      <div className="flex flex-col items-center justify-center px-4 py-[18px] border-b">
         <span className="w-full flex justify-center">
           <Link href="/" className="flex items-center w-full justify-center">
-            <Image src="/lumary.png" alt="Lumary Logo" width={120} height={120} className="w-full h-auto max-w-[120px]" />
+            <Image src="/lumary.png" alt="Lumary Logo" width={110} height={110} className="w-full h-auto max-w-[100px]" />
           </Link>
         </span>
       </div>

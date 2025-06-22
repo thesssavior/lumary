@@ -1,20 +1,27 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import NaverProvider from "next-auth/providers/naver";
 import { supabase } from './lib/supabaseClient';
 import crypto from 'crypto';
 import type { JWT } from "next-auth/jwt";
 import type { Session, User, Account, Profile } from "next-auth";
 import type { NextRequest } from 'next/server';
 
-// Function to generate a consistent UUID v5 from Google ID
-function generateUUID(googleId: string | undefined) {
-  if (typeof googleId !== 'string') {
-    throw new Error('Invalid googleId for UUID generation');
+// Function to generate a consistent UUID v5 from provider account ID
+function generateUUID(providerAccountId: string | undefined, provider: string = 'google') {
+  if (typeof providerAccountId !== 'string') {
+    throw new Error('Invalid providerAccountId for UUID generation');
   }
-  // Use a consistent namespace UUID (can be any valid UUID)
-  const NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+  // Use different namespace UUIDs for different providers to avoid collisions
+  const NAMESPACES = {
+    google: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+    naver: '6ba7b811-9dad-11d1-80b4-00c04fd430c8'
+  };
+  
+  const namespace = NAMESPACES[provider as keyof typeof NAMESPACES] || NAMESPACES.google;
+  
   return crypto.createHash('sha1')
-    .update(NAMESPACE + googleId)
+    .update(namespace + providerAccountId)
     .digest('hex')
     .substring(0, 32)
     .replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5');
@@ -37,6 +44,10 @@ const baseAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       // Use GOOGLE_CLIENT_SECRET or fallback to legacy AUTH_GOOGLE_SECRET
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || process.env.AUTH_GOOGLE_SECRET!,
+    }),
+    NaverProvider({
+      clientId: process.env.NAVER_CLIENT_ID!,
+      clientSecret: process.env.NAVER_CLIENT_SECRET!,
     })
   ],
   callbacks: {
@@ -50,7 +61,8 @@ const baseAuthOptions = {
       session?: any;
     }) {
       if (account?.providerAccountId) {
-        token.userId = generateUUID(account.providerAccountId);
+        const provider = account.provider || 'google';
+        token.userId = generateUUID(account.providerAccountId, provider);
       }
       return token;
     },
@@ -85,7 +97,8 @@ const baseAuthOptions = {
         if (!account || typeof account.providerAccountId !== 'string') {
           throw new Error('Missing providerAccountId');
         }
-        const userId = generateUUID(account.providerAccountId as string);
+        const provider = account.provider || 'google';
+        const userId = generateUUID(account.providerAccountId as string, provider);
         
         // Upsert user record into Supabase with consistent UUID
         const { error: userError } = await supabase.from('users').upsert({
