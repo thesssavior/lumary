@@ -12,6 +12,7 @@ const intlMiddleware = createIntlMiddleware({
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
   // Skip internal or static files
   if (
     pathname.startsWith('/api') ||
@@ -21,6 +22,12 @@ export async function middleware(request: NextRequest) {
   ) {
     return NextResponse.next();
   }
+
+  // Skip root page - let client-side localStorage checking handle it
+  if (pathname === '/') {
+    return NextResponse.next();
+  }
+
   const host = request.headers.get('host') || ''
 
   // 🔁 Redirect old domain to new domain
