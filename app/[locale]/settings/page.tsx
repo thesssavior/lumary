@@ -20,6 +20,9 @@ const SettingsPage = () => {
   const { openSubscriptionModal } = useFolder();
 
   const handleLanguageChange = (newLocale: string) => {
+    // Save the preference to localStorage
+    localStorage.setItem('uiLanguage', newLocale);
+    
     startTransition(() => {
       router.replace(`/${newLocale}/settings`);
     });
