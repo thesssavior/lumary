@@ -310,7 +310,7 @@ export default function NewSummaryPage() {
             <Card className="p-4 bg-red-50 border-red-200">
               <p className="text-red-700 font-semibold">{t('errorOccurred')}</p>
               <p className="text-red-600 text-sm">{error}</p>
-              <Button variant="outline" onClick={() => router.push(`/${locale}`)} className="mt-4">
+              <Button variant="outline" onClick={() => router.push("/")} className="mt-4">
                 {t('goBackHome')}
               </Button>
             </Card>

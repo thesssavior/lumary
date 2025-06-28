@@ -68,7 +68,7 @@ export default function PaymentSuccess() {
       <Button
         size="lg"
         className="bg-black hover:bg-zinc-800 text-white"
-        onClick={() => router.push(`/${locale}`)}
+        onClick={() => router.push("/")}
       >
         <Plus className="w-5 h-5 mr-2" /> {t('newSummaryButton')}
       </Button>

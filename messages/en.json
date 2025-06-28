@@ -209,7 +209,7 @@
   "SettingsPage": {
     "title": "Settings",
     "mustBeLoggedIn": "You must be logged in to view this page.",
-    "confirmDeleteAccount": "Are you sure you want to delete your account? This action cannot be undone.",
+    "confirmDeleteAccount": "Are you sure you want to delete your account? This action cannot be undone. ** Your subscription will not be cancelled automatically. **",
     "deleteAccountNotImplemented": "Account deletion feature is not yet implemented.",
     "deleteAccountError": "Failed to delete account: {error}",
     "accountSection": {

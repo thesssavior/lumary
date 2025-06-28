@@ -216,7 +216,7 @@
   "SettingsPage": {
     "title": "설정",
     "mustBeLoggedIn": "이 페이지를 보려면 로그인해야 합니다.",
-    "confirmDeleteAccount": "계정을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+    "confirmDeleteAccount": "계정을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다. ** 구독이 자동으로 취소 되지 않습니다. **",
     "deleteAccountNotImplemented": "계정 삭제 기능은 아직 구현되지 않았습니다.",
     "deleteAccountError": "계정 삭제 실패: {error}",
     "accountSection": {

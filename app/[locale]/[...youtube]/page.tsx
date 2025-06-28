@@ -33,7 +33,7 @@ export default function YoutubeCatchAllPage({ params }: YoutubeCatchAllPageProps
       // Encode the full URL to safely pass it as a query parameter
       router.replace(`/${locale}?youtube=${encodeURIComponent(fullYoutubeUrl)}`);
     } else {
-      router.replace(`/${locale}`);
+      router.replace("/");
     }
   }, [fullYoutubeUrl, locale]);
 

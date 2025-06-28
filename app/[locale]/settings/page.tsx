@@ -29,7 +29,7 @@ const SettingsPage = () => {
   };
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: `/${locale}` });
+    await signOut({ callbackUrl: `/` });
   };
 
   const handleDeleteAccount = async () => {

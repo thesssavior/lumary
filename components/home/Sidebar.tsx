@@ -322,7 +322,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
       <nav className="flex-1 overflow-y-auto px-2 py-4">
         <ul className="space-y-1">
           <li>
-            <Link href={`/${locale}/`}>
+            <Link href="/">
               <div className="flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 font-medium">
                 <Home className="w-4 h-4" /> {t('Sidebar.home', { defaultValue: '홈' })}
               </div>
