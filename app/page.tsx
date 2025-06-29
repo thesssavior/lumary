@@ -16,9 +16,7 @@ export default function Home() {
       console.log('💾 Saved language in localStorage:', savedLanguage);
       
       if (savedLanguage && ['ko', 'en'].includes(savedLanguage)) {
-        console.log('✅ Using saved preference:', savedLanguage);
         const targetUrl = `/${savedLanguage}`;
-        console.log('🚀 Navigating to:', targetUrl);
         
         // Try router first, fallback to window.location if needed
         try {
@@ -33,12 +31,10 @@ export default function Home() {
       // Fallback to browser language detection
       const supportedLocales = ['ko', 'en'];
       const browserLanguages = navigator.languages || [navigator.language];
-      console.log('🌐 Browser languages:', browserLanguages);
       
       for (const lang of browserLanguages) {
         const code = lang.split('-')[0].toLowerCase();
         if (supportedLocales.includes(code)) {
-          console.log('✅ Using browser language:', code);
           router.push(`/${code}`);
           return;
         }
@@ -58,7 +54,6 @@ export default function Home() {
     // Listen for page visibility changes (when user comes back to tab)
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        console.log('👁️ Page became visible, re-checking language preference');
         checkLanguagePreference();
       }
     };

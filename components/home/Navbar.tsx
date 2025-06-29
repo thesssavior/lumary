@@ -2,16 +2,18 @@
 
 import { Button } from "@/components/ui/button";
 import { signIn, useSession } from "next-auth/react";
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import Image from 'next/image';
 import { HelpCircle, LogIn, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useParams } from "next/navigation";
 
 export function Navbar() {
   const t = useTranslations();
   const { data: session } = useSession();
-  const locale = useLocale();
+  const params = useParams();
+  const locale = params.locale as string;
   return (
     <>
       <nav className="border-b border-zinc-200 bg-white">
@@ -21,7 +23,7 @@ export function Navbar() {
           </Link>
 
           <div className="flex items-center space-x-4">
-            <Link href="/community">
+            <Link href={`/${locale}/community`}>
               <Button 
                 variant="ghost" 
                 title={t('helpAndCommunity')}
@@ -36,7 +38,7 @@ export function Navbar() {
 
             {session ? (
               <div className="flex items-center space-x-4">
-                <Link href="/settings">
+                <Link href={`/${locale}/settings`}>
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={session?.user?.image ?? undefined} alt={session?.user?.name ?? 'User'} />
                   <AvatarFallback>

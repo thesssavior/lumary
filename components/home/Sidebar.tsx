@@ -45,7 +45,6 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const { data: session } = useSession();
   const { activeFolder, setActiveFolder, openSubscriptionModal } = useFolder();
   const [folderOpen, setFolderOpen] = useState<{ [folderId: string]: boolean }>({});
-  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [hoveredSummaryId, setHoveredSummaryId] = useState<string | null>(null);
   const [hoveredFolderId, setHoveredFolderId] = useState<string | null>(null);
   const [isMac, setIsMac] = useState(false);
@@ -527,7 +526,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
       </nav>
 
       <div className="px-4 space-y-3 border-t text-center">
-        <Link href="/community">
+        <Link href={`/${locale}/community`}>
           <Button 
             variant="ghost" 
           title={t('helpAndCommunity')}
@@ -577,7 +576,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
             <p className="text-sm font-medium truncate text-gray-800">{session?.user?.name}</p>
             <p className="text-xs truncate text-gray-500">{session?.user?.email}</p>
           </div>
-          <Link href="/settings" className="flex items-center">
+          <Link href={`/${locale}/settings`} className="flex items-center">
             <button className="text-gray-400 hover:text-gray-700" title="Settings"> {/* Add functionality later */}
               <Settings className="w-5 h-5" />
             </button>
