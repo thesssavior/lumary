@@ -136,7 +136,14 @@ export function VideoInputForm() {
       }
 
       const transcriptDataJSON = await transcriptResponse.json();
-      const {transcript, title, description, tokenCount, fetcher} = transcriptDataJSON;
+      const {
+        transcript,
+        title,
+        description,
+        tokenCount,
+        fetcher,
+      } = transcriptDataJSON;
+      
       // Ensure all expected fields are present, providing defaults if necessary
       const data = {
         videoId: videoId,
@@ -182,7 +189,7 @@ export function VideoInputForm() {
       }
       
       // Redirect to the new summary generation page
-      router.push(`/${locale}/new`);
+      router.push(`/${locale}/summaries/new`);
 
     } catch (err: any) {
       if (!showTokenLimitUpgrade && !dailyLimitExceeded) {

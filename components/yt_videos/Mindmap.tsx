@@ -24,7 +24,7 @@ interface MindmapProps {
   mindmap: any | null;
   locale: string;
   contentLanguage?: string; // Content language for mindmap generation
-  summaryId: string;
+  summaryId: string | null | undefined;
   isActive: boolean | null;
   isStreaming?: boolean;
   // transcript: string; // Transcript is not directly used for generation by this component anymore

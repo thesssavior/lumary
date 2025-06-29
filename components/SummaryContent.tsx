@@ -15,12 +15,13 @@ type Props = {
     folder: any;
     locale: string;
     mindmap: any | null;
-    summaryId: string;
+    summaryId: string | null | undefined;
     quiz: any | null;
     contentLanguage: string;
+    isStreamingMode?: boolean;
 }
 
-export default function SummaryContent({ summary, folder, locale, mindmap, summaryId, quiz, contentLanguage }: Props) {
+export default function SummaryContent({ summary, folder, locale, mindmap, summaryId, quiz, contentLanguage, isStreamingMode = false }: Props) {
     const t = useTranslations();
     const [activetab, setActivetab] = useState("summary");
     const [copied, setCopied] = useState(false);
@@ -92,7 +93,7 @@ export default function SummaryContent({ summary, folder, locale, mindmap, summa
                 locale={locale} 
                 contentLanguage={contentLanguage}
                 mindmap={mindmap} 
-                summaryId={summaryId}
+                summaryId={summaryId || null}
                 isActive={activetab === "mindmap"}
               />
             ) : (
@@ -109,7 +110,7 @@ export default function SummaryContent({ summary, folder, locale, mindmap, summa
               summary={summary.summary} 
               quizData={quiz} 
               locale={locale} 
-              summaryId={summaryId} 
+              summaryId={summaryId || null} 
             />
           </TabsContent>
   
