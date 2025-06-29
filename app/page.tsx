@@ -9,11 +9,9 @@ export default function Home() {
 
   useEffect(() => {
     const checkLanguagePreference = () => {
-      console.log('🔍 Checking language preference...');
       
       // Check localStorage first (user's saved preference)
       const savedLanguage = localStorage.getItem('uiLanguage');
-      console.log('💾 Saved language in localStorage:', savedLanguage);
       
       if (savedLanguage && ['ko', 'en'].includes(savedLanguage)) {
         const targetUrl = `/${savedLanguage}`;

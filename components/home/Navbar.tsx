@@ -18,7 +18,7 @@ export function Navbar() {
     <>
       <nav className="border-b border-zinc-200 bg-white">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link href="/" className="flex items-center space-x-2 ml-12 sm:ml-0">
+          <Link href={`/${locale}`} className="flex items-center space-x-2 ml-12 sm:ml-0">
             <Image src="/lumary.png" alt="Lumary Logo" width={100} height={100} />
           </Link>
 
