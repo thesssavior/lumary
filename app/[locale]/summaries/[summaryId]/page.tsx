@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { supabaseClient } from '@/lib/supabaseClient';
 import { ScrollToTopButton } from '@/components/home/ScrollToTopButton';
 import SummaryContent from '@/components/SummaryContent';
 import { Loader2 } from 'lucide-react';
@@ -58,7 +58,7 @@ export default function SummaryDetailPage() {
     try {
       setLoading(true);
       
-      const { data: summaryData, error: summaryError } = await supabase
+      const { data: summaryData, error: summaryError } = await supabaseClient
         .from('summaries')
         .select('id, name, summary, video_id, created_at, folder_id, locale, content_language, transcript, mindmap, quiz, description')
         .eq('id', id)
@@ -69,7 +69,7 @@ export default function SummaryDetailPage() {
         return;
       }
 
-      const { data: folderData, error: folderError } = await supabase
+      const { data: folderData, error: folderError } = await supabaseClient
         .from('folders')
         .select('id, name')
         .eq('id', summaryData.folder_id)
