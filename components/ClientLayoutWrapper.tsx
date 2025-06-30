@@ -11,6 +11,7 @@ import { SessionProvider } from "next-auth/react";
 import SearchProvider from '@/contexts/SearchContext';
 import GlobalSearchModal from '@/components/GlobalSearchModal';
 import { ClientProvider } from '@/components/providers';
+import { usePathname } from 'next/navigation';
 
 interface ClientLayoutWrapperProps {
   children: React.ReactNode;
@@ -23,6 +24,34 @@ export function ClientLayoutWrapper({
   locale, 
   messages 
 }: ClientLayoutWrapperProps) {
+  const pathname = usePathname();
+  
+  // Check if we're on a summary page which needs a different layout
+  const isSummaryPage = pathname?.includes('/summaries/');
+
+  if (isSummaryPage) {
+    return (
+      <ClientProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <SessionProvider>
+            <SearchProvider>
+              <SummaryGenerationProvider>
+                <div className="flex flex-col h-screen">
+                  <Navbar />
+                  <main className="flex-1 overflow-y-auto">
+                    {children}
+                  </main>
+                </div>
+              </SummaryGenerationProvider>
+            </SearchProvider>
+          </SessionProvider>
+          <Toaster />
+        </NextIntlClientProvider>
+      </ClientProvider>
+    );
+  }
+
+  // Default layout for all other pages
   return (
     <ClientProvider>
       <NextIntlClientProvider locale={locale} messages={messages}>

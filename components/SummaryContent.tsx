@@ -9,6 +9,8 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import Quiz from './yt_videos/Quiz';
 import { Button } from '@/components/ui/button';
+import { VideoPlayer } from './yt_videos/VideoPlayer';
+import { TranscriptPanel } from './yt_videos/TranscriptPanel';
 
 type Props = {
     summary: any;
@@ -19,9 +21,20 @@ type Props = {
     quiz: any | null;
     contentLanguage: string;
     isStreamingMode?: boolean;
+    layoutMode?: 'default' | 'split';
 }
 
-export default function SummaryContent({ summary, folder, locale, mindmap, summaryId, quiz, contentLanguage, isStreamingMode = false }: Props) {
+export default function SummaryContent({ 
+  summary, 
+  folder, 
+  locale, 
+  mindmap, 
+  summaryId, 
+  quiz, 
+  contentLanguage, 
+  isStreamingMode = false,
+  layoutMode = 'default'
+}: Props) {
     const t = useTranslations();
     const [activetab, setActivetab] = useState("summary");
     const [copied, setCopied] = useState(false);
@@ -35,7 +48,122 @@ export default function SummaryContent({ summary, folder, locale, mindmap, summa
         console.error('Failed to copy:', err);
       }
     };
-  
+
+    // Split layout mode
+    if (layoutMode === 'split') {
+      return (
+        <div className="flex h-full w-full bg-gray-50">
+          {/* Left Panel */}
+          <div className="flex flex-col w-1/2">
+            {/* Video Player - Top Left */}
+            <div className="h-1/2 p-1">
+              <VideoPlayer videoId={summary.video_id} title={summary.name} />
+            </div>
+
+            {/* Transcript - Bottom Left */}
+            <div className="h-1/2 p-1">
+              <TranscriptPanel transcript={summary.transcript} />
+            </div>
+          </div>
+
+          {/* Right Panel - Summary Content */}
+          <div className="w-1/2 p-1">
+            <div className="h-full bg-white border overflow-hidden">
+              <div className="h-full flex flex-col">
+                {/* Header */}
+                <div className="px-4 py-3 border-b bg-gray-50 flex-shrink-0">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
+                    <Folder className="w-4 h-4" />
+                    <span>{folder?.name}</span>
+                    <span>/</span>
+                  </div>
+                  <h1 className="text-xl font-bold text-gray-900">{summary.name}</h1>
+                  {summary.created_at && (
+                    <div className="text-gray-500 text-xs mt-1">
+                      Created: {new Date(summary.created_at).toLocaleString()}
+                    </div>
+                  )}
+                </div>
+
+                {/* Tabs Content - Only Summary, Mindmap, Quiz (no transcript) */}
+                <div className="flex-1 overflow-hidden">
+                  <Tabs defaultValue="summary" value={activetab} onValueChange={setActivetab} className="h-full flex flex-col">
+                    <TabsList className="grid w-full grid-cols-3 mx-2 mt-2 mb-0 flex-shrink-0">
+                      <TabsTrigger value="summary">{t('summaryTab')}</TabsTrigger>
+                      <TabsTrigger value="mindmap">{t('mindmapTab')}</TabsTrigger>
+                      <TabsTrigger value="quiz">{t('quizTab')}</TabsTrigger>
+                    </TabsList>
+
+                    <div className="flex-1 overflow-auto">
+                      <TabsContent value="summary" className="m-0 h-full">
+                        <div className="p-4 h-full overflow-auto">
+                          <div className="prose prose-zinc max-w-none pr-10 relative">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={copyToClipboard}
+                              className="absolute top-0 right-0 h-8 w-8 p-0 hover:bg-gray-100"
+                              title={copied ? t('copiedToClipboard') : t('copySummary')}
+                            >
+                              {copied ? (
+                                <Check className="h-4 w-4" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <div className="text-black [&>h1]:text-xl [&>h2]:text-lg [&>h3]:text-base [&>p]:text-sm [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-4 [&>h1:not(:first-child)]:mt-6 [&>h2]:mb-3 [&>h2:not(:first-child)]:mt-5 [&>h3]:mb-2 [&>h3:not(:first-child)]:mt-4 [&>p]:mb-3 [&>ul]:mb-3 [&>ol]:mb-3 [&>li]:mb-2 [&>ol]:pl-6 [&>ul]:pl-6 [&>strong]:font-bold [&>strong]:text-black">
+                              <ReactMarkdown>{summary.summary}</ReactMarkdown>
+                            </div>
+                          </div>
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent 
+                        value="mindmap" 
+                        forceMount={true} 
+                        className="data-[state=active]:block hidden m-0 h-full"
+                      >
+                        <div className="p-2 h-full">
+                          {summary.summary ? (
+                            <Mindmap 
+                              summary={summary.summary} 
+                              locale={locale} 
+                              contentLanguage={contentLanguage}
+                              mindmap={mindmap} 
+                              summaryId={summaryId || null}
+                              isActive={activetab === "mindmap"}
+                            />
+                          ) : (
+                            <p className="text-gray-500 p-4">Summary not available for mindmap generation.</p>
+                          )}
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent 
+                        value="quiz" 
+                        forceMount={true} 
+                        className="data-[state=active]:block hidden m-0 h-full"
+                      >
+                        <div className="p-2 h-full overflow-auto">
+                          <Quiz 
+                            summary={summary.summary} 
+                            quizData={quiz} 
+                            locale={locale} 
+                            summaryId={summaryId || null} 
+                          />
+                        </div>
+                      </TabsContent>
+                    </div>
+                  </Tabs>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Default layout mode (original)
     return (
       <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">

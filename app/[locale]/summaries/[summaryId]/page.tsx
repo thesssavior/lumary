@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { supabaseClient } from '@/lib/supabaseClient';
+import { useSession } from 'next-auth/react';
 import { ScrollToTopButton } from '@/components/home/ScrollToTopButton';
 import SummaryContent from '@/components/SummaryContent';
 import { Loader2 } from 'lucide-react';
@@ -12,6 +12,7 @@ export default function SummaryDetailPage() {
   const params = useParams();
   const locale = params.locale as string;
   const summaryId = params.summaryId as string | undefined;
+  const { data: session, status } = useSession();
   
   const { generationData } = useSummaryGeneration();
   const [summary, setSummary] = useState<any>(null);
@@ -20,6 +21,12 @@ export default function SummaryDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Wait for session to load
+    if (status === 'loading') {
+      setLoading(true);
+      return;
+    }
+
     if (summaryId === 'new') {
       // New summary mode - use context data
       const { transcriptData, folderForSummary } = generationData;
@@ -45,43 +52,39 @@ export default function SummaryDetailPage() {
         setFolder(folderForSummary);
         setLoading(false);
       }
-    } else if (summaryId) {
-      // Existing summary mode - fetch from DB
+    } else if (summaryId && session?.user && !summary) {
+      // Existing summary mode - fetch from DB (only if authenticated and we don't already have data)
       fetchExistingSummary(summaryId);
-    } else {
+    } else if (summaryId && !session?.user) {
+      // User is not authenticated
+      setError('Please sign in to view this summary');
+      setLoading(false);
+    } else if (!summaryId) {
       // No summaryId - might be initial load, keep loading
       setLoading(true);
     }
-  }, [summaryId, generationData, locale]);
+  }, [summaryId, generationData, locale, session?.user?.id, status]);
 
   const fetchExistingSummary = async (id: string) => {
     try {
       setLoading(true);
       
-      const { data: summaryData, error: summaryError } = await supabaseClient
-        .from('summaries')
-        .select('id, name, summary, video_id, created_at, folder_id, locale, content_language, transcript, mindmap, quiz, description')
-        .eq('id', id)
-        .single();
-
-      if (summaryError || !summaryData) {
-        setError('Summary not found');
+      const response = await fetch(`/api/summaries/${id}`);
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          setError('Summary not found');
+        } else if (response.status === 401) {
+          setError('Please sign in to view this summary');
+        } else {
+          setError('Failed to load summary');
+        }
         return;
       }
 
-      const { data: folderData, error: folderError } = await supabaseClient
-        .from('folders')
-        .select('id, name')
-        .eq('id', summaryData.folder_id)
-        .single();
-
-      if (folderError || !folderData) {
-        setError('Folder not found');
-        return;
-      }
-
-      setSummary(summaryData);
-      setFolder(folderData);
+      const data = await response.json();
+      setSummary(data.summary);
+      setFolder(data.folder);
     } catch (err) {
       setError('Failed to load summary');
     } finally {
@@ -92,7 +95,7 @@ export default function SummaryDetailPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <Loader2 className="h-16 w-16 animate-spin" />
+        <Loader2 className="h-10 w-10 animate-spin" />
       </div>
     );
   }
@@ -125,6 +128,7 @@ export default function SummaryDetailPage() {
         quiz={summary.quiz || null}
         contentLanguage={summary.content_language || locale}
         isStreamingMode={summaryId === 'new'}
+        layoutMode="split"
       />
     </>
   );
