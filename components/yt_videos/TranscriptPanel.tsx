@@ -11,12 +11,12 @@ export function TranscriptPanel({ transcript }: TranscriptPanelProps) {
   const t = useTranslations();
 
   return (
-    <div className="h-full bg-white border overflow-hidden">
+    <div className="h-full bg-white border overflow-hidden rounded-lg">
       <div className="h-full flex flex-col">
-        <div className="px-3 py-2 border-b bg-gray-50 flex-shrink-0">
+        {/* <div className="px-3 py-2 border-b bg-gray-50 flex-shrink-0">
           <h3 className="font-semibold text-gray-800 text-sm">{t('transcriptTab')}</h3>
-        </div>
-        <div className="flex-1 overflow-auto p-3">
+        </div> */}
+        <div className="flex-1 overflow-auto p-3 h-full">
           {transcript ? (
             <FullTranscriptViewer transcript={transcript} />
           ) : (

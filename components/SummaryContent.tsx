@@ -54,23 +54,23 @@ export default function SummaryContent({
       return (
         <div className="flex h-full w-full bg-gray-50">
           {/* Left Panel */}
-          <div className="flex flex-col w-1/2">
+          <div className="flex flex-col w-1/2 space-y-1 mt-1">
             {/* Video Player - Top Left */}
-            <div className="h-1/2 p-1">
+            <div className="h-[46vh] p-1 rounded-lg">
               <VideoPlayer videoId={summary.video_id} title={summary.name} />
             </div>
 
             {/* Transcript - Bottom Left */}
-            <div className="h-1/2 p-1">
+            <div className="h-[46vh] p-1 rounded-lg">
               <TranscriptPanel transcript={summary.transcript} />
             </div>
           </div>
 
           {/* Right Panel - Summary Content */}
-          <div className="w-1/2 p-1">
-            <div className="h-full bg-white border overflow-hidden">
+          <div className="w-1/2 p-1 mt-1">
+            <div className="h-[91vh] bg-white border overflow-hidden rounded-lg">
               <div className="h-full flex flex-col">
-                {/* Header */}
+                {/* Header
                 <div className="px-4 py-3 border-b bg-gray-50 flex-shrink-0">
                   <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
                     <Folder className="w-4 h-4" />
@@ -83,12 +83,12 @@ export default function SummaryContent({
                       Created: {new Date(summary.created_at).toLocaleString()}
                     </div>
                   )}
-                </div>
+                </div> */}
 
                 {/* Tabs Content - Only Summary, Mindmap, Quiz (no transcript) */}
                 <div className="flex-1 overflow-hidden">
                   <Tabs defaultValue="summary" value={activetab} onValueChange={setActivetab} className="h-full flex flex-col">
-                    <TabsList className="grid w-full grid-cols-3 mx-2 mt-2 mb-0 flex-shrink-0">
+                    <TabsList className="grid w-[90%] grid-cols-3 mx-2 mt-2 mb-0 flex-shrink-0">
                       <TabsTrigger value="summary">{t('summaryTab')}</TabsTrigger>
                       <TabsTrigger value="mindmap">{t('mindmapTab')}</TabsTrigger>
                       <TabsTrigger value="quiz">{t('quizTab')}</TabsTrigger>
@@ -97,7 +97,7 @@ export default function SummaryContent({
                     <div className="flex-1 overflow-auto">
                       <TabsContent value="summary" className="m-0 h-full">
                         <div className="p-4 h-full overflow-auto">
-                          <div className="prose prose-zinc max-w-none pr-10 relative">
+                          <div className="prose prose-zinc max-w-none pr-10 relative h-full">
                             <Button
                               variant="ghost"
                               size="sm"
@@ -165,7 +165,7 @@ export default function SummaryContent({
 
     // Default layout mode (original)
     return (
-      <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
+      <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 h-full overflow-auto">
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
           {/* <Link href={`/${summary.locale}/folders/${folder.id}`} className="flex items-center gap-1 hover:text-gray-700"> */}
           <Folder className="w-4 h-4" />

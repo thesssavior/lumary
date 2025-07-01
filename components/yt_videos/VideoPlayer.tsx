@@ -7,7 +7,7 @@ interface VideoPlayerProps {
 
 export function VideoPlayer({ videoId, title }: VideoPlayerProps) {
   return (
-    <div className="h-full bg-black overflow-hidden">
+    <div className="h-full bg-black overflow-hidden rounded-lg">
       {videoId ? (
         <iframe
           width="100%"
@@ -17,7 +17,7 @@ export function VideoPlayer({ videoId, title }: VideoPlayerProps) {
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
-          className="w-full h-full"
+          className="w-full h-full rounded-lg"
         />
       ) : (
         <div className="flex items-center justify-center h-full text-white">

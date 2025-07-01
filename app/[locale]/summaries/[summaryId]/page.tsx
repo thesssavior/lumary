@@ -117,7 +117,7 @@ export default function SummaryDetailPage() {
   }
 
   return (
-    <>
+    <div className="h-full w-full">
       <ScrollToTopButton />
       <SummaryContent 
         summary={summary} 
@@ -130,6 +130,6 @@ export default function SummaryDetailPage() {
         isStreamingMode={summaryId === 'new'}
         layoutMode="split"
       />
-    </>
+    </div>
   );
 } 
