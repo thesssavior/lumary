@@ -10,13 +10,18 @@ export function ClientProvider({ children }: ClientProviderProps) {
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    setIsHydrated(true);
+    // Ensure we're actually in the browser before setting hydrated
+    if (typeof window !== 'undefined') {
+      setIsHydrated(true);
+    }
   }, []);
 
+  // During SSR and before hydration, render with suppressed hydration warnings
   if (!isHydrated) {
     return <div suppressHydrationWarning>{children}</div>;
   }
 
+  // After hydration, render normally
   return <>{children}</>;
 }
 
