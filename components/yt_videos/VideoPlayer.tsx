@@ -10,9 +10,10 @@ export function VideoPlayer({ videoId, title }: VideoPlayerProps) {
     <div className="h-full bg-black overflow-hidden rounded-lg">
       {videoId ? (
         <iframe
+          id="youtube-player"
           width="100%"
           height="100%"
-          src={`https://www.youtube.com/embed/${videoId}`}
+          src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1`}
           title={title || "YouTube video player"}
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

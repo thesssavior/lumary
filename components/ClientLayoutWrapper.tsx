@@ -27,7 +27,7 @@ export function ClientLayoutWrapper({
   // Default layout for all other pages
   return (
     <ClientProvider>
-      <NextIntlClientProvider locale={locale} messages={messages}>
+      <NextIntlClientProvider locale={locale} messages={messages} timeZone="Asia/Seoul">
         <SessionProvider>
           <SearchProvider>
             <SummaryGenerationProvider>

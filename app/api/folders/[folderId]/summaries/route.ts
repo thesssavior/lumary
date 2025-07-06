@@ -45,29 +45,32 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
       description,
       locale,
       contentLanguage,
-      fetcher
+      chapters,
     } = body;
 
-    if (!videoId || !summary || !(title || name)) {
-      console.error('Missing required fields:', { videoId, summary, title, name });
-      return NextResponse.json({ error: 'Missing videoId, summary, or title/name' }, { status: 400 });
+    if (!videoId || !(title || name)) {
+      console.error('Missing required fields:', { videoId, title, name });
+      return NextResponse.json({ error: 'Missing videoId or title/name' }, { status: 400 });
     }
 
-    const output_token_count = calculateTokenCount(summary);
+    let output_token_count = 0;
+    if (summary) {
+      output_token_count = calculateTokenCount(summary);
+    }
 
     const insertData = {
       folder_id: folderId,
       user_id: session.user.id,
       video_id: videoId,
-      summary: summary,
+      summary: summary || '',
       name: name || title,
-      input_token_count: input_token_count,
-      output_token_count: output_token_count,
+      input_token_count: input_token_count || 0,
+      output_token_count: output_token_count || 0,
       transcript: transcript,
       description: description,
       locale: locale,
       content_language: contentLanguage,
-      fetcher: fetcher
+      chapters: chapters || null,
     };
 
     const { data: summaryData, error: summaryError } = await supabase

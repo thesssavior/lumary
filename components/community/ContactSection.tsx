@@ -25,7 +25,7 @@ const ContactSection = () => {
     setSuccess(false);
 
     try {
-      const response = await fetch('/api/report', {
+      const response = await fetch('/api/home/report', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

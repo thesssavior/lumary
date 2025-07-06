@@ -10,7 +10,7 @@ import frMessages from '@/messages/fr.json';
 // constants & helpers
 const MAX_CHUNK_INPUT_TOKENS = 16384;
 const model = 'gpt-4.1-mini';
-const FINAL_SEPARATOR = ' <<<OVERVIEW_START>>>';
+const FINAL_SEPARATOR = ' <<<OVERVIEW_START>>>';
 
 function chunkTranscript(
   transcriptText: string,
@@ -144,7 +144,7 @@ export async function POST(req: Request) {
       },
     });
   } catch (err: any) {
-    console.error('summarise‑route error:', err);
+    console.error('summaries/yt_long route error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+} 

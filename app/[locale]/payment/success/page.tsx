@@ -20,7 +20,7 @@ export default function PaymentSuccess() {
     if (session?.user?.email && plan !== 'free') {
       interval = setInterval(async () => {
         try {
-            const res = await fetch(`/api/user/plan?email=${session.user.email}`);
+            const res = await fetch(`/api/home/user/plan?email=${session.user.email}`);
             if (!res.ok) {
                 console.error("Failed to fetch plan status:", res.status);
                 return; 

@@ -28,7 +28,7 @@ export async function GET() {
     return NextResponse.json(features, { status: 200 });
 
   } catch (error: any) {
-    console.error('API Route /api/feature-board GET error:', error);
+    console.error('API Route /api/home/feature-board GET error:', error);
     return NextResponse.json({ error: 'An unexpected error occurred while fetching features.' }, { status: 500 });
   }
 }
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, updatedFeature: updateData }, { status: 200 });
 
   } catch (error: any) {
-    console.error('API Route /api/feature-board POST error:', error);
+    console.error('API Route /api/home/feature-board POST error:', error);
     if (error instanceof SyntaxError) {
         return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
     }

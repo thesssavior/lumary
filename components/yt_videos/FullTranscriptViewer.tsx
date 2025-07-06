@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 // import { Card } from "@/components/ui/card"; // Card is not used
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 
 interface TranscriptGroup {
   timestamp: string;
@@ -28,6 +29,39 @@ function decodeHtmlEntities(text: string): string {
 
 export function FullTranscriptViewer({ transcript }: { transcript: string }) {
   const t = useTranslations();
+  
+  // Try to get video player context, but don't require it
+  let videoPlayer: ReturnType<typeof useVideoPlayer> | null = null;
+  try {
+    videoPlayer = useVideoPlayer();
+  } catch (error) {
+    // Context not available, transcript won't be clickable
+    videoPlayer = null;
+  }
+
+  // Function to parse timestamp and convert to seconds
+  const parseTimestampToSeconds = (timestamp: string): number => {
+    // Remove brackets and parse [HH:MM:SS] or [MM:SS]
+    const timeStr = timestamp.replace(/[\[\]]/g, '');
+    const parts = timeStr.split(':').map(Number);
+    
+    if (parts.length === 3) {
+      // HH:MM:SS format
+      return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    } else if (parts.length === 2) {
+      // MM:SS format
+      return parts[0] * 60 + parts[1];
+    }
+    return 0;
+  };
+
+  // Handle timestamp click
+  const handleTimestampClick = (timestamp: string) => {
+    if (videoPlayer) {
+      const seconds = parseTimestampToSeconds(timestamp);
+      videoPlayer.seekTo(seconds);
+    }
+  };
 
   if (!transcript) {
     return (
@@ -103,9 +137,13 @@ export function FullTranscriptViewer({ transcript }: { transcript: string }) {
       {/* Removed space-y-3 from here, mb-4 on group div will handle inter-group spacing */}
       <div className="pr-2 h-full">
         {finalGroups.map((group, index) => (
-          <div key={index} className="mb-4"> {/* Increased bottom margin for spacing between groups */}
+          <div 
+            key={index} 
+            className={`rounded-lg p-4 bg-white hover:bg-gray-100 ${videoPlayer ? 'cursor-pointer' : ''}`}
+            onClick={() => handleTimestampClick(group.timestamp)}
+          >
             {group.timestamp && (
-              <p className="font-bold text-gray-800 mb-1">{group.timestamp}</p> /* Timestamp as bold paragraph */
+              <p className="font-bold text-gray-800 mb-1">{group.timestamp}</p>
             )}
             {/* Indent lines and provide intra-group line spacing */} 
             <div className={"space-y-1"}> 

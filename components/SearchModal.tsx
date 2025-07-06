@@ -53,7 +53,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+              const response = await fetch(`/api/home/search?q=${encodeURIComponent(searchQuery)}`);
       
       if (!response.ok) {
         throw new Error('Search failed');

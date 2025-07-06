@@ -123,7 +123,7 @@ export function VideoInputForm() {
         : locale;
 
       // Step 1: Call /api/transcript
-      const transcriptResponse = await fetch('/api/transcript', {
+      const transcriptResponse = await fetch('/api/summaries/transcript', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ videoId, locale, contentLanguage }),

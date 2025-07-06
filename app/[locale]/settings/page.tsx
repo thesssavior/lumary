@@ -38,7 +38,7 @@ const SettingsPage = () => {
       setIsDeleting(true);
       try {
         // Call API to delete account
-        const response = await fetch('/api/user/delete', { method: 'DELETE' });
+        const response = await fetch('/api/home/user/delete', { method: 'DELETE' });
         if (response.ok) {
           await signOut({ callbackUrl: '/' }); // Sign out and redirect to home
         } else {

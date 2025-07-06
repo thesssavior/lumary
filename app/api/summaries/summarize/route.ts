@@ -12,7 +12,7 @@ const model = 'gpt-4.1-mini';
 // POST request to summarize a video
 export async function POST(req: Request) {
   try {
-    console.log("summarize route called");
+    console.log("summaries/summarize route called");
     // Get videoId, locale, transcriptText, title, and videoDescription from request
     const { 
       videoId, 
@@ -77,4 +77,4 @@ export async function POST(req: Request) {
     console.error("General error:", error.message);
     return NextResponse.json({ error: `${error.message}` }, { status: 500 });
   }
-}
+} 

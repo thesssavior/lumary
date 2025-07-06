@@ -13,7 +13,6 @@ export default function SummaryDetailPage() {
   const locale = params.locale as string;
   const summaryId = params.summaryId as string | undefined;
   const { data: session, status } = useSession();
-  
   const { generationData } = useSummaryGeneration();
   const [summary, setSummary] = useState<any>(null);
   const [folder, setFolder] = useState<any>(null);
@@ -32,7 +31,14 @@ export default function SummaryDetailPage() {
       const { transcriptData, folderForSummary } = generationData;
       
       if (transcriptData) {
-        const { videoId, contentLanguage, transcriptText, title, videoDescription } = transcriptData;
+        const { 
+          videoId, 
+          contentLanguage, 
+          transcriptText, 
+          title, 
+          videoDescription,
+          tokenCount
+        } = transcriptData;
         
         // Create summary object from context data
         setSummary({
@@ -47,6 +53,7 @@ export default function SummaryDetailPage() {
           description: videoDescription,
           mindmap: null,
           quiz: null,
+          input_token_count: tokenCount,
         });
         
         setFolder(folderForSummary);
@@ -69,6 +76,7 @@ export default function SummaryDetailPage() {
     try {
       setLoading(true);
       
+      // does this still work?
       const response = await fetch(`/api/summaries/${id}`);
       
       if (!response.ok) {
@@ -128,6 +136,7 @@ export default function SummaryDetailPage() {
         quiz={summary.quiz || null}
         contentLanguage={summary.content_language || locale}
         isStreamingMode={summaryId === 'new'}
+        tokenCount={summary.input_token_count || 0}
         layoutMode="split"
       />
     </div>

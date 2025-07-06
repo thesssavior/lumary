@@ -53,7 +53,7 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
     setIsLoading(true);
     
     try {
-      const response = await fetch('/api/feature-board', {
+              const response = await fetch('/api/home/feature-board', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -155,7 +155,7 @@ const FeatureBoard = () => {
     const fetchFeatures = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/feature-board');
+        const response = await fetch('/api/home/feature-board');
         if (!response.ok) {
           throw new Error(t('errors.fetchFeaturesFailed'));
         }

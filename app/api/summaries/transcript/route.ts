@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Supadata, Transcript } from '@supadata/js'
 import {
-  fetchTranscriptWithFallback,
   formatTranscript,
   fetchYoutubeInfo
 } from '@/lib/youtube-utils';
@@ -35,23 +34,11 @@ export async function POST(req: Request) {
         videoId: videoId,
       });
       supadataTranscript = transcript;
-      
-      // Debug logging to understand Supadata response
-      // console.log(`[DEBUG] Supadata response for ${videoId}:`, {
-      //   hasContent: !!supadataTranscript?.content,
-      //   contentLength: Array.isArray(supadataTranscript?.content) ? supadataTranscript.content.length : 'not array',
-      //   contentType: typeof supadataTranscript?.content,
-      //   lang: supadataTranscript?.lang,
-      //   availableLangs: supadataTranscript?.availableLangs,
-      //   firstItem: Array.isArray(supadataTranscript?.content) && supadataTranscript.content.length > 0 ? supadataTranscript.content[0] : 'no first item'
-      // });
-      
+            
       // Convert Supadata transcript format to standard format
       const standardTranscript = Array.isArray(supadataTranscript.content) ? supadataTranscript.content : [];
-      // console.log(`[DEBUG] Standard transcript length for ${videoId}: ${standardTranscript.length}`);
       
       formattedTranscriptText = formatTranscript(standardTranscript, 'offset');
-      // console.log(`[DEBUG] Formatted transcript text length for ${videoId}: ${formattedTranscriptText.length}`);
       
       // Check if Supadata returned empty content
       if (standardTranscript.length === 0) {
@@ -64,17 +51,6 @@ export async function POST(req: Request) {
       console.warn(
         `Supadata transcript fetch for ${videoId} failed: ${supadataError.message}.`
       );
-      // try {
-      //   // Primary fallback: youtube-transcript with proxies
-      //   rawTranscript = await fetchTranscriptWithFallback(videoId);
-      //   formattedTranscriptText = formatTranscript(rawTranscript, 'offset');
-      //   fetcherUsed = "primary";
-      // } catch (primaryError: any) {
-      //   console.error(
-      //     `All transcript fetch methods for ${videoId} failed. Last error: ${primaryError.message}`
-      //   );
-      //   return NextResponse.json({ error: messages.error || 'Failed to fetch transcript after multiple attempts' }, { status: 500 });
-      // }
     }
     
     try {
@@ -109,9 +85,8 @@ export async function POST(req: Request) {
     }, { status: 200 });
 
   } catch (error: any) {
-    console.error("[API /transcript] General error:", error.message);
+    console.error("[API /summaries/transcript] General error:", error.message);
     const messagesForError = error.locale === 'ko' ? koMessages : enMessages; 
     return NextResponse.json({ error: messagesForError.error || 'An unexpected error occurred.' }, { status: 500 });
   }
-}
-
+} 
