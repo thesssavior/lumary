@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Loader2, Clock, Tag, ChevronDown, ChevronUp } from 'lucide-react'
 import { useVideoPlayer } from '@/contexts/VideoPlayerContext'
 import { useTranslations } from 'next-intl'
+import { formatTimeString, timeStringToSeconds } from '@/lib/utils'
 
 interface ChapterData {
-  start_time: number
+  start_time: string | number
   heading: string
   summary: string
-  keywords: string
+  keywords: string | string[]
 }
 
 interface ChaptersProps {
@@ -59,9 +60,9 @@ const Chapters = ({
   }
 
   // Handle chapter click to seek to timestamp
-  const handleChapterClick = (startTime: number) => {
+  const handleChapterClick = (startTime: string | number) => {
     if (videoPlayer) {
-      videoPlayer.seekTo(startTime);
+      videoPlayer.seekTo(timeStringToSeconds(startTime));
     }
   };
 
@@ -156,6 +157,8 @@ const Chapters = ({
       return
     }
 
+    // Set flag immediately to prevent duplicate calls
+    creationAttemptedRef.current = true
     setIsGenerating(true)
     setError(null)
     setParsedChapters([])
@@ -168,7 +171,10 @@ const Chapters = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           transcript, 
-          contentLanguage: contentLanguage || 'en'
+          contentLanguage: contentLanguage || 'ko',
+          tokenCount: tokenCount,
+          videoTitle: title,
+          videoDescription: videoDescription
         }),
       })
 
@@ -217,6 +223,8 @@ const Chapters = ({
     } catch (err: any) {
       console.error('Error generating chapters:', err)
       setError(err.message || 'Failed to generate chapters')
+      // Reset flag on error so it can be retried
+      creationAttemptedRef.current = false
     } finally {
       setIsGenerating(false)
       setIsCreatingSummary(false)
@@ -283,10 +291,11 @@ const Chapters = ({
 
   const saveChaptersOnly = async (chaptersData: string) => {
     try {
-      const response = await fetch(`/api/summaries/${summaryId}`, {
+      const response = await fetch('/api/summaries/chapters', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          summaryId: summaryId,
           chapters: chaptersData,
         }),
       })
@@ -303,16 +312,7 @@ const Chapters = ({
     }
   }
 
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    const secs = seconds % 60
-    
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-    }
-    return `${minutes}:${secs.toString().padStart(2, '0')}`
-  }
+
 
   if (isGenerating && parsedChapters.length === 0) {
     return (
@@ -356,11 +356,13 @@ const Chapters = ({
             onClick={() => setIsTocExpanded(!isTocExpanded)}
           >
             <h2 className="text-lg font-semibold my-2">{t('tableOfContents')}</h2>
+
             {isTocExpanded ? (
               <ChevronDown className="h-5 w-5 text-gray-500" />
             ) : (
               <ChevronUp className="h-5 w-5 text-gray-500" />
             )}
+            
           </div>
           {isTocExpanded && (
             <div className="">
@@ -371,9 +373,6 @@ const Chapters = ({
                   onClick={() => handleChapterClick(chapter.start_time)}
                 >
                   <span className="text-sm min-w-[20px]">{index + 1}.</span>
-                  {/* <span className="text-xs min-w-[60px]">
-                    // {formatTime(chapter.start_time)}
-                  </span> */}
                   <span>
                     {chapter.heading}
                   </span>
@@ -410,8 +409,8 @@ const Chapters = ({
                     <div className="flex-1">
                         {/* timestamp and heading */}
                         <div className="flex items-center gap-2 mb-2">
-                            <div className="flex items-center gap-1 text-sm font-medium">
-                                {formatTime(chapter.start_time)}
+                            <div className="flex items-center gap-1 font-normal">
+                                {formatTimeString(chapter.start_time)}
                             </div>
                             <h3 className="text-lg font-semibold text-gray-900">
                                 {chapter.heading}
@@ -419,20 +418,43 @@ const Chapters = ({
                         </div>
 
                         {/* keywords */}
-                        {chapter.keywords && typeof chapter.keywords === 'string' && (
+                        {/* {chapter.keywords && (
                           <div className="flex items-center gap-2 mb-2">
                               <div className="flex flex-wrap gap-1">
-                                  {chapter.keywords.split(',').map((keyword, keyIndex) => (
+                                  {(() => {
+                                    // Handle both string and array formats
+                                    let keywordsList: string[] = [];
+                                    
+                                    if (typeof chapter.keywords === 'string') {
+                                      try {
+                                        // Try to parse as JSON array first
+                                        const parsed = JSON.parse(chapter.keywords);
+                                        if (Array.isArray(parsed)) {
+                                          keywordsList = parsed;
+                                        } else {
+                                          // Fall back to comma-separated string
+                                          keywordsList = chapter.keywords.split(',');
+                                        }
+                                      } catch {
+                                        // If JSON parse fails, treat as comma-separated string
+                                        keywordsList = chapter.keywords.split(',');
+                                      }
+                                    } else if (Array.isArray(chapter.keywords)) {
+                                      keywordsList = chapter.keywords;
+                                    }
+                                    
+                                    return keywordsList.map((keyword, keyIndex) => (
                                       <span 
-                                      key={keyIndex}
-                                      className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
+                                        key={keyIndex}
+                                        className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
                                       >
-                                      {keyword.trim()}
+                                        {keyword.trim()}
                                       </span>
-                                  ))}
+                                    ));
+                                  })()}
                               </div>
                           </div>
-                        )}
+                        )} */}
 
                         {/* summary */}
                         <p className="text-gray-700 text-sm leading-relaxed">

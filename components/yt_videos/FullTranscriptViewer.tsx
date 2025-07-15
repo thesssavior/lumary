@@ -77,8 +77,8 @@ export function FullTranscriptViewer({ transcript }: { transcript: string }) {
 
   // Pre-processing: Ensure every timestamp forces a new line for the split operation.
   // This handles cases where multiple timestamps might exist on a single "line" in the raw data.
-  // Updated regex to handle both [HH:MM:SS] and [MM:SS] formats
-  const timestampRegex = /(\[[0-9]{2}:[0-9]{2}(?::[0-9]{2})?\])/g;
+  // Updated regex to handle both [HH:MM:SS] and [MM:SS] formats, with single-digit hours supported
+  const timestampRegex = /(\[[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?\])/g;
   processedTranscript = processedTranscript.replace(timestampRegex, '\n$1');
 
   const groups = processedTranscript
@@ -86,8 +86,8 @@ export function FullTranscriptViewer({ transcript }: { transcript: string }) {
     .map(line => line.trim())
     .filter(line => line) // Remove empty lines that might result from the replace/split
     .reduce<TranscriptGroup[]>((acc, rawLine) => {
-      // Updated regex to match both [HH:MM:SS] and [MM:SS] formats
-      const match = rawLine.match(/^(\[[0-9]{2}:[0-9]{2}(?::[0-9]{2})?\])/);
+      // Updated regex to match both [HH:MM:SS] and [MM:SS] formats, with single-digit hours supported  
+      const match = rawLine.match(/^(\[[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?\])/);
       if (match) {
         const timestamp = match[1];
         const textContent = decodeHtmlEntities(rawLine.substring(timestamp.length).trim());
@@ -143,7 +143,7 @@ export function FullTranscriptViewer({ transcript }: { transcript: string }) {
             onClick={() => handleTimestampClick(group.timestamp)}
           >
             {group.timestamp && (
-              <p className="font-bold text-gray-800 mb-1">{group.timestamp}</p>
+              <p className="font-normal mb-1">{group.timestamp.replace(/[\[\]]/g, '')}</p>
             )}
             {/* Indent lines and provide intra-group line spacing */} 
             <div className={"space-y-1"}> 

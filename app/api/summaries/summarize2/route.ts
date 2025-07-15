@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from "@google/genai";
 import { getTranslations } from "next-intl/server";
+import { formatTime } from '@/lib/utils';
+import { NextRequest } from 'next/server';
+import { auth } from '@/auth';
+import { supabase } from '@/lib/supabaseClient';
 
 // Initialize Gemini AI
 const ai = new GoogleGenAI({});
@@ -46,16 +50,6 @@ export async function POST(req: Request) {
 
     // Create structured chapter content for the AI with citations
     const chaptersContent = parsedChapters.map((chapter, index) => {
-      const formatTime = (seconds: number) => {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-        if (hours > 0) {
-          return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-        return `${minutes}:${secs.toString().padStart(2, '0')}`;
-      };
-
       return `[Chapter ${index + 1}] ${formatTime(chapter.start_time)} - "${chapter.heading}"
         Summary: ${chapter.summary}
         Keywords: ${chapter.keywords}
@@ -63,31 +57,13 @@ export async function POST(req: Request) {
     }).join('\n\n');
 
     // Enhanced system prompt for citation and indexing
-    // const systemPrompt = `${systemPrompts}`;
-    const systemPrompt = `You are a YouTube video summary generator. You will be given a video title, description, and chapters with indexing data.
-
-Your task is to create a comprehensive, well-structured summary using appropriate Markdown for formatting.
-
-**Formatting Guidelines:**
-- Use headings (#) and subheadings (##, ###) to organize the content logically.
-- Use bullet points (*) or numbered lists (1.) for key takeaways, lists of items, or sequential steps.
-- Use bold text (**) to highlight important concepts and keywords.
-- Ensure  (ecitations.g., [CH1@0:45]) are naturally integrated within the text.
-- The entire response should be a single Markdown document.
-
-The goal is to produce a summary that is not only informative but also easy to read and skim. The content should be highly searchable and well-organized.`
-    const userPrompt = `${userPrompts}
-
-      Video Title: ${videoTitle}
-      Video Description: ${videoDescription}
-
-      CHAPTERS WITH INDEXING DATA:
-      ${chaptersContent}
-
-      Please create a comprehensive summary with proper citations
-      and indexing as specified in the system instructions. 
-      Ensure citations are naturally integrated 
-      and the content is highly searchable.`;
+    const systemPrompt = `${systemPrompts}`;
+    const userPrompt = `
+      ${t('videoTitle')}: ${videoTitle}
+      ${t('videoDescription')}: ${videoDescription}
+      ${t('chaptersContent')}: ${chaptersContent}
+      ${t('userPrompts')}
+    `;
 
     const encoder = new TextEncoder();
     
@@ -131,5 +107,59 @@ The goal is to produce a summary that is not only informative but also easy to r
     return NextResponse.json({ 
       error: `Chapter-based summarization failed: ${error.message}`,
     }, { status: 500 });
+  }
+}
+
+// PATCH /api/summaries/summarize2
+export async function PATCH(req: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { summaryId, summary } = await req.json();
+
+    if (!summaryId) {
+      return NextResponse.json({ error: 'Summary ID is required' }, { status: 400 });
+    }
+
+    if (!summary) {
+      return NextResponse.json({ error: 'Summary content is required' }, { status: 400 });
+    }
+
+    // Update the summary with generated content, ensuring user owns the summary
+    // output_token_count uses another method for gemini-2.5-flash
+    const updateData: any = {
+      summary: summary,
+    };
+
+    const { data, error } = await supabase
+      .from('summaries')
+      .update(updateData)
+      .eq('id', summaryId)
+      .eq('user_id', session.user.id) // Ensure user owns this summary
+      .select('id, video_id, name')
+      .single();
+
+    if (error) {
+      console.error('Supabase error saving summary:', error);
+      return NextResponse.json({ error: error.message || 'Failed to save summary data to database' }, { status: 500 });
+    }
+
+    if (!data) {
+      return NextResponse.json({ error: 'Summary not found or you do not have permission to update it' }, { status: 404 });
+    }
+
+    return NextResponse.json({ 
+      message: 'Summary saved successfully', 
+      summaryId: data.id, 
+      videoId: data.video_id,
+      name: data.name
+    }, { status: 200 });
+
+  } catch (error: any) {
+    console.error('Error processing request to save summary:', error);
+    return NextResponse.json({ error: error.message || 'Internal server error while saving summary' }, { status: 500 });
   }
 }

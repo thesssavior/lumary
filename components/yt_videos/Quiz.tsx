@@ -119,10 +119,13 @@ const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData
     // setError(null); // Don't clear generation error if saving fails
 
     try {
-      const response = await fetch(`/api/summaries/${currentSummaryId}/quiz`, {
+      const response = await fetch('/api/summaries/quiz', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ quiz: currentQuizItems }),
+        body: JSON.stringify({ 
+          summaryId: currentSummaryId,
+          quiz: currentQuizItems 
+        }),
       });
 
       if (!response.ok) {

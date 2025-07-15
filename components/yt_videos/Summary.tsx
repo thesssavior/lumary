@@ -56,10 +56,11 @@ const Summary = ({
       throw new Error('Summary ID is required')
     }
 
-    const response = await fetch(`/api/summaries/${summaryId}/summarize2`, {
+    const response = await fetch('/api/summaries/summarize2', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        summaryId: summaryId,
         summary: summaryContent,
       }),
     })

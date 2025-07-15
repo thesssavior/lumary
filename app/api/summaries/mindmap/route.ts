@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI } from "@google/genai";
+import { auth } from '@/auth';
+import { supabase } from '@/lib/supabaseClient';
 
 const ai = new GoogleGenAI({});
 
@@ -21,11 +23,11 @@ export async function POST(req: NextRequest) {
       "nodes": RFNode[],
       "edges": RFEdge[]
     }
+
     Each RFNode must have unique "id" and a "position".
     Each RFEdge must reference existing node ids.
-    Return 1-3 top-level nodes plus their children.
     The deepest level of nodes (leaf nodes) for any branch should be limited to 3 items.
-    Use emojis and concise labels (max 6 words)
+    Use emojis and concise labels (max 4 words)
     Maximum 16 total nodes (including root)
     Left to right layout: top node at the left, children to the right
     Example:
@@ -74,5 +76,58 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('Error generating mindmap:', error);
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+  }
+}
+
+// PATCH /api/summaries/mindmap
+export async function PATCH(req: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { summaryId, mindmap } = await req.json();
+
+    if (!summaryId) {
+      return NextResponse.json({ error: 'Summary ID is required' }, { status: 400 });
+    }
+
+    if (!mindmap) {
+      return NextResponse.json({ error: 'Mindmap data is required' }, { status: 400 });
+    }
+
+    // Validate mindmap data structure
+    if (!mindmap.nodes || !mindmap.edges) {
+      return NextResponse.json({ error: 'Mindmap data (nodes and edges) is required' }, { status: 400 });
+    }
+
+    // Update the summary with mindmap data, ensuring user owns the summary
+    const { data, error } = await supabase
+      .from('summaries')
+      .update({ mindmap: mindmap })
+      .eq('id', summaryId)
+      .eq('user_id', session.user.id) // Ensure user owns this summary
+      .select('id, video_id')
+      .single();
+
+    if (error) {
+      console.error('Supabase error saving mindmap:', error);
+      return NextResponse.json({ error: error.message || 'Failed to save mindmap data to database' }, { status: 500 });
+    }
+
+    if (!data) {
+      return NextResponse.json({ error: 'Summary not found or you do not have permission to update it' }, { status: 404 });
+    }
+
+    return NextResponse.json({ 
+      message: 'Mindmap saved successfully', 
+      summaryId: data.id, 
+      videoId: data.video_id 
+    }, { status: 200 });
+
+  } catch (error: any) {
+    console.error('Error processing request to save mindmap:', error);
+    return NextResponse.json({ error: error.message || 'Internal server error while saving mindmap' }, { status: 500 });
   }
 } 

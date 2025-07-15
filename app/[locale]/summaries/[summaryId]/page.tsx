@@ -7,6 +7,7 @@ import SummaryContent from '@/components/SummaryContent';
 import { Loader2 } from 'lucide-react';
 import { useSummaryGeneration } from '@/contexts/SummaryGenerationContext';
 import { useParams } from 'next/navigation';
+import { getLayoutPreference } from '@/lib/utils';
 
 export default function SummaryDetailPage() {
   const params = useParams();
@@ -18,6 +19,23 @@ export default function SummaryDetailPage() {
   const [folder, setFolder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [layoutMode, setLayoutMode] = useState<'default' | 'split'>('default');
+
+  // Load layout preference on component mount
+  useEffect(() => {
+    setLayoutMode(getLayoutPreference());
+
+    // Listen for layout changes from settings
+    const handleLayoutChange = (event: CustomEvent) => {
+      setLayoutMode(event.detail.layoutMode);
+    };
+
+    window.addEventListener('layoutChanged', handleLayoutChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('layoutChanged', handleLayoutChange as EventListener);
+    };
+  }, []);
 
   useEffect(() => {
     // Wait for session to load
@@ -137,7 +155,7 @@ export default function SummaryDetailPage() {
         contentLanguage={summary.content_language || locale}
         isStreamingMode={summaryId === 'new'}
         tokenCount={summary.input_token_count || 0}
-        layoutMode="split"
+        layoutMode={layoutMode}
       />
     </div>
   );

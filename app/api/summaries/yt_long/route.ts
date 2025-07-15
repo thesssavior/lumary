@@ -36,7 +36,6 @@ export async function POST(req: Request) {
   try {
     const {
       videoId,
-      locale = 'ko',
       contentLanguage = 'ko',
       transcriptText,
       title,
