@@ -1,48 +1,162 @@
-import { supabase } from '@/lib/supabaseClient';
-import { notFound } from 'next/navigation';
+"use client";
+
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { ScrollToTopButton } from '@/components/home/ScrollToTopButton';
-import { Suspense } from 'react';
 import SummaryContent from '@/components/SummaryContent';
 import { Loader2 } from 'lucide-react';
-export default async function SummaryDetailPage({ params }: { params: Promise<{ summaryId: string; locale: string; }> }) {
-  const resolvedParams = await params;
-  const summaryId = resolvedParams.summaryId;
-  const locale = resolvedParams.locale;
-  
-  const { data: summary, error: summaryError } = await supabase
-    .from('summaries')
-    .select('id, name, summary, video_id, created_at, folder_id, locale, content_language, transcript, mindmap, quiz')
-    .eq('id', summaryId)
-    .single();
+import { useSummaryGeneration } from '@/contexts/SummaryGenerationContext';
+import { useParams } from 'next/navigation';
+import { getLayoutPreference } from '@/lib/utils';
 
-  if (summaryError || !summary) {
-    notFound();
+export default function SummaryDetailPage() {
+  const params = useParams();
+  const locale = params.locale as string;
+  const summaryId = params.summaryId as string | undefined;
+  const { data: session, status } = useSession();
+  const { generationData } = useSummaryGeneration();
+  const [summary, setSummary] = useState<any>(null);
+  const [folder, setFolder] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [layoutMode, setLayoutMode] = useState<'default' | 'split'>('default');
+
+  // Load layout preference on component mount
+  useEffect(() => {
+    setLayoutMode(getLayoutPreference());
+
+    // Listen for layout changes from settings
+    const handleLayoutChange = (event: CustomEvent) => {
+      setLayoutMode(event.detail.layoutMode);
+    };
+
+    window.addEventListener('layoutChanged', handleLayoutChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('layoutChanged', handleLayoutChange as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Wait for session to load
+    if (status === 'loading') {
+      setLoading(true);
+      return;
+    }
+
+    if (summaryId === 'new') {
+      // New summary mode - use context data
+      const { transcriptData, folderForSummary } = generationData;
+      
+      if (transcriptData) {
+        const { 
+          videoId, 
+          contentLanguage, 
+          transcriptText, 
+          title, 
+          videoDescription,
+          tokenCount
+        } = transcriptData;
+        
+        // Create summary object from context data
+        setSummary({
+          id: videoId,
+          name: title,
+          summary: '', // Will be filled by streaming
+          video_id: videoId,
+          created_at: null,
+          locale: locale,
+          content_language: contentLanguage,
+          transcript: transcriptText,
+          description: videoDescription,
+          mindmap: null,
+          quiz: null,
+          input_token_count: tokenCount,
+        });
+        
+        setFolder(folderForSummary);
+        setLoading(false);
+      }
+    } else if (summaryId && session?.user && !summary) {
+      // Existing summary mode - fetch from DB (only if authenticated and we don't already have data)
+      fetchExistingSummary(summaryId);
+    } else if (summaryId && !session?.user) {
+      // User is not authenticated
+      setError('Please sign in to view this summary');
+      setLoading(false);
+    } else if (!summaryId) {
+      // No summaryId - might be initial load, keep loading
+      setLoading(true);
+    }
+  }, [summaryId, generationData, locale, session?.user?.id, status]);
+
+  const fetchExistingSummary = async (id: string) => {
+    try {
+      setLoading(true);
+      
+      // does this still work?
+      const response = await fetch(`/api/summaries/${id}`);
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          setError('Summary not found');
+        } else if (response.status === 401) {
+          setError('Please sign in to view this summary');
+        } else {
+          setError('Failed to load summary');
+        }
+        return;
+      }
+
+      const data = await response.json();
+      setSummary(data.summary);
+      setFolder(data.folder);
+    } catch (err) {
+      setError('Failed to load summary');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="h-10 w-10 animate-spin" />
+      </div>
+    );
   }
 
-  const { data: folder, error: folderError } = await supabase
-    .from('folders')
-    .select('id, name')
-    .eq('id', summary.folder_id)
-    .single();
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
 
-  if (folderError || !folder) {
-    notFound();
+  if (!summary) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <p className="text-gray-500">No summary data available</p>
+      </div>
+    );
   }
 
   return (
-    <>
+    <div className="h-full w-full">
       <ScrollToTopButton />
-      <Suspense fallback={<Loader2 className="h-16 w-16 animate-spin" />}>
-        <SummaryContent 
-          summary={summary} 
-          folder={folder} 
-          locale={locale} 
-          mindmap={summary.mindmap || null} 
-          summaryId={summaryId} 
-          quiz={summary.quiz || null}
-          contentLanguage={summary.content_language || locale}
-        />
-      </Suspense>
-    </>
+      <SummaryContent 
+        summary={summary} 
+        folder={folder} 
+        locale={locale} 
+        mindmap={summary.mindmap || null} 
+        summaryId={summaryId || summary.id} 
+        quiz={summary.quiz || null}
+        contentLanguage={summary.content_language || locale}
+        isStreamingMode={summaryId === 'new'}
+        tokenCount={summary.input_token_count || 0}
+        layoutMode={layoutMode}
+      />
+    </div>
   );
 } 

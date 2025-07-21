@@ -97,9 +97,9 @@ function formatTranscript(transcript: any[], timeProperty: string = 'offset'): s
   return transcript.map((item: any, idx: number) => {
     const text = he.decode(item.text); // Decode text here
     if (idx % 10 === 0) {
-      // Convert milliseconds to seconds if the value is too large (likely milliseconds)
-      const timeValue = item[timeProperty];
-      const timeInSeconds = timeValue > 10000 ? Math.floor(timeValue / 1000) : timeValue;
+      // Supadata always returns timestamps in milliseconds, so always convert to seconds
+      const timeValue = item[timeProperty] || 0;
+      const timeInSeconds = Math.floor(timeValue / 1000);
       return `[${formatTime(timeInSeconds)}] ${text}`;
     }
     return text;

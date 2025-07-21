@@ -2,7 +2,7 @@
 export const runtime = 'nodejs';
 import { NextRequest } from 'next/server';
 import crypto from 'crypto';
-import { supabase } from '@/lib/supabaseClient'; // Adjust path if needed
+import { supabase } from '@/lib/supabaseClient';
 
 const webhookSecret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET!;
 

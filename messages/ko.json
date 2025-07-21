@@ -158,6 +158,7 @@
   },
   "summarySavedSuccess": "요약이 성공적으로 저장되었습니다!",
   "summaryTab": "요약",
+  "chaptersTab": "챕터",
   "mindmapTab": "마인드맵",
   "transcriptTab": "자막",
   "quizTab": "퀴즈",
@@ -215,33 +216,39 @@
   },
   "SettingsPage": {
     "title": "설정",
-    "mustBeLoggedIn": "이 페이지를 보려면 로그인해야 합니다.",
-    "confirmDeleteAccount": "계정을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다. ** 구독이 자동으로 취소 되지 않습니다. **",
-    "deleteAccountNotImplemented": "계정 삭제 기능은 아직 구현되지 않았습니다.",
+    "mustBeLoggedIn": "이 페이지를 보려면 로그인이 필요합니다.",
+    "confirmDeleteAccount": "정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다. ** 구독은 자동으로 취소되지 않습니다. **",
+    "deleteAccountNotImplemented": "계정 삭제 기능이 아직 구현되지 않았습니다.",
     "deleteAccountError": "계정 삭제 실패: {error}",
     "accountSection": {
       "title": "계정",
-      "description": "계정 세부 정보를 관리합니다.",
+      "description": "계정 정보를 관리합니다.",
       "emailLabel": "이메일",
       "nameLabel": "이름",
-      "noEmail": "이 계정에 연결된 이메일이 없습니다.",
-      "noName": "이 계정에 연결된 이름이 없습니다.",
+      "noEmail": "이 계정과 연결된 이메일이 없습니다.",
+      "noName": "이 계정과 연결된 이름이 없습니다.",
       "signOutButton": "로그아웃",
       "deleteAccountButton": "계정 삭제"
     },
     "preferencesSection": {
-      "title": "기호",
-      "description": "사용자 경험을 정의합니다.",
+      "title": "환경설정",
+      "description": "사용자 경험을 맞춤화합니다.",
       "languageLabel": "언어",
       "selectLanguagePlaceholder": "언어 선택",
-      "english": "영어",
-      "korean": "한국어"
+      "english": "English",
+      "korean": "한국어",
+      "modeLabel": "모드",
+      "selectModePlaceholder": "모드 선택",
+      "defaultLayout": "기본",
+      "splitLayout": "공부 모드",
+      "defaultLayoutDescription": "빠른 요약에 적합",
+      "splitLayoutDescription": "고밀도 공부에 적합"
     },
     "subscriptionSection": {
       "title": "구독 관리",
-      "description": "구독 세부 정보를 관리합니다.",
-      "manageButton": "구독 관리로 이동",
-      "upgradeButton": "플랜 업그레이드"
+      "description": "구독 정보를 확인하고 관리합니다.",
+      "manageButton": "결제 관리",
+      "upgradeButton": "프리미엄으로 업그레이드"
     }
   },
   "Mindmap": {
@@ -301,5 +308,41 @@
         "answer": "환불 정책은 다음과 같습니다:\n\n• 구독 결제 후 7일 이내, 요약 기능을 전혀 사용하지 않은 경우: 전액 환불 가능\n• 상기 조건에 해당하지 않는 경우: 환불이 제한될 수 있음\n\n환불 요청은 고객 지원팀으로 문의해 주시기 바랍니다."
       }
     ]
+  },
+  "Chapters": {
+    "generatingChapters": "챕터 생성 중...",
+    "generatingMoreChapters": "챕터 생성 중... ({count}개 챕터 생성 완료)",
+    "noChapters": "챕터가 없습니다.",
+    "noChaptersGenerated": "챕터가 생성되지 않았습니다.",
+    "noChaptersGeneratedYet": "챕터가 생성되지 않았습니다.",
+    "systemInstruction": "당신은 유튜브 영상의 긴 자막을 읽고, 2~5개의 일관된 주제로 나눠 깔끔한 챕터를 생성하는 어시스턴트입니다. 사용자가 긴 영상을 빠르게 이해할 수 있도록, 자막을 토픽별로 나누고 각 구간의 핵심 내용을 요약해 전달하세요. 각 챕터마다 다음을 출력하세요: • start_time : 자막에서 추출한 타임스탬프. ([HH:MM:SS]형태로 출력) • heading : 8단어 이하, 제목 형식 • summary : 핵심 내용을 담은 3-5문장 • keywords : 3-5개의 콤마로 구분된 명사구. 정확한 JSON 배열 형식으로 응답하세요. 채팅이나 불필요한 텍스트는 추가하지 마세요.",
+    "userInstruction": "다음 자막에 대한 챕터를 생성해 주세요:",
+    "tableOfContents": "목차",
+    "videoTitle": "영상 제목:",
+    "videoDescription": "영상 설명:",
+    "transcript": "자막:"
+  },
+  "Summarize2": {
+    "systemPrompts": "당신은 SummaryWeaver-v2 입니다. 영상 챕터 데이터를 기반으로 영상 요약을 생성합니다. 작업: 1. 영상 제목과 설명을 바탕으로 영상 요약을 작성하세요. 2. 챕터 데이터를 바탕으로 영상 요약을 작성하세요. 3. 챕터 데이터를 바탕으로 영상 요약을 작성하세요. 4. 챕터 데이터를 바탕으로 영상 요약을 작성하세요. 5. 챕터 데이터를 바탕으로 영상 요약을 작성하세요. 6. 챕터 데이터를 바탕으로 영상 요약을 작성하세요. 7. 챕터 데이터를 바탕으로 영상 요약을 작성하세욘. 8. 챕터 데이터를 바탕으로 영상 요약을 작성하세요. 9. 챕터 데이터를 바탕으로 영상 요약을 작성하세요. 10. 챕터 데이터를 바탕으로 영상 요약을 작성하세요.",
+    "videoTitle": "영상 제목:",
+    "videoDescription": "영상 설명:",
+    "chaptersContent": "영상 챕터 데이터:",
+    "userPrompts": "위 정보를 바탕으로 영상 요약을 생성해 주세요:"
+  },
+  "Summary": {
+    "title": "요약",
+    "description": "요약 내용입니다.",
+    "loading": "요약 로딩 중...",
+    "error": "요약 로딩 오류",
+    "generateTitle": "요약",
+    "generateDescription": "포괄적인 영상 요약을 생성합니다.",
+    "generateButton": "요약 생성",
+    "chaptersRequired": "챕터가 필요합니다.",
+    "lastAttemptError": "마지막 시도 오류",
+    "generatingSummary": "요약 생성 중...",
+    "generatingSummaryDescription": "요약을 생성하는 중입니다. 잠시만 기다려 주세요...",
+    "savingSummary": "요약 저장 중...",
+    "savingSummaryDescription": "요약을 저장하는 중입니다. 잠시만 기다려 주세요...",
+    "errorTitle": "요약 생성 오류"
   }
 } 

@@ -131,6 +131,7 @@
   "fullTranscriptTitle": "Transcript",
   "summarySavedSuccess": "Summary saved successfully!",
   "summaryTab": "Summary",
+  "chaptersTab": "Chapters",
   "mindmapTab": "Mindmap",
   "transcriptTab": "Transcript",
   "quizTab": "Quiz",
@@ -228,7 +229,13 @@
       "languageLabel": "Language",
       "selectLanguagePlaceholder": "Select language",
       "english": "English",
-      "korean": "Korean"
+      "korean": "Korean",
+      "modeLabel": "Mode",
+      "selectModePlaceholder": "Select mode",
+      "defaultLayout": "Default",
+      "splitLayout": "Study Mode",
+      "defaultLayoutDescription": "Great for quick summaries",
+      "splitLayoutDescription": "Great for studying"
     },
     "subscriptionSection": {
       "title": "Manage Subscription",
@@ -294,5 +301,41 @@
         "answer": "The refund policy is as follows:\n\n• Full refund available within 7 days of subscription payment if the summary feature has not been used at all\n• Refunds may be limited for cases that do not meet the above conditions\n\nPlease contact our support team for refund requests."
       }
     ]
+  },
+  "Chapters": {
+    "generatingChapters": "Generating chapters...",
+    "generatingMoreChapters": "Generating chapters... ({count} chapters generated)",
+    "noChapters": "No chapters",
+    "noChaptersGenerated": "No chapters generated",
+    "noChaptersGeneratedYet": "No chapters generated yet",
+    "systemInstruction": "You are an expert assistant that generates clean and structured chapter breakdowns from a YouTube transcript. Your goal is to help users understand long videos quickly by dividing the content into 5 to 10 coherent topical chapters. Tasks: Partition the transcript into coherent topical chapters. For each chapter output: • start_time : timestamp in [HH:MM:SS] format, extracted from the transcript timestamps • heading : ≤ 8 words, Title-Case • summary : 3-5 sentences capturing key points. • keywords : 3-5 comma-separated nouns for later indexing. Output exactly valid JSON - an array of chapter objects in the order they appear. No other text.",
+    "userInstruction": "Please generate chapters for the following transcript:",
+    "tableOfContents": "Table of Contents",
+    "videoTitle": "Video Title:",
+    "videoDescription": "Video Description:",
+    "transcript": "Transcript:"
+  },
+  "Summarize2": {
+    "systemPrompts": "You are SummaryWeaver-v2, an advanced AI that creates comprehensive video summaries with built-in citation and indexing systems. CORE RESPONSIBILITIES: 1. Create a comprehensive summary from chapter data 2. Include proper citations referencing specific chapters 3. Generate index keywords for searchability 4. Maintain narrative flow while preserving source attribution CITATION FORMAT: - Use [CH#@timestamp] to cite specific chapters - Example: \"The main concept discussed [CH1@2:30] shows that...\" - Always cite when referencing specific points from chapters - Integrate citations naturally within the text flow INDEXING REQUIREMENTS: - Extract and highlight key concepts, terms, and topics - Create cross-references between related ideas across chapters - Include relevant keywords from source chapters - Build searchable content structure OUTPUT STRUCTURE: 1. **Executive Summary** (2-3 sentences with key citations) 2. **Main Content** (detailed summary with proper citations throughout) 3. **Key Topics Index** (list of main topics with chapter references) 4. **Keywords** (searchable terms extracted from all chapters) QUALITY STANDARDS: - Maintain factual accuracy with proper attribution - Ensure logical flow between cited concepts - Create value-added insights while preserving source integrity - Make content easily searchable and navigable - Use natural language integration of citations",
+    "videoTitle": "Video Title:",
+    "videoDescription": "Video Description:",
+    "chaptersContent": "Video Chapters:",
+    "userPrompts": "Please summarize the video using the given data:"
+  },
+  "Summary": {
+    "title": "Summary",
+    "description": "Summary of the video.",
+    "loading": "Loading summary...",
+    "error": "Error loading summary.",
+    "generateTitle": "Generate Summary",
+    "generateDescription": "Create a comprehensive summary from the video chapters with key insights and takeaways",
+    "generateButton": "Generate Summary",
+    "chaptersRequired": "Chapters required",
+    "lastAttemptError": "Last attempt error",
+    "generatingSummary": "Generating summary...",
+    "generatingSummaryDescription": "Please wait while we create your comprehensive summary",
+    "savingSummary": "Saving summary...",
+    "savingSummaryDescription": "Saving to database...",
+    "errorTitle": "Error generating summary"
   }
 } 

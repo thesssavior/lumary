@@ -106,8 +106,8 @@ export default function NewSummaryPage() {
 
               const isLongVideo = tokenCount > TOKEN_THRESHOLD;
               const summaryApiEndpoint = isLongVideo
-                ? '/api/yt_long'
-                : '/api/summarize';
+                ? '/api/summaries/yt_long'
+                : '/api/summaries/summarize';
               setIsLongVideo(isLongVideo);
               console.log(`Using API endpoint: ${summaryApiEndpoint} for token count: ${tokenCount}`);
 

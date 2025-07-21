@@ -13,7 +13,8 @@ interface QuizItem {
 }
 
 interface QuizProps {
-  summary: string | null;
+  summary?: string | null;
+  chapters?: { title: string; summary: string }[];
   quizData: QuizItem[] | null; // Pre-loaded quiz from DB
   locale: string;
   contentLanguage?: string; // Content language for quiz generation
@@ -22,7 +23,7 @@ interface QuizProps {
   // isActive: boolean; // To trigger generation, or for other conditional logic if needed
 }
 
-const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData, locale, contentLanguage, summaryId, title }) => {
+const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData, locale, contentLanguage, summaryId, title, chapters }) => {
   const t = useTranslations();
 
   const [quizItems, setQuizItems] = useState<QuizItem[]>(initialQuizData || []);
@@ -45,22 +46,28 @@ const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData
     }
   }, [initialQuizData]);
 
+  const hasContent = summary || (chapters && chapters.length > 0);
+
   const generateQuiz = async () => {
-    if (!summary) {
+    if (!hasContent) {
       setError(t('Quiz.errorNoSummary'));
       return;
     }
+
+    const content = chapters && chapters.length > 0
+      ? chapters.map(c => `${c.title}\n${c.summary}`).join('\n\n')
+      : summary;
 
     setIsLoading(true);
     setError(null);
     setRevealedAnswers({}); // Reset revealed answers on new generation
 
     try {
-      const response = await fetch('/api/quiz', {
+      const response = await fetch('/api/summaries/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          summaryText: summary, 
+          summaryText: content, 
           locale, 
           contentLanguage: contentLanguage || locale,
           title: title 
@@ -112,10 +119,13 @@ const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData
     // setError(null); // Don't clear generation error if saving fails
 
     try {
-      const response = await fetch('/api/quiz', {
-        method: 'PUT',
+      const response = await fetch('/api/summaries/quiz', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ summaryId: currentSummaryId, quiz: currentQuizItems }),
+        body: JSON.stringify({ 
+          summaryId: currentSummaryId,
+          quiz: currentQuizItems 
+        }),
       });
 
       if (!response.ok) {
@@ -138,19 +148,19 @@ const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[300px] p-6 border rounded-md">
+      <div className="flex flex-col items-center justify-center h-full min-h-[300px] p-6 rounded-md">
         <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
       </div>
     );
   }
 
-  if ((error || !summary) && !isGenerated) { // Show error prominently if nothing could be generated/loaded
+  if ((error || (!summary && !chapters)) && !isGenerated) { // Show error prominently if nothing could be generated/loaded
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[300px] p-6 border rounded-md bg-red-50 text-red-700">
+      <div className="flex flex-col items-center justify-center h-full min-h-[300px] p-6 rounded-md bg-red-50 text-red-700">
         <AlertTriangle className="h-10 w-10 mb-3" />
         <p className="font-semibold">{t('Quiz.error')}</p>
         <p className="text-sm mb-4">{error}</p>
-        <Button onClick={generateQuiz} variant="outline" disabled={!summary || isLoading}>
+        <Button onClick={generateQuiz} variant="outline" disabled={!hasContent || isLoading}>
           {t('Quiz.regenerateButton')}
         </Button>
       </div>
@@ -159,13 +169,13 @@ const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData
   
   if (!isGenerated) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[300px] p-10 border rounded-md text-center">
-        <Lightbulb className="h-12 w-12 my-6" />
+      <div className="flex flex-col items-center justify-center h-full min-h-[300px] p-10 rounded-md text-center">
+        <Lightbulb className="h-12 w-12 mb-6" />
         <h3 className="text-xl font-semibold mb-2">{t('Quiz.title')}</h3>
         <p className="text-sm text-gray-500 mb-6 max-w-md">
           {t('Quiz.generateDescription')}
         </p>
-        <Button onClick={generateQuiz} size="lg" disabled={!summary || isLoading} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+        <Button onClick={generateQuiz} size="lg" disabled={!hasContent || isLoading} className="bg-primary hover:bg-primary/90 text-primary-foreground">
           {t('Quiz.generateButton')}
         </Button>
          {error && ( // Show less prominent error if there was a previous attempt
@@ -179,15 +189,15 @@ const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData
 
   // Quiz is generated or loaded
   return (
-    <div className="space-y-6">
+    <div className="space-y-2 mt-2">
       {error && ( // Show error if one occurred during generation/saving, even if quiz is displayed
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
+        <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">
           <p><span className="font-semibold">{t('Quiz.errorEncountered')}:</span> {error}</p>
         </div>
       )}
 
       {quizItems.map((item, index) => (
-        <Card key={index} className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+        <Card key={index} className="overflow-hidden">
           <CardHeader className="bg-slate-50 dark:bg-slate-800 p-4">
             <CardTitle className="text-lg flex items-center">
               {t('Quiz.question')} {index + 1}
@@ -199,12 +209,12 @@ const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData
               onClick={() => toggleAnswer(index)}
               variant="outline"
               size="sm"
-              className="mt-2 text-primary border-primary hover:bg-primary/10"
+              className="mt-2 text-primary hover:bg-primary/10"
             >
               {revealedAnswers[index] ? t('Quiz.hideAnswerButton') : t('Quiz.showAnswerButton')}
             </Button>
             {revealedAnswers[index] && (
-              <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 rounded-r-md">
+              <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/30 rounded-r-md">
                 <p className="text-sm font-semibold text-green-700 dark:text-green-300 mb-1">{t('Quiz.answer')}:</p>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">{item.answer}</p>
               </div>

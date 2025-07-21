@@ -1,14 +1,12 @@
-// Path: app/api/quiz/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { GoogleGenAI } from "@google/genai";
+import { auth } from '@/auth';
 import { supabase } from '@/lib/supabaseClient';
-import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const ai = new GoogleGenAI({});
 
 // Placeholder for your OpenAI model, e.g., "gpt-3.5-turbo" or "gpt-4.1-mini"
-const model = "gpt-4.1-mini"; 
+const model = "gemini-2.5-flash"; 
 
 interface QuizItem {
   question: string;
@@ -25,11 +23,8 @@ export async function POST(req: NextRequest) {
     if (!locale) {
       return NextResponse.json({ error: 'Locale is required' }, { status: 400 });
     }
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 });
-    }
 
-    const systemPrompt = `
+    const systemInstruction = `
         You are an AI assistant tasked with generating a quiz from a video summary.
         Create 5 distinct question and answer pairs that test understanding of the core ideas in the summary.
         
@@ -58,28 +53,43 @@ export async function POST(req: NextRequest) {
         ${summaryText}
         ---
 
-        JSON Output (array of question-answer objects):
+        JSON Output (array of question-answer objects) in ${contentLanguage} language:
         `;
 
-    const completion = await openai.chat.completions.create({
-      model: model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: `${userPrompt} in ${contentLanguage} language.` }
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.5, // Adjust temperature as needed for creativity vs. determinism
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: userPrompt,
+      config: {
+        systemInstruction: systemInstruction,
+        temperature: 0.5,
+      },
     });
 
-    const resultJsonString = completion.choices[0]?.message?.content;
+    const resultJsonString = response.text;
 
     if (!resultJsonString) {
-      console.error("OpenAI response was empty for quiz generation.");
-      return NextResponse.json({ error: 'Failed to generate quiz from OpenAI: Empty response' }, { status: 500 });
+      console.error("Gemini response was empty for quiz generation.");
+      return NextResponse.json({ error: 'Failed to generate quiz from Gemini: Empty response' }, { status: 500 });
     }
 
     try {
-      const parsedResult = JSON.parse(resultJsonString);
+      console.log("Gemini response:", resultJsonString);
+      // Clean up the response - remove markdown code blocks if present
+      let cleanedResponse = resultJsonString.trim();
+      
+      // Remove markdown code blocks (```json ... ``` or ``` ... ```)
+      cleanedResponse = cleanedResponse.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
+      
+      // Try to find JSON within the response if it's wrapped in other text
+      const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        cleanedResponse = jsonMatch[0];
+      }
+      
+      console.log("Cleaned Gemini response:", cleanedResponse);
+      
+      const parsedResult = JSON.parse(cleanedResponse);
+
       // The prompt asks for an array directly, but sometimes models wrap it in a root key.
       // Check if the result is an array, or if it has a common root key like "quiz" or "questions".
       let quizData: QuizItem[];
@@ -93,49 +103,58 @@ export async function POST(req: NextRequest) {
       } else if (parsedResult.result && Array.isArray(parsedResult.result)) {
         quizData = parsedResult.result;
       } else {
-        console.error("OpenAI response for quiz was not in the expected array format:", parsedResult);
-        return NextResponse.json({ error: 'Invalid quiz structure from OpenAI: Expected an array of questions or an object with a "quiz", "questions", or "result" array.' }, { status: 500 });
+        console.error("Gemini response for quiz was not in the expected array format:", parsedResult);
+        return NextResponse.json({ error: 'Invalid quiz structure from Gemini: Expected an array of questions or an object with a "quiz", "questions", or "result" array.' }, { status: 500 });
       }
       
       // Further validation of items in the array
       if (!quizData.every(item => typeof item.question === 'string' && typeof item.answer === 'string')) {
-        console.error("Invalid item structure in quiz data from OpenAI:", quizData);
+        console.error("Invalid item structure in quiz data from Gemini:", quizData);
         return NextResponse.json({ error: 'Invalid item structure in quiz data: Each item must have a question and answer string.' }, { status: 500 });
       }
 
       return NextResponse.json({ quiz: quizData }, { status: 200 });
     } catch (parseError) {
-      console.error("Failed to parse OpenAI quiz response:", parseError, "Raw response:", resultJsonString);
-      return NextResponse.json({ error: 'Failed to parse quiz data from OpenAI' }, { status: 500 });
+      console.error("Failed to parse Gemini quiz response:", parseError, "Raw response:", resultJsonString);
+      return NextResponse.json({ error: 'Failed to parse quiz data from Gemini' }, { status: 500 });
     }
 
   } catch (error: any) {
     console.error('Error generating quiz:', error);
-    // Check for OpenAI specific errors if possible
-    if (error.response && error.response.data && error.response.data.error) {
-        console.error('OpenAI API Error:', error.response.data.error.message);
-        return NextResponse.json({ error: `OpenAI API Error: ${error.response.data.error.message}` }, { status: 500 });
-    }
     return NextResponse.json({ error: error.message || 'Internal server error generating quiz' }, { status: 500 });
   }
 }
 
-export async function PUT(req: NextRequest) {
+// PATCH /api/summaries/quiz
+export async function PATCH(req: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { summaryId, quiz } = await req.json();
 
     if (!summaryId) {
-      return NextResponse.json({ error: 'Summary ID is required for saving the quiz' }, { status: 400 });
+      return NextResponse.json({ error: 'Summary ID is required' }, { status: 400 });
     }
-    if (!quiz || !Array.isArray(quiz) || !quiz.every(item => typeof item.question === 'string' && typeof item.answer === 'string')) {
+
+    if (!quiz) {
+      return NextResponse.json({ error: 'Quiz data is required' }, { status: 400 });
+    }
+
+    // Validate quiz data structure
+    if (!Array.isArray(quiz) || !quiz.every(item => typeof item.question === 'string' && typeof item.answer === 'string')) {
       return NextResponse.json({ error: 'Valid quiz data (array of question/answer objects) is required' }, { status: 400 });
     }
 
+    // Update the summary with quiz data, ensuring user owns the summary
     const { data, error } = await supabase
       .from('summaries')
-      .update({ quiz: quiz }) // Ensure 'quiz' is the correct column name in your Supabase table
+      .update({ quiz: quiz })
       .eq('id', summaryId)
-      .select('id')
+      .eq('user_id', session.user.id) // Ensure user owns this summary
+      .select('id, video_id')
       .single();
 
     if (error) {
@@ -144,13 +163,17 @@ export async function PUT(req: NextRequest) {
     }
 
     if (!data) {
-        return NextResponse.json({ error: 'Failed to update summary with quiz, or summary not found.' }, { status: 404 });
+      return NextResponse.json({ error: 'Summary not found or you do not have permission to update it' }, { status: 404 });
     }
 
-    return NextResponse.json({ message: 'Quiz saved successfully', summaryId: data.id }, { status: 200 });
+    return NextResponse.json({ 
+      message: 'Quiz saved successfully', 
+      summaryId: data.id, 
+      videoId: data.video_id 
+    }, { status: 200 });
 
   } catch (error: any) {
     console.error('Error processing request to save quiz:', error);
     return NextResponse.json({ error: error.message || 'Internal server error while saving quiz' }, { status: 500 });
   }
-}
+} 

@@ -15,7 +15,7 @@ export default function HomePageContent() {
   // if (isDevMode) {
   //   // Render the original page content for developers
     return (
-        <div className="container mx-auto px-4 max-w-3xl mt-16">
+        <div className="container mx-auto px-4 max-w-3xl mt-24">
           <HomeHeader locale={locale} />
           <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
             <VideoInputForm />

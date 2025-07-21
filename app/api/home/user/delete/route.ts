@@ -82,7 +82,7 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ success: true, message: 'User account deleted successfully.' }, { status: 200 });
 
   } catch (error: any) {
-    console.error('API Route /api/user/delete error:', error);
+    console.error('API Route /api/home/user/delete error:', error);
     return NextResponse.json({ error: 'An unexpected error occurred during account deletion.', details: error.message }, { status: 500 });
   }
-}
+} 

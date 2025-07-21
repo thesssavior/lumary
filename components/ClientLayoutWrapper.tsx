@@ -23,20 +23,24 @@ export function ClientLayoutWrapper({
   locale, 
   messages 
 }: ClientLayoutWrapperProps) {
+
+  // Default layout for all other pages
   return (
     <ClientProvider>
-      <NextIntlClientProvider locale={locale} messages={messages}>
+      <NextIntlClientProvider locale={locale} messages={messages} timeZone="Asia/Seoul">
         <SessionProvider>
           <SearchProvider>
             <SummaryGenerationProvider>
               <ServerDownModalProvider>
-                <Navbar />
-                <SidebarLayout>
-                  <div className="container mx-auto px-4 py-8 bg-white min-h-screen">
-                    {children}
-                  </div>
-                </SidebarLayout>
-                <ConditionalFooter />
+                <div>
+                  <SidebarLayout>
+                    <div className="bg-white min-h-screen">
+                      <Navbar />
+                      {children}
+                    </div>
+                  </SidebarLayout>
+                  <ConditionalFooter />
+                </div>
                 <GlobalSearchModal />
               </ServerDownModalProvider>
             </SummaryGenerationProvider>
