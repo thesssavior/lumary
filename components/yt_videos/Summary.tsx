@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Button } from '@/components/ui/button'
 import { Check, Copy, Loader2, AlertTriangle, FileText } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+
+// Constants for transcript-based streaming
+const TOKEN_THRESHOLD = 20000;
+const FINAL_SEPARATOR = ' <<<OVERVIEW_START>>>';
 
 interface SummaryProps {
   summary: string
@@ -11,6 +15,10 @@ interface SummaryProps {
   chapters?: any[]
   title?: string
   videoDescription?: string
+  transcript?: string
+  tokenCount?: number
+  videoId?: string
+  locale?: string
   onSummaryGenerated?: (summary: string) => void
   onSummarySaved?: (summaryData: any) => void
 }
@@ -22,6 +30,10 @@ const Summary = ({
   chapters,
   title,
   videoDescription,
+  transcript,
+  tokenCount,
+  videoId,
+  locale,
   onSummaryGenerated,
   onSummarySaved
 }: SummaryProps) => {
@@ -32,6 +44,11 @@ const Summary = ({
   const [error, setError] = useState<string | null>(null)
   const [generatedSummary, setGeneratedSummary] = useState('')
   const [isGenerated, setIsGenerated] = useState(false)
+  
+  // New state for transcript-based streaming
+  const [overviewContent, setOverviewContent] = useState('')
+  const [isLongVideo, setIsLongVideo] = useState(false)
+  const generationAttemptedRef = useRef(false)
 
   // Initialize state based on existing summary
   useEffect(() => {
@@ -44,8 +61,24 @@ const Summary = ({
     }
   }, [summary])
 
+  // Auto-generation logic (similar to Chapters.tsx)
+  useEffect(() => {
+    // If we already have a summary, don't auto-generate
+    if (summary && summary.trim()) {
+      return
+    }
+
+    // If no summary but we have transcript, generate directly from transcript
+    // This replaces the old new/page.tsx flow
+    if (!summary && transcript && !isGenerating && !generationAttemptedRef.current && tokenCount && videoId) {
+      generateFromTranscript()
+    }
+  }, [summary, transcript, tokenCount, videoId, isGenerating])
+
   const copyToClipboard = () => {
-    const textToCopy = generatedSummary || summary
+    const textToCopy = isLongVideo && overviewContent 
+      ? overviewContent + "\n\n" + (generatedSummary || summary)
+      : generatedSummary || summary
     navigator.clipboard.writeText(textToCopy)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -74,7 +107,7 @@ const Summary = ({
   }
 
   const generateSummary = async () => {
-    if (!chapters || !Array.isArray(chapters) || chapters.length === 0) {
+    if (!chapters || !Array.isArray(chapters) || chapters.length === 0 || !transcript) {
       setError('Chapters are required to generate summary')
       return
     }
@@ -93,6 +126,7 @@ const Summary = ({
           chapters: chapters,
           title: title,
           videoDescription: videoDescription,
+          transcript: transcript,
         }),
       })
 
@@ -139,6 +173,88 @@ const Summary = ({
     } finally {
       setIsGenerating(false)
       setIsSaving(false)
+    }
+  }
+
+  // Generate summary directly from transcript (replaces new/page.tsx flow)
+  const generateFromTranscript = async () => {
+    if (!transcript || !tokenCount || !videoId) {
+      setError('Transcript, token count, and video ID are required')
+      return
+    }
+
+    generationAttemptedRef.current = true
+    setIsGenerating(true)
+    setError(null)
+    setGeneratedSummary('')
+    setOverviewContent('')
+
+    try {
+      const isLongVideo = tokenCount > TOKEN_THRESHOLD
+      const summaryApiEndpoint = isLongVideo
+        ? '/api/summaries/yt_long'
+        : '/api/summaries/summarize'
+      setIsLongVideo(isLongVideo)
+      console.log(`Using API endpoint: ${summaryApiEndpoint} for token count: ${tokenCount}`)
+
+      const response = await fetch(summaryApiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transcriptText: transcript,
+          title: title,
+          videoDescription: videoDescription,
+          locale: locale || 'en',
+          contentLanguage: contentLanguage || 'en',
+          tokenCount: tokenCount,
+          videoId: videoId,
+        }),
+      })
+
+      if (!response.ok) {
+        const errData = await response.json()
+        throw new Error(errData.error || 'Failed to generate summary')
+      }
+      if (!response.body) {
+        throw new Error('Empty response stream')
+      }
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let content = ''
+      let fullSummary = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) {
+          if (isLongVideo) {
+            const separatorIndex = content.indexOf(FINAL_SEPARATOR)
+            setOverviewContent(content.slice(separatorIndex + FINAL_SEPARATOR.length))
+            setGeneratedSummary(content.slice(0, separatorIndex))
+            fullSummary = content.slice(separatorIndex + FINAL_SEPARATOR.length) + content.slice(0, separatorIndex)
+          } else {
+            setGeneratedSummary(content)
+            fullSummary = content
+          }
+          break
+        }
+        const chunk = decoder.decode(value)
+        content += chunk
+        setGeneratedSummary(prev => prev + chunk)
+      }
+
+      if (onSummaryGenerated && fullSummary) {
+        onSummaryGenerated(fullSummary)
+      }
+
+      setIsGenerated(true)
+
+    } catch (err: any) {
+      console.error('Error generating summary from transcript:', err)
+      setError(err.message || 'Failed to generate summary')
+      generationAttemptedRef.current = false // Reset on error to allow retry
+    } finally {
+      setIsGenerating(false)
     }
   }
 
@@ -217,29 +333,56 @@ const Summary = ({
 
   // Generated summary display
   return (
-    <div className="prose prose-zinc max-w-none p-4 pr-16 rounded-lg relative">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={copyToClipboard}
-        className="absolute top-4 right-4 h-8 w-8 p-0 hover:bg-gray-100"
-        title={copied ? t('copiedToClipboard') : t('copySummary')}
-      >
-        {copied ? (
-          <Check className="h-4 w-4" />
-        ) : (
-          <Copy className="h-4 w-4" />
-        )}
-      </Button>
-      
-      {error && (
-        <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm mb-4">
-          <p><span className="font-semibold">Error encountered:</span> {error}</p>
+    <div className="space-y-4">
+      {/* Overview content for long videos */}
+      {overviewContent && (
+        <div className="prose prose-zinc max-w-none p-4 pr-16 rounded-lg relative border">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={copyToClipboard}
+            className="absolute top-4 right-4 h-8 w-8 p-0 hover:bg-gray-100"
+            title={copied ? t('copiedToClipboard') : t('copySummary')}
+          >
+            {copied ? (
+              <Check className="h-4 w-4 text-green-600" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
+          </Button>
+          <div className="text-black [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1:not(:first-child)]:mt-10 [&>h2]:mb-5 [&>h2:not(:first-child)]:mt-8 [&>h3]:mb-4 [&>h3:not(:first-child)]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-black">
+            <ReactMarkdown>{overviewContent}</ReactMarkdown>
+          </div>
         </div>
       )}
-      
-      <div className="text-black [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1:not(:first-child)]:mt-10 [&>h2]:mb-5 [&>h2:not(:first-child)]:mt-8 [&>h3]:mb-4 [&>h3:not(:first-child)]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-black">
-        <ReactMarkdown>{displaySummary}</ReactMarkdown>
+
+      {/* Main summary content */}
+      <div className="prose prose-zinc max-w-none p-4 pr-16 rounded-lg relative border">
+        {!overviewContent && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={copyToClipboard}
+            className="absolute top-4 right-4 h-8 w-8 p-0 hover:bg-gray-100"
+            title={copied ? t('copiedToClipboard') : t('copySummary')}
+          >
+            {copied ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
+          </Button>
+        )}
+        
+        {error && (
+          <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm mb-4">
+            <p><span className="font-semibold">Error encountered:</span> {error}</p>
+          </div>
+        )}
+        
+        <div className="text-black [&>h1]:text-2xl [&>h2]:text-xl [&>h3]:text-lg [&>p]:text-base [&>ul]:list-disc [&>ol]:list-decimal [&>li]:ml-4 [&>h1]:mb-6 [&>h1:not(:first-child)]:mt-10 [&>h2]:mb-5 [&>h2:not(:first-child)]:mt-8 [&>h3]:mb-4 [&>h3:not(:first-child)]:mt-6 [&>p]:mb-5 [&>ul]:mb-5 [&>ol]:mb-5 [&>li]:mb-3 [&>ol]:pl-8 [&>ul]:pl-8 [&>strong]:font-bold [&>strong]:text-black">
+          <ReactMarkdown>{displaySummary}</ReactMarkdown>
+        </div>
       </div>
     </div>
   )
