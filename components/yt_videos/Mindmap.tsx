@@ -28,9 +28,10 @@ interface MindmapProps {
   summaryId: string | null | undefined;
   isActive: boolean | null;
   isStreaming?: boolean;
+  layout?: 'default' | 'split';
 }
 
-const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, contentLanguage, summaryId, isActive, isStreaming = false, chapters }) => {
+const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, contentLanguage, summaryId, isActive, isStreaming = false, chapters, layout = 'default' }) => {
   const t = useTranslations();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -152,7 +153,7 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, co
 
   if (!isGenerated && !isLoading && !error && !isSaving && !isStreaming) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[300px] p-10 text-center rounded-md">
+      <div className={`flex flex-col items-center justify-center h-full min-h-[300px] p-10 text-center rounded-md ${layout === 'split' ? 'mt-[-20%]' : ''}`}>
         <Brain className="h-12 w-12 mb-6" />
         <h3 className="text-xl font-semibold mb-2">{t('Mindmap.title')}</h3>
         <p className="text-sm text-gray-500 text-center max-w-md mb-6">

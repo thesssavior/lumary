@@ -140,6 +140,7 @@ export default function SummarySplit({
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[300px] p-10 text-center rounded-md mt-[-20%]">
         <FileText className="h-12 w-12 mb-6" />
+        <h3 className="text-xl font-semibold mb-2">{t('Summary.generateTitle')}</h3>
         <p className="text-sm text-gray-500 mb-6 max-w-md">{t('Summary.generateDescription')}</p>
         <Button onClick={generateFromChapters} size="lg" disabled={isGenerating}>
           {t('Summary.generateButton')}

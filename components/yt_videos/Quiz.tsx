@@ -20,10 +20,11 @@ interface QuizProps {
   contentLanguage?: string; // Content language for quiz generation
   summaryId: string | null; // summaryId might be null initially on /new page
   title?: string | null;
+  layout?: 'default' | 'split';
   // isActive: boolean; // To trigger generation, or for other conditional logic if needed
 }
 
-const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData, locale, contentLanguage, summaryId, title, chapters }) => {
+const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData, locale, contentLanguage, summaryId, title, chapters, layout = 'default' }) => {
   const t = useTranslations();
 
   const [quizItems, setQuizItems] = useState<QuizItem[]>(initialQuizData || []);
@@ -169,7 +170,7 @@ const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData
   
   if (!isGenerated) {
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[300px] p-10 rounded-md text-center">
+      <div className={`flex flex-col items-center justify-center h-full min-h-[300px] p-10 rounded-md text-center ${layout === 'split' ? 'mt-[-20%]' : ''}`}>
         <Lightbulb className="h-12 w-12 mb-6" />
         <h3 className="text-xl font-semibold mb-2">{t('Quiz.title')}</h3>
         <p className="text-sm text-gray-500 mb-6 max-w-md">

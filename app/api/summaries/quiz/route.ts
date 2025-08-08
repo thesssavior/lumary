@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 import { auth } from '@/auth';
 import { supabase } from '@/lib/supabaseClient';
 
-const model = 'gpt-5-mini';
+const model = 'gpt-4.1-mini';
 
 interface QuizItem {
   question: string;

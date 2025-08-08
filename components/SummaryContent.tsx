@@ -69,7 +69,7 @@ export default function SummaryContent({
                 <ResizablePanel defaultSize={46} minSize={25}>
                   <ResizablePanelGroup ref={verticalPanelGroupRef} direction="vertical" className="h-full">
                     {/* Video Player - Top Left */}
-                    <ResizablePanel defaultSize={56} minSize={25} className="p-1 ml-2">
+                    <ResizablePanel defaultSize={60} minSize={25} className="p-1 ml-2">
                       <VideoPlayer videoId={summary.video_id} title={summary.name} />
                     </ResizablePanel>
 
@@ -87,7 +87,7 @@ export default function SummaryContent({
                 <ResizableHandle />
 
                 {/* Right Panel - Summary Content */}
-                <ResizablePanel defaultSize={56} minSize={30} className="p-1">
+                <ResizablePanel defaultSize={60} minSize={30} className="p-1">
                 <div className="h-full overflow-hidden">
                   <div className="h-full flex flex-col">
 
@@ -162,7 +162,7 @@ export default function SummaryContent({
                           <TabsContent 
                             value="mindmap" 
                             forceMount={true} 
-                            className="data-[state=active]:block hidden m-0 h-full mt-[-20%]"
+                            className="data-[state=active]:block hidden m-0 h-full"
                           >
                             <div className="p-2 h-full">
                                 <Mindmap 
@@ -173,6 +173,7 @@ export default function SummaryContent({
                                   mindmap={mindmap} 
                                   summaryId={summaryId || null}
                                   isActive={activetab === "mindmap"}
+                                  layout="split"
                                 />
                             </div>
                           </TabsContent>
@@ -180,7 +181,7 @@ export default function SummaryContent({
                           <TabsContent 
                             value="quiz" 
                             forceMount={true} 
-                            className="data-[state=active]:block hidden m-0 h-full mt-[-20%]"
+                            className="data-[state=active]:block hidden m-0 h-full"
                           >
                             <div className="p-2 h-full overflow-auto">
                               <Quiz 
@@ -191,6 +192,7 @@ export default function SummaryContent({
                                 contentLanguage={contentLanguage}
                                 summaryId={summaryId || null} 
                                 title={summary.name}
+                                layout="split"
                               />
                             </div>
                           </TabsContent>
