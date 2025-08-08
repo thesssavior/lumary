@@ -40,7 +40,7 @@ export default function SummaryContent({
   tokenCount
 }: Props) {
     const t = useTranslations();
-    const [activetab, setActivetab] = useState("chapters");
+    const [activetab, setActivetab] = useState(layoutMode === 'split' ? 'chapters' : 'summary');
     const [generatedChapters, setGeneratedChapters] = useState<any[] | null>(null);
     const [generatedSummary, setGeneratedSummary] = useState('');
     
@@ -131,6 +131,7 @@ export default function SummaryContent({
                                   locale={locale}
                                   tokenCount={tokenCount}
                                   onChaptersGenerated={setGeneratedChapters}
+                                  layout="split"
                                 />
                             </div>
                           </TabsContent>
@@ -223,7 +224,6 @@ export default function SummaryContent({
           <TabsList className="grid w-full grid-cols-4">
             {/* <TabsTrigger value="summary" className="data-[state=active]:bg-black data-[state=active]:text-white">{t('summaryTab')}</TabsTrigger> */}
             <TabsTrigger value="summary" >{t('summaryTab')}</TabsTrigger>
-            <TabsTrigger value="chapters" >{t('chaptersTab')}</TabsTrigger>
             <TabsTrigger value="mindmap" >{t('mindmapTab')}</TabsTrigger>
             <TabsTrigger value="quiz" >{t('quizTab')}</TabsTrigger>
             <TabsTrigger value="transcript" >{t('transcriptTab')}</TabsTrigger>
@@ -241,22 +241,6 @@ export default function SummaryContent({
               tokenCount={tokenCount}
               videoId={summary.video_id}
               locale={locale}
-            />
-          </TabsContent>
-
-          <TabsContent value="chapters" className="mt-4 p-0 border rounded-lg">
-            <Chapters 
-              chapters={summary.chapters} 
-              transcript={summary.transcript} 
-              summaryId={summaryId || undefined} 
-              contentLanguage={contentLanguage}
-              videoId={summary.video_id}
-              folderId={folder?.id}
-              title={summary.name}
-              videoDescription={summary.description}
-              locale={locale}
-              tokenCount={tokenCount}
-              onChaptersGenerated={setGeneratedChapters}
             />
           </TabsContent>
 

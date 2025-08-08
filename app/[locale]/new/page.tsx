@@ -235,7 +235,8 @@ export default function NewSummaryPage() {
           locale: videoLocale,
           contentLanguage: contentLanguage,
           fetcher: fetcher,
-          name: title
+          name: title,
+          layout: 'default'
         }),
       });
       if (!response.ok) {

@@ -46,6 +46,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
       locale,
       contentLanguage,
       chapters,
+      layout,
     } = body;
 
     if (!videoId || !(title || name)) {
@@ -71,6 +72,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ folderI
       locale: locale,
       content_language: contentLanguage,
       chapters: chapters || null,
+      layout: layout || null,
     };
 
     const { data: summaryData, error: summaryError } = await supabase

@@ -25,6 +25,7 @@ interface ChaptersProps {
   tokenCount?: number
   onSummaryCreated?: (summaryData: any) => void
   onChaptersGenerated?: (chaptersData: ChapterData[]) => void
+  layout?: 'default' | 'split'
 }
 
 const Chapters = ({ 
@@ -39,7 +40,8 @@ const Chapters = ({
   locale,
   tokenCount,
   onSummaryCreated,
-  onChaptersGenerated
+  onChaptersGenerated,
+  layout
 }: ChaptersProps) => {
   const [chaptersText, setChaptersText] = useState(initialChapters || '')
   const [parsedChapters, setParsedChapters] = useState<ChapterData[]>([])
@@ -264,6 +266,7 @@ const Chapters = ({
           contentLanguage: contentLanguage,
           chapters: chaptersData, // Save the generated chapters
           input_token_count: tokenCount,
+          layout: layout || 'split',
         })
       })
 

@@ -21,13 +21,23 @@ export default function SummaryDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [layoutMode, setLayoutMode] = useState<'default' | 'split'>('default');
 
+  // Derive persisted/locked layout if available; fallback to heuristic (chapters implies split)
+  const derivedLockedLayout: 'default' | 'split' | null = (summary?.layout === 'split' || summary?.layout === 'default')
+    ? summary.layout
+    : (summary?.chapters ? 'split' : null);
+
   // Load layout preference on component mount
   useEffect(() => {
+    // If summary has persisted/derived layout, honor it and ignore preference switching
+    if (derivedLockedLayout) {
+      setLayoutMode(derivedLockedLayout);
+      return;
+    }
     setLayoutMode(getLayoutPreference());
 
-    // Listen for layout changes from settings
+    // Listen for layout changes from settings only if not locked by summary
     const handleLayoutChange = (event: CustomEvent) => {
-      setLayoutMode(event.detail.layoutMode);
+      setLayoutMode(prev => (derivedLockedLayout ? prev : event.detail.layoutMode));
     };
 
     window.addEventListener('layoutChanged', handleLayoutChange as EventListener);
@@ -35,7 +45,7 @@ export default function SummaryDetailPage() {
     return () => {
       window.removeEventListener('layoutChanged', handleLayoutChange as EventListener);
     };
-  }, []);
+  }, [derivedLockedLayout]);
 
   useEffect(() => {
     // Wait for session to load
@@ -155,7 +165,7 @@ export default function SummaryDetailPage() {
         contentLanguage={summary.content_language || locale}
         isStreamingMode={summaryId === 'new'}
         tokenCount={summary.input_token_count || 0}
-        layoutMode={layoutMode}
+        layoutMode={derivedLockedLayout || layoutMode}
       />
     </div>
   );

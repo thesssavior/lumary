@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useTransition, useEffect } from 'react';
+import React, { useState, useTransition, useEffect, Suspense } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -82,6 +82,7 @@ const SettingsPage = () => {
   }
 
   return (
+    <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
     <div className="space-y-8 max-w-2xl mx-auto py-8">
       <h1 className="text-3xl font-semibold mb-6">{t('title')}</h1>
 
@@ -200,6 +201,7 @@ const SettingsPage = () => {
 
       {/* Add more sections as needed, e.g., Theme, Notifications */}
     </div>
+    </Suspense>
   );
 };
 

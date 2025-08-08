@@ -106,7 +106,6 @@ export async function POST(request: Request) {
         openai.chat.completions.create({
           model,
           stream: true,
-          temperature: 0.3,
           messages: [
             { role: 'system', content: `${systemInstruction} respond in ${contentLanguage}` },
             {
@@ -162,7 +161,6 @@ export async function POST(request: Request) {
       const completion = await openai.chat.completions.create({
         model,
         stream: true,
-        temperature: 0.3,
         messages: [
           { role: 'system', content: `${systemInstruction} respond in ${contentLanguage}` },
           {

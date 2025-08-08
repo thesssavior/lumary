@@ -68,7 +68,6 @@ export async function POST(req: Request) {
       openai.chat.completions.create({
         model,
         stream: true,
-        temperature: 0.3,
         messages: [
           { role: 'system', content: `Important: Respond in ${contentLanguage} language. ${messages.systemPromptsChunked}` },
           {
@@ -116,7 +115,6 @@ export async function POST(req: Request) {
         const finalCompletion = await openai.chat.completions.create({
           model,
           stream: false, // Reverted: This call is streaming again
-          temperature: 0.3,
           messages: [
             { role: 'system', content: `Important: Respond in ${contentLanguage} language. ${messages.systemPromptsFinal}` },
             {

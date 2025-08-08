@@ -11,6 +11,7 @@ import { SessionProvider } from "next-auth/react";
 import SearchProvider from '@/contexts/SearchContext';
 import GlobalSearchModal from '@/components/GlobalSearchModal';
 import { ClientProvider } from '@/components/providers';
+import React, { Suspense } from 'react';
 
 interface ClientLayoutWrapperProps {
   children: React.ReactNode;
@@ -34,10 +35,12 @@ export function ClientLayoutWrapper({
               <ServerDownModalProvider>
                 <div>
                   <SidebarLayout>
-                    <div className="bg-white min-h-screen">
-                      <Navbar />
-                      {children}
-                    </div>
+                    <Suspense fallback={<div className="flex justify-center items-center h-32">Loading...</div>}>
+                      <div className="bg-white min-h-screen">
+                        <Navbar />
+                        {children}
+                      </div>
+                    </Suspense>
                   </SidebarLayout>
                   <ConditionalFooter />
                 </div>

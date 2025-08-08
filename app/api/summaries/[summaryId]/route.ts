@@ -72,7 +72,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ sum
       transcript,
       description,
       locale,
-      contentLanguage
+      contentLanguage,
+      layout
     } = await req.json();
 
     if (!folderId || !videoId || !title) {
@@ -93,6 +94,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ sum
       locale: locale,
       content_language: contentLanguage,
       input_token_count: input_token_count,
+      layout: layout || null,
     };
 
     const { data: summaryData, error: summaryError } = await supabase
@@ -132,6 +134,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ su
     delete updateData.id;
     delete updateData.user_id;
     delete updateData.created_at;
+    // Prevent changing layout after creation
+    if (typeof updateData.layout !== 'undefined') {
+      delete updateData.layout;
+    }
 
     const { data, error } = await supabase
       .from('summaries')
