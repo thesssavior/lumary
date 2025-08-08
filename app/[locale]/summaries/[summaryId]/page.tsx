@@ -130,7 +130,7 @@ export default function SummaryDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-full">
+      <div className="flex justify-center items-center h-full mt-[20%]">
         <Loader2 className="h-10 w-10 animate-spin" />
       </div>
     );

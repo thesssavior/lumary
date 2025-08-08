@@ -187,23 +187,14 @@ const baseAuthOptions = {
           throw new Error('Missing providerAccountId or test account setup');
         }
         
-        // Upsert user record into Supabase with consistent UUID
-        console.log('💾 Attempting to upsert user with ID:', userId, 'email:', user.email, 'name:', user.name);
-        
-        const { data: upsertedUser, error: userError } = await supabase.from('users').upsert({
+        // Legacy behavior: Upsert id/email/name only (do not touch plan)
+        const { error: userError } = await supabase.from('users').upsert({
           id: userId,
           email: user.email,
           name: user.name,
-          plan: 'free' // Ensure plan is set
-        }, {
-          onConflict: 'id'
-        }).select();
-        
+        });
         if (userError) {
           console.error('❌ Supabase upsert user error:', userError.message, userError);
-          console.error('Full error details:', userError);
-        } else {
-          console.log('✅ Successfully upserted user:', upsertedUser);
         }
 
         // Ensure default folder exists
