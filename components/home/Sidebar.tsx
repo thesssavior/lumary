@@ -13,6 +13,7 @@ import { useFolder, FolderContext } from '@/components/home/SidebarLayout';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from '@/components/ui/button';
 import { useSearch } from '@/contexts/SearchContext';
+import { useDevMode } from '@/hooks/useDevMode';
 
 interface FolderType { id: string; name: string; }
 interface SummaryType { id: string; video_id: string; summary: string; name: string; }
@@ -46,6 +47,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const { activeFolder, setActiveFolder, openSubscriptionModal } = useFolder();
   const [folderOpen, setFolderOpen] = useState<{ [folderId: string]: boolean }>({});
   const [hoveredSummaryId, setHoveredSummaryId] = useState<string | null>(null);
+  const isDevMode = useDevMode();
   const [hoveredFolderId, setHoveredFolderId] = useState<string | null>(null);
   const [isMac, setIsMac] = useState(false);
   const { openSearchModal } = useSearch();
@@ -53,6 +55,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   // Needs test
   // Use session from useSession hook instead of redundant fetch
   useEffect(() => {
+    console.log('Client: Session state changed:', session?.user?.id, session?.user?.email);
     setIsSignedIn(!!session?.user);
   }, [session]);
 
@@ -60,9 +63,13 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   const fetchFolders = async () => {
     setIsLoadingFolders(true);
     try {
+      console.log('Client: Starting to fetch folders...');
       const res = await fetch('/api/folders');
+      console.log('Client: Fetch response status:', res.status, res.statusText);
+      
       if (res.ok) {
         const data: FolderType[] = await res.json();
+        console.log('Client: Successfully fetched folders:', data);
         setFolders(data);
         if (!activeFolder && data.length) {
           setActiveFolder(data[0]);
@@ -70,7 +77,8 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
           setActiveFolder(null);
         }
       } else {
-        console.error("Failed to fetch folders");
+        const errorText = await res.text();
+        console.error("Failed to fetch folders - Status:", res.status, "Response:", errorText);
         setFolders([]);
         setActiveFolder(null);
       }
@@ -103,10 +111,13 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
 
   // Fetch folders on signin, refreshKey
   useEffect(() => {
+    console.log('Client: isSignedIn effect triggered. isSignedIn:', isSignedIn, 'refreshKey:', refreshKey);
     if (isSignedIn) {
+      console.log('Client: User is signed in, fetching folders...');
       setIsLoadingFolders(true);
       fetchFolders();
     } else {
+      console.log('Client: User not signed in, clearing folder state');
       setFolders([]);
       setActiveFolder(null);
       setFolderSummaries({});
@@ -295,12 +306,26 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
             Google 로그인이 차단되었습니다. 크롬, 사파리 등 기본 브라우저로 열어주세요.
           </div>
         ) : (
-          <button
-            onClick={() => signIn('google')}
-            className="px-4 py-2 bg-black hover:bg-zinc-800 text-white rounded-md"
-          >
-            {t('signIn') || '로그인하기'}
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={() => signIn('google')}
+              className="w-full px-4 py-2 bg-black hover:bg-zinc-800 text-white rounded-md"
+            >
+              {t('signIn') || '로그인하기'}
+            </button>
+            {isDevMode && (
+              <button
+                onClick={() => signIn('test-account', { 
+                  username: "testuser", 
+                  password: "test123",
+                  callbackUrl: "/" 
+                })}
+                className="w-full px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md text-sm"
+              >
+                🧪 Test Account
+              </button>
+            )}
+          </div>
         )}
       </div>
     );

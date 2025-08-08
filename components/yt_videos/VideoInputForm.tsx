@@ -12,6 +12,7 @@ import { useFolder } from '../home/SidebarLayout';
 import { useSummaryGeneration } from '@/contexts/SummaryGenerationContext';
 import { LanguageSwitcher } from '../home/LanguageSwitcher';
 import { useHydration } from '@/hooks/useHydration';
+import { useDevMode } from '@/hooks/useDevMode';
 
 interface FolderType {
   id: string;
@@ -27,6 +28,7 @@ export function VideoInputForm() {
   const { activeFolder, openSubscriptionModal } = useFolder();
   const { setGenerationData } = useSummaryGeneration();
   const isHydrated = useHydration();
+  const isDevMode = useDevMode();
   
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -217,6 +219,21 @@ export function VideoInputForm() {
               >
                 {t('signInWithGoogle')}
               </Button>
+              {isDevMode && (
+                <Button
+                  className="w-full bg-orange-600 hover:bg-orange-700 text-white mb-2"
+                  onClick={() => { 
+                    setShowLoginPrompt(false); 
+                    signIn("test-account", { 
+                      username: "testuser", 
+                      password: "test123",
+                      callbackUrl: "/" 
+                    }); 
+                  }}
+                >
+                  🧪 Test Account
+                </Button>
+              )}
               <Button
                 variant="outline"
                 className="w-full"

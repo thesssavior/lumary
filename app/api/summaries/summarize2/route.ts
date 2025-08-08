@@ -1,18 +1,17 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from 'openai';
 import { getTranslations } from "next-intl/server";
 import { formatTime } from '@/lib/utils';
 import { NextRequest } from 'next/server';
 import { auth } from '@/auth';
 import { supabase } from '@/lib/supabaseClient';
 
-// Initialize Gemini AI
-const ai = new GoogleGenAI({});
+const model = 'gpt-5-mini';
 
-// POST request to summarize a video using chapters with Gemini 2.5 Flash
+// POST request to summarize a video using chapters with OpenAI gpt-5-mini
 export async function POST(req: Request) {
   try {
-    console.log("summaries/summarize2 route called with Gemini 2.5 Flash");
+    console.log("summaries/summarize2 route called with gpt-5-mini");
     
     // Get data from request
     const { 
@@ -67,28 +66,27 @@ export async function POST(req: Request) {
 
     const encoder = new TextEncoder();
     
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const completion = await openai.chat.completions.create({
+      model,
+      stream: true,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+    });
+
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          const response = await ai.models.generateContentStream({
-            model: "gemini-2.5-flash",
-            contents: userPrompt,
-            config: {
-              systemInstruction: systemPrompt,
-              temperature: 0.3,
-              // topP: 0.95,
-              // topK: 40,
-            },
-          });
-          
-          for await (const chunk of response) {
-            const text = chunk.text;
-            if (text) {
-              controller.enqueue(encoder.encode(text));
+          for await (const part of completion) {
+            const content = part.choices[0]?.delta?.content;
+            if (content) {
+              controller.enqueue(encoder.encode(content));
             }
           }
         } catch (error) {
-          console.error("Gemini 2.5 Flash streaming error:", error);
+          console.error("OpenAI streaming error:", error);
           controller.error(error);
         } finally {
           controller.close();
@@ -103,7 +101,7 @@ export async function POST(req: Request) {
       }
     });
   } catch (error: any) {
-    console.error("Gemini 2.5 Flash API error:", error.message);
+    console.error("gpt-5-mini API error:", error.message);
     return NextResponse.json({ 
       error: `Chapter-based summarization failed: ${error.message}`,
     }, { status: 500 });
@@ -129,7 +127,6 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Update the summary with generated content, ensuring user owns the summary
-    // output_token_count uses another method for gemini-2.5-flash
     const updateData: any = {
       summary: summary,
     };

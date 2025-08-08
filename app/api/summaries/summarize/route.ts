@@ -7,7 +7,7 @@ import frMessages from '@/messages/fr.json';
 import thMessages from '@/messages/th.json';
 
 // Constants
-const model = 'gpt-4.1-mini'; 
+const model = 'gpt-5-mini'; 
 
 // POST request to summarize a video
 export async function POST(req: Request) {
@@ -52,7 +52,6 @@ export async function POST(req: Request) {
               { role: "user", content: `${messages.userPrompts} \n\nVideo Title: ${videoTitle}\n\nVideo Description: ${videoDescription}\n\nTranscript:\n${transcriptText}` }
             ],
             stream: true,
-            temperature: 0.3,
           });
           for await (const part of completion) {
             const content = part.choices[0]?.delta?.content;

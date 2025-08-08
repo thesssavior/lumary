@@ -5,11 +5,13 @@ import { Input } from "@/components/ui/input";
 import { signIn } from "next-auth/react";
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { useDevMode } from '@/hooks/useDevMode';
 
 export default function SignIn() {
   const t = useTranslations();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const isDevMode = useDevMode();
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,6 +84,35 @@ export default function SignIn() {
         >
           {t('signInWithNaver') || 'Sign in with Naver'}
         </Button>
+
+        {/* Test Account - Only show when ?dev=true in URL */}
+        {isDevMode && (
+          <>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-gray-500">For Testing</span>
+              </div>
+            </div>
+            
+            <Button
+              onClick={() => signIn("test-account", { 
+                username: "testuser", 
+                password: "test123",
+                callbackUrl: "/" 
+              })}
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              🧪 Sign in with Test Account
+            </Button>
+            
+            <div className="text-xs text-gray-500 text-center">
+              Test credentials: testuser / test123
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

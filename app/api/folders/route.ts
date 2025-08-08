@@ -10,6 +10,8 @@ export async function GET(request: Request) {
       console.log('No session found in /api/folders');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    
+    console.log('Fetching folders for user ID:', session.user.id);
     const { data: folders, error } = await supabase
       .from('folders')
       .select('*')
@@ -18,10 +20,12 @@ export async function GET(request: Request) {
       console.error('Supabase folders fetch error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+    
+    console.log('Found folders:', folders?.length || 0);
     // If no folders exist, create a default one
     let foldersList = folders || [];
     if (foldersList.length === 0) {
-      console.log('No folders found for user, creating default folder');
+      console.log('No folders found for user:', session.user.id, 'creating default folder');
       const { data: defaultFolder, error: createErr } = await supabase
         .from('folders')
         .insert({ user_id: session.user.id, name: 'My Folder' })
@@ -30,9 +34,11 @@ export async function GET(request: Request) {
       if (createErr) {
         console.error('Default folder creation error:', createErr);
       } else {
+        console.log('Successfully created default folder:', defaultFolder);
         foldersList = [defaultFolder];
       }
     }
+    console.log('Returning', foldersList.length, 'folders to client');
     return NextResponse.json(foldersList);
   } catch (error) {
     console.error('Unexpected error in /api/folders:', error);

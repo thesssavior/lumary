@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from 'openai';
 import { auth } from '@/auth';
 import { supabase } from '@/lib/supabaseClient';
 
-const ai = new GoogleGenAI({});
-
-// Placeholder for your OpenAI model, e.g., "gpt-3.5-turbo" or "gpt-4.1-mini"
-const model = "gemini-2.5-flash"; 
+const model = 'gpt-5-mini';
 
 interface QuizItem {
   question: string;
@@ -56,24 +53,24 @@ export async function POST(req: NextRequest) {
         JSON Output (array of question-answer objects) in ${contentLanguage} language:
         `;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: userPrompt,
-      config: {
-        systemInstruction: systemInstruction,
-        temperature: 0.5,
-      },
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const completion = await openai.chat.completions.create({
+      model,
+      messages: [
+        { role: 'system', content: systemInstruction },
+        { role: 'user', content: userPrompt },
+      ],
     });
 
-    const resultJsonString = response.text;
+    const resultJsonString = completion.choices[0]?.message?.content || '';
 
     if (!resultJsonString) {
-      console.error("Gemini response was empty for quiz generation.");
-      return NextResponse.json({ error: 'Failed to generate quiz from Gemini: Empty response' }, { status: 500 });
+      console.error("OpenAI response was empty for quiz generation.");
+      return NextResponse.json({ error: 'Failed to generate quiz: Empty response' }, { status: 500 });
     }
 
     try {
-      console.log("Gemini response:", resultJsonString);
+      console.log("OpenAI response:", resultJsonString);
       // Clean up the response - remove markdown code blocks if present
       let cleanedResponse = resultJsonString.trim();
       
@@ -86,7 +83,7 @@ export async function POST(req: NextRequest) {
         cleanedResponse = jsonMatch[0];
       }
       
-      console.log("Cleaned Gemini response:", cleanedResponse);
+      console.log("Cleaned LLM response:", cleanedResponse);
       
       const parsedResult = JSON.parse(cleanedResponse);
 
@@ -103,20 +100,20 @@ export async function POST(req: NextRequest) {
       } else if (parsedResult.result && Array.isArray(parsedResult.result)) {
         quizData = parsedResult.result;
       } else {
-        console.error("Gemini response for quiz was not in the expected array format:", parsedResult);
-        return NextResponse.json({ error: 'Invalid quiz structure from Gemini: Expected an array of questions or an object with a "quiz", "questions", or "result" array.' }, { status: 500 });
+        console.error("OpenAI response for quiz was not in the expected array format:", parsedResult);
+        return NextResponse.json({ error: 'Invalid quiz structure: Expected an array of questions or an object with a "quiz", "questions", or "result" array.' }, { status: 500 });
       }
       
       // Further validation of items in the array
       if (!quizData.every(item => typeof item.question === 'string' && typeof item.answer === 'string')) {
-        console.error("Invalid item structure in quiz data from Gemini:", quizData);
+        console.error("Invalid item structure in quiz data:", quizData);
         return NextResponse.json({ error: 'Invalid item structure in quiz data: Each item must have a question and answer string.' }, { status: 500 });
       }
 
       return NextResponse.json({ quiz: quizData }, { status: 200 });
     } catch (parseError) {
-      console.error("Failed to parse Gemini quiz response:", parseError, "Raw response:", resultJsonString);
-      return NextResponse.json({ error: 'Failed to parse quiz data from Gemini' }, { status: 500 });
+      console.error("Failed to parse quiz response:", parseError, "Raw response:", resultJsonString);
+      return NextResponse.json({ error: 'Failed to parse quiz data' }, { status: 500 });
     }
 
   } catch (error: any) {

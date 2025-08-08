@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from 'openai';
 import { auth } from '@/auth';
 import { supabase } from '@/lib/supabaseClient';
-
-const ai = new GoogleGenAI({});
+ 
+const model = 'gpt-5-mini';
 
 export async function POST(req: NextRequest) {
   try {
@@ -45,32 +45,32 @@ export async function POST(req: NextRequest) {
       JSON Output:
     `;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        systemInstruction: systemInstruction,
-        temperature: 0.3,
-      },
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const completion = await openai.chat.completions.create({
+      model,
+      messages: [
+        { role: 'system', content: systemInstruction },
+        { role: 'user', content: prompt },
+      ],
     });
 
-    const resultJsonString = response.text;
+    const resultJsonString = completion.choices[0]?.message?.content || '';
 
     if (!resultJsonString) {
-      return NextResponse.json({ error: 'Failed to generate mind map from Gemini' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to generate mind map' }, { status: 500 });
     }
 
     try {
       const mindmapData = JSON.parse(resultJsonString);
       // Basic validation of the structure
       if (!mindmapData.nodes || !mindmapData.edges) {
-        console.error("Gemini response missing nodes or edges:", mindmapData);
-        return NextResponse.json({ error: 'Invalid mind map structure from Gemini' }, { status: 500 });
+        console.error("Mindmap response missing nodes or edges:", mindmapData);
+        return NextResponse.json({ error: 'Invalid mind map structure' }, { status: 500 });
       }
       return NextResponse.json(mindmapData, { status: 200 });
     } catch (parseError) {
-      console.error("Failed to parse Gemini response:", parseError, "Raw response:", resultJsonString);
-      return NextResponse.json({ error: 'Failed to parse mind map data from Gemini' }, { status: 500 });
+      console.error("Failed to parse mind map response:", parseError, "Raw response:", resultJsonString);
+      return NextResponse.json({ error: 'Failed to parse mind map data' }, { status: 500 });
     }
 
   } catch (error: any) {

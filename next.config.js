@@ -8,6 +8,8 @@ const nextConfig = {
   images: { unoptimized: true },
   // Move serverExternalPackages to top level (not experimental)
   serverExternalPackages: [],
+  // Enable Turbopack (stable in Next.js 15.3+)
+  turbopack: {},
   experimental: {
     // Helps prevent hydration issues
     optimizePackageImports: ['@/components', '@/hooks'],
