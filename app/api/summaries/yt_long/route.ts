@@ -9,7 +9,7 @@ import frMessages from '@/messages/fr.json';
 // ────────────────────────────────────────────────────────────────
 // constants & helpers
 const MAX_CHUNK_INPUT_TOKENS = 16384;
-const model = 'gpt-5-mini';
+const model = 'gpt-4.1-mini';
 const FINAL_SEPARATOR = ' <<<OVERVIEW_START>>>';
 
 function chunkTranscript(

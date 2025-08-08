@@ -343,7 +343,7 @@ const Chapters = ({
   }
 
   return (
-    <div className="prose prose-zinc max-w-none p-2 relative h-full">
+    <div className="prose prose-zinc max-w-none p-2 pr-16 relative h-full">
       {/* Video Title Heading */}
       {title && (
         <div className="p-2">

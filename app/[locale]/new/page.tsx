@@ -17,7 +17,7 @@ import { ScrollToTopButton } from '@/components/home/ScrollToTopButton';
 import Quiz from '@/components/yt_videos/Quiz';
 
 // Define a threshold for switching to the long video API
-const TOKEN_THRESHOLD = 20000; // Example value, adjust as needed
+const TOKEN_THRESHOLD = 16384; // Example value, adjust as needed
 const FINAL_SEPARATOR = ' <<<OVERVIEW_START>>>';
 
 // Assuming FolderType might be used for persistedFolder, define a placeholder if not imported

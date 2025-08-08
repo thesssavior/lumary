@@ -58,7 +58,9 @@ export function formatTimeString(time: string | number): string {
     return String(time);
   }
   
-  const parts = time.split(':');
+  // Sanitize to remove any non-digit and non-colon chars (e.g., brackets)
+  const sanitized = time.trim().replace(/[^0-9:]/g, '');
+  const parts = sanitized.split(':');
   
   if (parts.length === 3) {
     // Format: hh:mm:ss
@@ -75,10 +77,10 @@ export function formatTimeString(time: string | number): string {
     }
   } else if (parts.length === 2) {
     // Already in mm:ss format
-    return time;
+    return sanitized;
   }
   
-  return time;
+  return sanitized || String(time);
 }
 
 // Convert time string (hh:mm:ss) to seconds for video seeking
@@ -91,7 +93,9 @@ export function timeStringToSeconds(timeString: string | number): number {
     return 0;
   }
   
-  const parts = timeString.split(':');
+  // Sanitize to remove any non-digit and non-colon chars (e.g., brackets)
+  const sanitized = timeString.trim().replace(/[^0-9:]/g, '');
+  const parts = sanitized.split(':');
   if (parts.length === 3) {
     const hours = parseInt(parts[0], 10) || 0;
     const minutes = parseInt(parts[1], 10) || 0;

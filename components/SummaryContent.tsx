@@ -10,7 +10,8 @@ import Quiz from './yt_videos/Quiz';
 import { VideoPlayer } from './yt_videos/VideoPlayer';
 import { TranscriptPanel } from './yt_videos/TranscriptPanel';
 import Chapters from './yt_videos/Chapters';
-import Summary from './yt_videos/Summary';
+import SummaryDefault from './yt_videos/SummaryDefault';
+import SummarySplit from './yt_videos/SummarySplit';
 import { VideoPlayerProvider } from '@/contexts/VideoPlayerContext';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
@@ -63,12 +64,12 @@ export default function SummaryContent({
       return (
         <VideoPlayerProvider>
           <div className="w-full" style={{ height: 'calc(100vh - 4.2rem)' }}>
-                          <ResizablePanelGroup ref={horizontalPanelGroupRef} direction="horizontal" className="h-full">
+                <ResizablePanelGroup ref={horizontalPanelGroupRef} direction="horizontal" className="h-full">
                 {/* Left Panel */}
                 <ResizablePanel defaultSize={46} minSize={25}>
                   <ResizablePanelGroup ref={verticalPanelGroupRef} direction="vertical" className="h-full">
                     {/* Video Player - Top Left */}
-                    <ResizablePanel defaultSize={54} minSize={25} className="p-1">
+                    <ResizablePanel defaultSize={56} minSize={25} className="p-1 ml-2">
                       <VideoPlayer videoId={summary.video_id} title={summary.name} />
                     </ResizablePanel>
 
@@ -86,7 +87,7 @@ export default function SummaryContent({
                 <ResizableHandle />
 
                 {/* Right Panel - Summary Content */}
-                <ResizablePanel defaultSize={54} minSize={30} className="p-1">
+                <ResizablePanel defaultSize={56} minSize={30} className="p-1">
                 <div className="h-full overflow-hidden">
                   <div className="h-full flex flex-col">
 
@@ -139,10 +140,10 @@ export default function SummaryContent({
                           <TabsContent 
                             value="summary" 
                             forceMount={true} 
-                            className="data-[state=active]:block hidden m-0 h-full mt-[-25%]"
+                            className="data-[state=active]:block hidden m-0 h-full"
                           >
                             <div className="p-4 h-full overflow-auto">
-                              <Summary 
+                              <SummarySplit 
                                 summary={generatedSummary || summary.summary} 
                                 summaryId={summaryId || undefined}
                                 contentLanguage={contentLanguage}
@@ -161,7 +162,7 @@ export default function SummaryContent({
                           <TabsContent 
                             value="mindmap" 
                             forceMount={true} 
-                            className="data-[state=active]:block hidden m-0 h-full mt-[-25%]"
+                            className="data-[state=active]:block hidden m-0 h-full mt-[-20%]"
                           >
                             <div className="p-2 h-full">
                                 <Mindmap 
@@ -179,7 +180,7 @@ export default function SummaryContent({
                           <TabsContent 
                             value="quiz" 
                             forceMount={true} 
-                            className="data-[state=active]:block hidden m-0 h-full mt-[-25%]"
+                            className="data-[state=active]:block hidden m-0 h-full mt-[-20%]"
                           >
                             <div className="p-2 h-full overflow-auto">
                               <Quiz 
@@ -230,17 +231,16 @@ export default function SummaryContent({
           </TabsList>
   
           <TabsContent value="summary" className="mt-4 p-0 border rounded-lg">
-            <Summary 
-              summary={summary.summary} 
-              summaryId={summaryId || undefined}
+            <SummaryDefault
+              summary={summary.summary}
               contentLanguage={contentLanguage}
-              chapters={generatedChapters || summary.chapters}
               title={summary.name}
               videoDescription={summary.description}
               transcript={summary.transcript}
               tokenCount={tokenCount}
               videoId={summary.video_id}
               locale={locale}
+              folderId={folder?.id}
             />
           </TabsContent>
 

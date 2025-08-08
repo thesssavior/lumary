@@ -7,12 +7,12 @@ import frMessages from '@/messages/fr.json';
 import thMessages from '@/messages/th.json';
 
 // Constants
-const model = 'gpt-5-mini'; 
+const model = 'gpt-4.1-mini'; 
 
 // POST request to summarize a video
 export async function POST(req: Request) {
   try {
-    console.log("summaries/summarize route called");
+    console.log("model: ", model);
     // Get videoId, locale, transcriptText, title, and videoDescription from request
     const { 
       videoId, 

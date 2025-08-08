@@ -8,7 +8,7 @@ import * as path from 'path';
 
 // ────────────────────────────────────────────────────────────────
 // constants & helpers
-const MAX_CHUNK_INPUT_TOKENS = 16384;
+const MAX_CHUNK_INPUT_TOKENS = 16384; 
 const model = 'gpt-5-mini';
 
 function chunkTranscript(
