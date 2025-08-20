@@ -235,7 +235,13 @@
       "defaultLayout": "Default",
       "splitLayout": "Study Mode",
       "defaultLayoutDescription": "Great for quick summaries",
-      "splitLayoutDescription": "Great for studying"
+      "splitLayoutDescription": "Great for studying",
+      "themeLabel": "Theme",
+      "selectThemePlaceholder": "Select theme",
+      "lightTheme": "Light",
+      "darkTheme": "Dark",
+      "systemTheme": "System",
+      "themeDescription": "Choose your preferred theme or sync with your system settings."
     },
     "subscriptionSection": {
       "title": "Manage Subscription",

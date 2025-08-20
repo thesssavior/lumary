@@ -321,14 +321,14 @@ const Chapters = ({
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-6 w-6 animate-spin mr-2" />
-        <span className="text-gray-600">Generating chapters...</span>
+        <span className="text-gray-600 dark:text-gray-300">Generating chapters...</span>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="text-red-500 p-4">
+      <div className="text-red-500 dark:text-red-400 p-4">
         {error}
       </div>
     )
@@ -336,18 +336,18 @@ const Chapters = ({
 
   if (parsedChapters.length === 0 && !isGenerating) {
     return (
-      <div className="text-gray-500 p-4">
+      <div className="text-gray-500 dark:text-gray-400 p-4">
         No chapters available
       </div>
     )
   }
 
   return (
-    <div className="prose prose-zinc max-w-none p-2 pr-16 relative h-full">
+    <div className="prose prose-zinc dark:prose-invert max-w-none p-2 pr-16 relative h-full">
       {/* Video Title Heading */}
       {title && (
         <div className="p-2">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{title}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">{title}</h1>
         </div>
       )}
 
@@ -355,15 +355,15 @@ const Chapters = ({
       {parsedChapters.length > 0 && (
         <div className="mb-2 rounded-lg p-2">
           <div 
-            className="flex items-center cursor-pointer p-1 rounded hover:bg-gray-100"
+            className="flex items-center cursor-pointer p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
             onClick={() => setIsTocExpanded(!isTocExpanded)}
           >
-            <h2 className="text-lg font-semibold my-2">{t('tableOfContents')}</h2>
+            <h2 className="text-lg font-semibold my-2 text-gray-900 dark:text-gray-100">{t('tableOfContents')}</h2>
 
             {isTocExpanded ? (
-              <ChevronDown className="h-5 w-5 text-gray-500" />
+              <ChevronDown className="h-5 w-5 text-gray-500 dark:text-gray-400" />
             ) : (
-              <ChevronUp className="h-5 w-5 text-gray-500" />
+              <ChevronUp className="h-5 w-5 text-gray-500 dark:text-gray-400" />
             )}
             
           </div>
@@ -372,11 +372,11 @@ const Chapters = ({
               {parsedChapters.map((chapter, index) => (
                 <div 
                   key={`toc-${index}`}
-                  className={`flex items-center gap-2 text-sm hover:bg-gray-100 p-1 rounded ${videoPlayer ? 'cursor-pointer' : ''}`}
+                  className={`flex items-center gap-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded ${videoPlayer ? 'cursor-pointer' : ''}`}
                   onClick={() => handleChapterClick(chapter.start_time)}
                 >
-                  <span className="text-sm min-w-[20px]">{index + 1}.</span>
-                  <span>
+                  <span className="text-sm min-w-[20px] text-gray-700 dark:text-gray-300">{index + 1}.</span>
+                  <span className="text-gray-900 dark:text-gray-100">
                     {chapter.heading}
                   </span>
                 </div>
@@ -405,17 +405,17 @@ const Chapters = ({
         {parsedChapters.map((chapter, index) => (
             <div 
               key={index} 
-              className={`rounded-lg p-4 bg-white hover:bg-gray-100 ${videoPlayer ? 'cursor-pointer' : ''}`}
+              className={`rounded-lg p-4 bg-background border border-gray-200 dark:border-none text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${videoPlayer ? 'cursor-pointer' : ''}`}
               onClick={() => handleChapterClick(chapter.start_time)}
             >
                 <div className="flex items-start">
                     <div className="flex-1">
                         {/* timestamp and heading */}
                         <div className="flex items-center gap-2 mb-2">
-                            <div className="flex items-center gap-1 font-normal">
+                            <div className="flex items-center gap-1 font-normal text-primary dark:text-primary">
                                 {formatTimeString(chapter.start_time)}
                             </div>
-                            <h3 className="text-lg font-semibold text-gray-900">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                 {chapter.heading}
                             </h3>
                         </div>
@@ -460,7 +460,7 @@ const Chapters = ({
                         )} */}
 
                         {/* summary */}
-                        <p className="text-gray-700 text-sm leading-relaxed">
+                        <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300">
                             {chapter.summary}
                         </p>
                     </div>

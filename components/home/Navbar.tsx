@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { signIn, useSession } from "next-auth/react";
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import Image from 'next/image';
 import { HelpCircle, LogIn, User } from 'lucide-react';
+import { Logo } from '@/components/ui/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useParams } from "next/navigation";
 
@@ -16,10 +16,10 @@ export function Navbar() {
   const locale = params.locale as string;
   return (
     <>
-      <nav className="border-b border-zinc-200 bg-white">
+      <nav className="border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex h-16 items-center justify-between px-4 sm:px-12">
           <Link href={`/${locale}`} className="flex items-center space-x-2 ml-12 sm:ml-6">
-            <Image src="/lumary.png" alt="Lumary Logo" width={100} height={100} />
+            <Logo width={100} height={100} small={true} />
           </Link>
 
           <div className="flex items-center space-x-4">
@@ -50,7 +50,7 @@ export function Navbar() {
             ) : (
               <Button
                 onClick={() => signIn("google")}
-                className="bg-black hover:bg-zinc-800 text-white"
+                className="bg-foreground hover:opacity-90 text-background"
                 title={t('signIn')}
               >
                 <span className="sm:hidden"><LogIn className="h-5 w-5" /></span>

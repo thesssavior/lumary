@@ -10,7 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { SessionProvider } from "next-auth/react";
 import SearchProvider from '@/contexts/SearchContext';
 import GlobalSearchModal from '@/components/GlobalSearchModal';
-import { ClientProvider } from '@/components/providers';
+import { Providers } from '@/components/providers';
 import React, { Suspense } from 'react';
 
 interface ClientLayoutWrapperProps {
@@ -27,7 +27,7 @@ export function ClientLayoutWrapper({
 
   // Default layout for all other pages
   return (
-    <ClientProvider>
+    <Providers>
       <NextIntlClientProvider locale={locale} messages={messages} timeZone="Asia/Seoul">
         <SessionProvider>
           <SearchProvider>
@@ -36,7 +36,7 @@ export function ClientLayoutWrapper({
                 <div>
                   <SidebarLayout>
                     <Suspense fallback={<div className="flex justify-center items-center h-32">Loading...</div>}>
-                      <div className="bg-white min-h-screen">
+                      <div className="bg-background text-foreground min-h-screen">
                         <Navbar />
                         {children}
                       </div>
@@ -51,6 +51,6 @@ export function ClientLayoutWrapper({
         </SessionProvider>
         <Toaster />
       </NextIntlClientProvider>
-    </ClientProvider>
+    </Providers>
   );
 } 

@@ -139,7 +139,7 @@ export function FullTranscriptViewer({ transcript }: { transcript: string }) {
         {finalGroups.map((group, index) => (
           <div 
             key={index} 
-            className={`rounded-lg p-4 bg-white hover:bg-gray-100 ${videoPlayer ? 'cursor-pointer' : ''}`}
+            className={`rounded-lg p-4 bg-card text-card-foreground hover:bg-accent ${videoPlayer ? 'cursor-pointer' : ''}`}
             onClick={() => handleTimestampClick(group.timestamp)}
           >
             {group.timestamp && (
@@ -148,7 +148,7 @@ export function FullTranscriptViewer({ transcript }: { transcript: string }) {
             {/* Indent lines and provide intra-group line spacing */} 
             <div className={"space-y-1"}> 
               {group.lines.map((textLine, lineIndex) => (
-                <p key={lineIndex} className="text-sm text-gray-700 leading-relaxed">{textLine}</p> /* Each line of text */
+                <p key={lineIndex} className="text-sm leading-relaxed text-muted-foreground">{textLine}</p>
               ))}
               {/* If a timestamped group has no lines (e.g. '[00:01:00]' on its own line), 
                   you might want to render a small placeholder or just let it be empty space under the timestamp. 

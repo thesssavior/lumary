@@ -242,7 +242,13 @@
       "defaultLayout": "기본",
       "splitLayout": "공부 모드",
       "defaultLayoutDescription": "빠른 요약에 적합",
-      "splitLayoutDescription": "고밀도 공부에 적합"
+      "splitLayoutDescription": "고밀도 공부에 적합",
+      "themeLabel": "테마",
+      "selectThemePlaceholder": "테마 선택",
+      "lightTheme": "라이트",
+      "darkTheme": "다크",
+      "systemTheme": "시스템",
+      "themeDescription": "원하는 테마를 선택하거나 시스템 설정과 동기화하세요."
     },
     "subscriptionSection": {
       "title": "구독 관리",

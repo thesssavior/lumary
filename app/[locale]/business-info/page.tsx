@@ -4,8 +4,8 @@ import { Building2, Phone, Mail, MapPin, FileText, User, Calendar, ExternalLink 
 export default function BusinessInfoPage() {
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+      <div className="bg-card text-card-foreground rounded-lg shadow-sm border border-border p-8">
+        <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
           {/* <Building2 className="w-8 h-8 text-blue-600" /> */}
           사업자 정보 및 약관
         </h1>
@@ -13,32 +13,32 @@ export default function BusinessInfoPage() {
         <div className="grid md:grid-cols-2 gap-8">
           {/* Company Information */}
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2">
+            <h2 className="text-xl font-semibold border-b border-border pb-2">
               기업 정보
             </h2>
             
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <Building2 className="w-5 h-5 text-gray-500 mt-0.5" />
+                <Building2 className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div>
-                  <dt className="font-medium text-gray-700">상호명</dt>
-                  <dd className="text-gray-600">루마리</dd>
+                  <dt className="font-medium">상호명</dt>
+                  <dd className="text-muted-foreground">루마리</dd>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <User className="w-5 h-5 text-gray-500 mt-0.5" />
+                <User className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div>
-                  <dt className="font-medium text-gray-700">대표자명</dt>
-                  <dd className="text-gray-600">조승주</dd>
+                  <dt className="font-medium">대표자명</dt>
+                  <dd className="text-muted-foreground">조승주</dd>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <FileText className="w-5 h-5 text-gray-500 mt-0.5" />
+                <FileText className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div>
-                  <dt className="font-medium text-gray-700">사업자등록번호</dt>
-                  <dd className="text-gray-600">411-17-64537</dd>
+                  <dt className="font-medium">사업자등록번호</dt>
+                  <dd className="text-muted-foreground">411-17-64537</dd>
                 </div>
               </div>
             </div>
@@ -46,32 +46,32 @@ export default function BusinessInfoPage() {
 
           {/* Contact Information */}
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2">
+            <h2 className="text-xl font-semibold border-b border-border pb-2">
               연락처 정보
             </h2>
             
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-gray-500 mt-0.5" />
+                <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div>
-                  <dt className="font-medium text-gray-700">사업장 주소</dt>
-                  <dd className="text-gray-600">한양대학로 55 한양대학교 ERICA 창업보육센터 내 219-2호 날리지 랩(Knowledge Lab)</dd>
+                  <dt className="font-medium">사업장 주소</dt>
+                  <dd className="text-muted-foreground">한양대학로 55 한양대학교 ERICA 창업보육센터 내 219-2호 날리지 랩(Knowledge Lab)</dd>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <Phone className="w-5 h-5 text-gray-500 mt-0.5" />
+                <Phone className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div>
-                  <dt className="font-medium text-gray-700">전화번호</dt>
-                  <dd className="text-gray-600">010-4842-8226</dd>
+                  <dt className="font-medium">전화번호</dt>
+                  <dd className="text-muted-foreground">010-4842-8226</dd>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <Mail className="w-5 h-5 text-gray-500 mt-0.5" />
+                <Mail className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div>
-                  <dt className="font-medium text-gray-700">이메일</dt>
-                  <dd className="text-gray-600">ssaviormessiah@gmail.com</dd>
+                  <dt className="font-medium">이메일</dt>
+                  <dd className="text-muted-foreground">ssaviormessiah@gmail.com</dd>
                 </div>
               </div>
             </div>
@@ -79,99 +79,99 @@ export default function BusinessInfoPage() {
         </div>
 
         {/* Additional Business Information */}
-        <div className="mt-8 pt-8 border-t border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+        <div className="mt-8 pt-8 border-t border-border">
+          <h2 className="text-xl font-semibold mb-4">
             추가 사업자 정보
           </h2>
           
-          <div className="grid md:grid-cols-2 gap-6 text-sm text-gray-600">
+          <div className="grid md:grid-cols-2 gap-6 text-sm text-muted-foreground">
             <div>
-              <dt className="font-medium text-gray-700 mb-1">업종</dt>
+              <dt className="font-medium mb-1">업종</dt>
               <dd>정보통신업</dd>
             </div>
             
             <div>
-              <dt className="font-medium text-gray-700 mb-1">개업일자</dt>
+              <dt className="font-medium mb-1">개업일자</dt>
               <dd>2025-04-21</dd>
             </div>
             
             <div>
-              <dt className="font-medium text-gray-700 mb-1">사업자상태</dt>
+              <dt className="font-medium mb-1">사업자상태</dt>
               <dd>사업중</dd>
             </div>
             
             <div>
-              <dt className="font-medium text-gray-700 mb-1">과세유형</dt>
+              <dt className="font-medium mb-1">과세유형</dt>
               <dd>일반과세</dd>
             </div>
           </div>
         </div>
 
         {/* Legal Notice */}
-        <div className="mt-8 pt-8 border-t border-gray-200">
-          <div className="bg-blue-50 rounded-lg p-4">
-            <p className="text-sm text-blue-800">
+        <div className="mt-8 pt-8 border-t border-border">
+          <div className="bg-accent rounded-lg p-4">
+            <p className="text-sm">
               <strong>법적 고지:</strong> ※ 이 정보는 전자상거래법 등 관련 법령에 따라 고지됩니다.
             </p>
           </div>
         </div>
 
         {/* Terms of Service */}
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+        <div className="mt-12 pt-8 border-t border-border">
+          <h1 className="text-2xl font-bold mb-6 flex items-center gap-3">
             이용약관 (Terms of Service)
           </h1>
 
-          <div className="flex items-center gap-2 text-gray-600 mb-6">
+          <div className="flex items-center gap-2 text-muted-foreground mb-6">
             <Calendar className="w-4 h-4" />
             <span className="text-sm">시행일자: 2025-06-19</span>
           </div>
 
-          <div className="prose prose-gray max-w-none">
+          <div className="prose prose-zinc max-w-none">
             <div className="space-y-6">
               <section>
-                <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b border-gray-200 pb-2">제1조 (목적)</h3>
-                <p className="text-sm text-gray-700">
+                <h3 className="text-lg font-semibold mb-3 border-b border-border pb-2">제1조 (목적)</h3>
+                <p className="text-sm text-muted-foreground">
                   이 약관은 Lumary(이하 “회사”)가 제공하는 웹 기반 요약 서비스(이하 “서비스”)의 이용조건 및 절차, 회사와 이용자의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.
                 </p>
               </section>
 
               <section>
-                <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b border-gray-200 pb-2">제2조 (정의)</h3>
-                <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                <h3 className="text-lg font-semibold mb-3 border-b border-border pb-2">제2조 (정의)</h3>
+                <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
                   <li>“회원”이란 회사와 서비스 이용계약을 체결하고 계정을 부여받은 자를 말합니다.</li>
                   <li>“콘텐츠”란 서비스 내에서 제공되거나 이용자가 업로드하는 모든 자료를 말합니다.</li>
                 </ul>
               </section>
 
               <section>
-                <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b border-gray-200 pb-2">제3조 (약관의 효력과 변경)</h3>
-                <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                <h3 className="text-lg font-semibold mb-3 border-b border-border pb-2">제3조 (약관의 효력과 변경)</h3>
+                <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
                   <li>본 약관은 서비스 화면에 게시하거나 기타 방법으로 공지함으로써 효력이 발생합니다.</li>
                   <li>회사는 필요 시 관련 법령을 위반하지 않는 범위에서 약관을 변경할 수 있습니다.</li>
                 </ul>
               </section>
 
               <section>
-                <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b border-gray-200 pb-2">제4조 (이용계약의 성립)</h3>
-                <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                <h3 className="text-lg font-semibold mb-3 border-b border-border pb-2">제4조 (이용계약의 성립)</h3>
+                <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
                   <li>회원가입 시 본 약관과 개인정보처리방침에 동의함으로써 이용계약이 성립됩니다.</li>
                   <li>회사는 허위 정보 기재, 법령 위반 등의 사유가 있는 경우 서비스 제공을 거부할 수 있습니다.</li>
                 </ul>
               </section>
 
               <section>
-                <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b border-gray-200 pb-2">제5조 (서비스의 제공 및 변경)</h3>
-                <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                <h3 className="text-lg font-semibold mb-3 border-b border-border pb-2">제5조 (서비스의 제공 및 변경)</h3>
+                <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
                   <li>회사는 24시간, 연중무휴 서비스를 원칙으로 합니다.</li>
                   <li>서비스 내용이 변경되는 경우 사전 공지합니다.</li>
                 </ul>
               </section>
 
               <section>
-                <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b border-gray-200 pb-2">제6조 (서비스 이용 제한)</h3>
-                <p className="text-sm text-gray-700 mb-2">회사는 다음 사유 발생 시 서비스 이용을 제한할 수 있습니다.</p>
-                <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                <h3 className="text-lg font-semibold mb-3 border-b border-border pb-2">제6조 (서비스 이용 제한)</h3>
+                <p className="text-sm text-muted-foreground mb-2">회사는 다음 사유 발생 시 서비스 이용을 제한할 수 있습니다.</p>
+                <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
                   <li>법령 위반 또는 공서양속 저해</li>
                   <li>서비스의 정상적 운영 방해</li>
                   <li>타인의 권리 침해</li>
@@ -179,8 +179,8 @@ export default function BusinessInfoPage() {
               </section>
 
               <section>
-                <h3 className="text-lg font-semibold text-gray-800 mb-3 border-b border-gray-200 pb-2">제7조 (이용자의 의무)</h3>
-                <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                <h3 className="text-lg font-semibold mb-3 border-b border-border pb-2">제7조 (이용자의 의무)</h3>
+                <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
                   <li>회원은 본 약관 및 관계법령을 준수해야 합니다.</li>
                   <li>회원은 타인의 정보를 무단으로 사용해서는 안 됩니다.</li>
                 </ul>

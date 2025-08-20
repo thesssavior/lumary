@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
+import { ThemeProvider } from "next-themes";
 
 interface ClientProviderProps {
   children: ReactNode;
@@ -29,7 +30,14 @@ export function ClientProvider({ children }: ClientProviderProps) {
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ClientProvider>
-      {children}
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        {children}
+      </ThemeProvider>
     </ClientProvider>
   );
 } 

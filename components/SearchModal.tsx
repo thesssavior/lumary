@@ -142,21 +142,21 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center pt-20">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col overflow-hidden">
+      <div className="bg-card text-card-foreground rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-3 p-4 border-b">
-          <Search className="w-5 h-5 text-gray-400" />
+          <Search className="w-5 h-5 text-muted-foreground" />
           <input
             type="text"
             placeholder={t('SearchModal.placeholder', { defaultValue: 'Search summaries and folders...' })}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 outline-none text-lg"
+            className="flex-1 outline-none text-lg bg-transparent"
             autoFocus
           />
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-1 hover:bg-accent rounded-full transition-colors"
             title="Close search"
           >
             <X className="w-5 h-5 text-gray-500" />
@@ -172,15 +172,15 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           )}
 
           {isLoading && (
-            <div className="p-8 text-center text-gray-500">
-              <div className="animate-spin w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full mx-auto mb-3"></div>
+            <div className="p-8 text-center text-muted-foreground">
+              <div className="animate-spin w-6 h-6 border-2 border-border border-t-foreground rounded-full mx-auto mb-3"></div>
               {t('SearchModal.searching', { defaultValue: 'Searching...' })}
             </div>
           )}
 
           {showNoResults && (
-            <div className="p-8 text-center text-gray-500">
-              <Search className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <div className="p-8 text-center text-muted-foreground">
+              <Search className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
               <p className="text-lg font-medium mb-1">
                 {t('SearchModal.noResults', { defaultValue: 'No results found' })}
               </p>
@@ -195,7 +195,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
               {/* Folders */}
               {results.folders.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-600 mb-3 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
                     <Folder className="w-4 h-4" />
                     {t('SearchModal.folders', { defaultValue: 'Folders' })} ({results.folders.length})
                   </h3>
@@ -204,17 +204,17 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       <div
                         key={folder.id}
                         onClick={handleResultClick}
-                        className="p-3 hover:bg-gray-50 rounded-lg cursor-pointer border border-transparent hover:border-gray-200 transition-colors"
+                        className="p-3 hover:bg-accent rounded-lg cursor-pointer border border-transparent hover:border-border transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-blue-50 rounded-lg">
-                            <Folder className="w-4 h-4 text-blue-600" />
+                          <div className="p-2 bg-accent rounded-lg">
+                            <Folder className="w-4 h-4" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 truncate">
+                            <p className="font-medium truncate">
                               {folder.name}
                             </p>
-                            <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                               <Clock className="w-3 h-3" />
                               {new Date(folder.created_at).toLocaleDateString()}
                             </div>
@@ -229,7 +229,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
               {/* Summaries */}
               {results.summaries.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-600 mb-3 flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
                     <FileText className="w-4 h-4" />
                     {t('SearchModal.summaries', { defaultValue: 'Summaries' })} ({results.summaries.length})
                   </h3>
@@ -239,22 +239,22 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         key={summary.id}
                         href={`/${locale}/summaries/${summary.id}`}
                         onClick={handleResultClick}
-                        className="block p-3 hover:bg-gray-50 rounded-lg border border-transparent hover:border-gray-200 transition-colors"
+                        className="block p-3 hover:bg-accent rounded-lg border border-transparent hover:border-border transition-colors"
                       >
                         <div className="flex items-start gap-3">
-                          <div className="p-2 bg-green-50 rounded-lg flex-shrink-0 mt-1">
-                            <FileText className="w-4 h-4 text-green-600" />
+                          <div className="p-2 bg-accent rounded-lg flex-shrink-0 mt-1">
+                            <FileText className="w-4 h-4" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 truncate mb-1">
+                            <p className="font-medium truncate mb-1">
                               {summary.name || summary.video_id}
                             </p>
                             {summary.description && (
-                              <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                              <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
                                 {summary.description}
                               </p>
                             )}
-                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Clock className="w-3 h-3" />
                               {new Date(summary.created_at).toLocaleDateString()}
                             </div>
@@ -270,8 +270,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
           {/* Empty state when no query */}
           {query.length === 0 && (
-            <div className="p-8 text-center text-gray-500">
-              <Search className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <div className="p-8 text-center text-muted-foreground">
+              <Search className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
               <p className="text-lg font-medium mb-1">
                 {t('SearchModal.startTyping', { defaultValue: 'Start typing to search' })}
               </p>
@@ -283,16 +283,16 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="border-t bg-gray-50 px-4 py-3 text-xs text-gray-500 text-center">
+        <div className="border-t bg-muted px-4 py-3 text-xs text-muted-foreground text-center">
           <div className="flex items-center justify-center gap-4">
             <span>{t('SearchModal.tips', { defaultValue: 'Tip: Press Escape to close' })}</span>
             <span className="text-gray-400">•</span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-gray-600 font-mono text-xs">
+              <kbd className="px-1.5 py-0.5 bg-accent rounded text-foreground/80 font-mono text-xs">
                 {isMac ? '⌘' : 'Ctrl'}
               </kbd>
               <span>+</span>
-              <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-gray-600 font-mono text-xs">
+              <kbd className="px-1.5 py-0.5 bg-accent rounded text-foreground/80 font-mono text-xs">
                 K
               </kbd>
               <span className="ml-1">to search</span>

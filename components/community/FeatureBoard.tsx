@@ -84,13 +84,13 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
   const getStatusBadge = (status: Status) => {
     switch (status) {
       case "planned":
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-50">{t('statusPlanned')}</Badge>;
+        return <Badge variant="outline" className="bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10">{t('statusPlanned')}</Badge>;
       case "in-progress":
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 hover:bg-yellow-50">{t('statusInProgress')}</Badge>;
+        return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-500/10">{t('statusInProgress')}</Badge>;
       case "shipped":
-        return <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-50">{t('statusShipped')}</Badge>;
+        return <Badge variant="outline" className="bg-green-500/10 text-green-700 dark:text-green-300 hover:bg-green-500/10">{t('statusShipped')}</Badge>;
       case "considering":
-        return <Badge variant="outline" className="bg-gray-50 text-gray-700 hover:bg-gray-50">{t('statusConsidering')}</Badge>;
+        return <Badge variant="outline" className="bg-muted text-muted-foreground hover:bg-muted">{t('statusConsidering')}</Badge>;
       default:
         return null;
     }
@@ -100,15 +100,15 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
     <Card className="p-4 mb-4 notion-card">
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="font-medium text-gray-900">{feature.title}</h3>
-          <p className="text-sm text-gray-600 mt-1">{feature.description}</p>
+          <h3 className="font-medium text-foreground">{feature.title}</h3>
+          <p className="text-sm text-muted-foreground mt-1">{feature.description}</p>
           <div className="mt-3 flex items-center gap-2">
             {getStatusBadge(feature.status)}
             {feature.date && (feature.status === "planned" || feature.status === "in-progress") && (
-                <span className="text-xs text-gray-500">{t('expectedDate', { date: feature.date })}</span>
+                <span className="text-xs text-muted-foreground">{t('expectedDate', { date: feature.date })}</span>
             )}
             {feature.date && feature.status === "shipped" && (
-                <span className="text-xs text-gray-500">{t('shippedDate', { date: feature.date })}</span>
+                <span className="text-xs text-muted-foreground">{t('shippedDate', { date: feature.date })}</span>
             )}
           </div>
         </div>
@@ -117,10 +117,10 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
           disabled={hasVoted || isLoading}
           className={`flex flex-col items-center justify-center p-2 rounded-md transition-colors ${
             hasVoted 
-              ? 'bg-green-100 text-green-700 cursor-not-allowed' 
+              ? 'bg-green-500/10 text-green-700 dark:text-green-300 cursor-not-allowed' 
               : isLoading 
-              ? 'bg-gray-100 text-gray-500 cursor-wait' 
-              : 'hover:bg-gray-100 text-gray-500'
+              ? 'bg-muted text-muted-foreground cursor-wait' 
+              : 'hover:bg-accent text-muted-foreground'
           }`}
         >
           <svg
@@ -133,7 +133,7 @@ const FeatureCard = ({ feature }: { feature: Feature }) => {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-gray-500"
+            className="text-muted-foreground"
           >
             <path d="m19 14-7-7-7 7" />
           </svg>
@@ -178,16 +178,16 @@ const FeatureBoard = () => {
   }
 
   if (error) {
-    return <div className="text-red-500">{t('errors.fetchFeaturesError', { error: error })}</div>;
+    return <div className="text-destructive">{t('errors.fetchFeaturesError', { error: error })}</div>;
   }
 
   return (
     <div className="space-y-6 mt-8">
-      <h2 className="text-xl font-semibold text-gray-900">{t('productRoadmapTitle')}</h2>
+      <h2 className="text-xl font-semibold text-foreground">{t('productRoadmapTitle')}</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="space-y-4">
-          <h3 className="font-medium text-base text-gray-700 border-b pb-2 border-gray-200">{t('columnPlanned')}</h3>
+          <h3 className="font-medium text-base text-foreground border-b pb-2 border-border">{t('columnPlanned')}</h3>
           {features
             .filter(feature => feature.status === "planned")
             .map(feature => (
@@ -196,7 +196,7 @@ const FeatureBoard = () => {
         </div>
         
         <div className="space-y-4">
-          <h3 className="font-medium text-base text-gray-700 border-b pb-2 border-gray-200">{t('columnInProgress')}</h3>
+          <h3 className="font-medium text-base text-foreground border-b pb-2 border-border">{t('columnInProgress')}</h3>
           {features
             .filter(feature => feature.status === "in-progress")
             .map(feature => (
@@ -205,7 +205,7 @@ const FeatureBoard = () => {
         </div>
         
         <div className="space-y-4">
-          <h3 className="font-medium text-base text-gray-700 border-b pb-2 border-gray-200">{t('columnShipped')}</h3>
+          <h3 className="font-medium text-base text-foreground border-b pb-2 border-border">{t('columnShipped')}</h3>
           {features
             .filter(feature => feature.status === "shipped")
             .map(feature => (
@@ -214,7 +214,7 @@ const FeatureBoard = () => {
         </div>
         
         <div className="space-y-4">
-          <h3 className="font-medium text-base text-gray-700 border-b pb-2 border-gray-200">{t('columnConsidering')}</h3>
+          <h3 className="font-medium text-base text-foreground border-b pb-2 border-border">{t('columnConsidering')}</h3>
           {features
             .filter(feature => feature.status === "considering")
             .map(feature => (

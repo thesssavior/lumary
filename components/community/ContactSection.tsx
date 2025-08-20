@@ -55,18 +55,18 @@ const ContactSection = () => {
       {/* FAQ Section */}
       <div className="space-y-6">
         <div className="flex items-center space-x-2">
-          <HelpCircle className="h-6 w-6 text-gray-700" />
-          <h2 className="text-xl font-semibold text-gray-900">{t('faq.title')}</h2>
+          <HelpCircle className="h-6 w-6 text-muted-foreground" />
+          <h2 className="text-xl font-semibold text-foreground">{t('faq.title')}</h2>
         </div>
         
         <Card className="p-6 notion-card">
           <Accordion type="single" collapsible className="w-full">
             {t.raw('faq.questions').map((item: any, index: number) => (
               <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger className="text-left text-gray-800 hover:text-gray-900">
+                <AccordionTrigger className="text-left text-foreground hover:text-foreground">
                   {item.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-gray-600 whitespace-pre-line">
+                <AccordionContent className="text-muted-foreground whitespace-pre-line">
                   {item.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -77,17 +77,17 @@ const ContactSection = () => {
       
       <div className="space-y-4">
         <div>
-            <h2 className="text-xl font-semibold text-gray-900 my-2">{t('contactSection.directContactTitle')}</h2>
-            <p className="text-gray-600">{t('contactSection.directContactDescription')}</p>
+            <h2 className="text-xl font-semibold text-foreground my-2">{t('contactSection.directContactTitle')}</h2>
+            <p className="text-muted-foreground">{t('contactSection.directContactDescription')}</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:w-3/4">
             <Card className="p-6 notion-card">
                 <div className="flex items-center space-x-3">
-                    <MessageCircle className="h-5 w-5 text-gray-700" />
+                    <MessageCircle className="h-5 w-5 text-muted-foreground" />
                     <div className="flex items-center space-x-4">
                         <div>
-                            <h3 className="text-sm font-medium text-gray-700">{t('contactSection.kakaoCardTitle')}</h3>
-                            <a href="https://open.kakao.com/o/sip4wCwh" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            <h3 className="text-sm font-medium text-muted-foreground">{t('contactSection.kakaoCardTitle')}</h3>
+                            <a href="https://open.kakao.com/o/sip4wCwh" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
                             {t('contactSection.kakaoHandle')}
                             </a>
                         </div>
@@ -98,10 +98,10 @@ const ContactSection = () => {
 
             <Card className="p-6 notion-card">
                 <div className="flex items-center space-x-3 mt-2">
-                    <Mail className="h-5 w-5 text-gray-700" />
+                    <Mail className="h-5 w-5 text-muted-foreground" />
                     <div>
-                        <h3 className="text-sm font-medium text-gray-700">{t('contactSection.emailCardTitle')}</h3>
-                        <a href="mailto:ssaviormessiah@gmail.com" className="text-blue-600 hover:underline">
+                        <h3 className="text-sm font-medium text-muted-foreground">{t('contactSection.emailCardTitle')}</h3>
+                        <a href="mailto:ssaviormessiah@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline">
                         {t('contactSection.emailAddress')}
                         </a>
                     </div>
@@ -112,7 +112,7 @@ const ContactSection = () => {
       </div>
 
       <div className="space-y-6 lg:w-3/5">
-        <h2 className="text-xl font-semibold text-gray-900">{t('contactSection.contactFeedbackTitle')}</h2>
+        <h2 className="text-xl font-semibold text-foreground">{t('contactSection.contactFeedbackTitle')}</h2>
         
         <Card className="p-6 notion-card">
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -120,10 +120,10 @@ const ContactSection = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-gray-700">{t('contactSection.emailLabel')}</label>
+                  <label htmlFor="email" className="text-sm font-medium text-muted-foreground">{t('contactSection.emailLabel')}</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <Mail className="h-4 w-4 text-gray-400" />
+                      <Mail className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <Input
                       id="email"
@@ -139,10 +139,10 @@ const ContactSection = () => {
               </div>
               
               <div className="space-y-2">
-                <label htmlFor="message" className="text-sm font-medium text-gray-700">{t('contactSection.messageLabel')}</label>
+                <label htmlFor="message" className="text-sm font-medium text-muted-foreground">{t('contactSection.messageLabel')}</label>
                 <div className="relative">
                   <div className="absolute top-3 left-3 pointer-events-none">
-                    <MessageCircle className="h-4 w-4 text-gray-400" />
+                    <MessageCircle className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <Textarea
                     id="message"
@@ -157,10 +157,10 @@ const ContactSection = () => {
             </div>
 
             {success && (
-                <p className="text-sm text-green-600">{t('contactSection.toastMessageSentDescription')}</p>
+                <p className="text-sm text-green-600 dark:text-green-400">{t('contactSection.toastMessageSentDescription')}</p>
             )}
             {error && (
-                <p className="text-sm text-red-600">{error}</p>
+                <p className="text-sm text-destructive">{error}</p>
             )}
 
             <div className="flex lg:justify-end">

@@ -74,7 +74,7 @@ export function LanguageSwitcher() {
         open={isOpen}
         onOpenChange={setIsOpen}
       >
-        <SelectTrigger className="w-120 border-zinc-200 text-zinc-600 hover:bg-zinc-50">
+        <SelectTrigger className="w-120 border-border text-muted-foreground hover:bg-accent">
           <div className="flex items-center space-x-2">
             <Globe size={16} />
             <span className="mr-2">{selectedLanguage?.nativeName || 'Language'}</span>

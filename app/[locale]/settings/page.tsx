@@ -7,7 +7,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Crown, Layout, Grid } from 'lucide-react';
+import { Loader2, Crown, Layout, Grid, Moon, Sun, Monitor } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { useFolder } from '@/components/home/SidebarLayout';
 import { getLayoutPreference, setLayoutPreference } from '@/lib/utils';
 
@@ -20,6 +21,7 @@ const SettingsPage = () => {
   const [isDeleting, setIsDeleting] = useState(false); // For delete account loading state
   const [layoutMode, setLayoutMode] = useState<'default' | 'split'>('default');
   const { openSubscriptionModal } = useFolder();
+  const { theme, setTheme } = useTheme();
 
   // Load layout preference on component mount
   useEffect(() => {
@@ -94,13 +96,13 @@ const SettingsPage = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-gray-700">{t('accountSection.nameLabel')}</label>
-            <p className="text-gray-900 break-all">{session.user?.name || t('accountSection.noName')}</p>
+            <label className="text-sm font-medium text-muted-foreground">{t('accountSection.nameLabel')}</label>
+            <p className="text-foreground break-all">{session.user?.name || t('accountSection.noName')}</p>
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700">{t('accountSection.emailLabel')}</label>
-            <p className="text-gray-900 break-all">{session.user?.email || t('accountSection.noEmail')}</p>
+            <label className="text-sm font-medium text-muted-foreground">{t('accountSection.emailLabel')}</label>
+            <p className="text-foreground break-all">{session.user?.email || t('accountSection.noEmail')}</p>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col sm:flex-row gap-2">
@@ -127,7 +129,7 @@ const SettingsPage = () => {
         <CardContent className="space-y-6">
           {/* Language Preference */}
           <div>
-            <label htmlFor="language-select" className="text-sm font-medium text-gray-700">
+            <label htmlFor="language-select" className="text-sm font-medium text-muted-foreground">
               {t('preferencesSection.languageLabel')}
             </label>
             <Select value={locale} onValueChange={handleLanguageChange} disabled={isPending}>
@@ -144,7 +146,7 @@ const SettingsPage = () => {
 
           {/* Layout Preference */}
           <div>
-            <label htmlFor="layout-select" className="text-sm font-medium text-gray-700">
+            <label htmlFor="layout-select" className="text-sm font-medium text-muted-foreground">
               {t('preferencesSection.modeLabel')}
             </label>
             <Select value={layoutMode} onValueChange={handleLayoutChange}>
@@ -166,11 +168,46 @@ const SettingsPage = () => {
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-500 mt-1 p-2">
+            <p className="text-xs text-muted-foreground mt-1 p-2">
               {layoutMode === 'split' 
                 ? t('preferencesSection.splitLayoutDescription') 
                 : t('preferencesSection.defaultLayoutDescription')
               }
+            </p>
+          </div>
+
+          {/* Theme Preference */}
+          <div>
+            <label htmlFor="theme-select" className="text-sm font-medium text-muted-foreground">
+              {t('preferencesSection.themeLabel', { defaultValue: 'Theme' })}
+            </label>
+            <Select value={theme} onValueChange={setTheme}>
+              <SelectTrigger id="theme-select" className="w-full sm:w-[180px] mt-1">
+                <SelectValue placeholder={t('preferencesSection.selectThemePlaceholder', { defaultValue: 'Select theme' })} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="light">
+                  <div className="flex items-center gap-2">
+                    <Sun className="h-4 w-4" />
+                    {t('preferencesSection.lightTheme', { defaultValue: 'Light' })}
+                  </div>
+                </SelectItem>
+                <SelectItem value="dark">
+                  <div className="flex items-center gap-2">
+                    <Moon className="h-4 w-4" />
+                    {t('preferencesSection.darkTheme', { defaultValue: 'Dark' })}
+                  </div>
+                </SelectItem>
+                <SelectItem value="system">
+                  <div className="flex items-center gap-2">
+                    <Monitor className="h-4 w-4" />
+                    {t('preferencesSection.systemTheme', { defaultValue: 'System' })}
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-1 p-2">
+              {t('preferencesSection.themeDescription', { defaultValue: 'Choose your preferred theme or sync with your system settings.' })}
             </p>
           </div>
         </CardContent>

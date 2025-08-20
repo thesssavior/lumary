@@ -7,8 +7,8 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { signIn, signOut } from 'next-auth/react';
-import Image from 'next/image';
 import { useSession } from "next-auth/react";
+import { Logo } from '@/components/ui/logo';
 import { useFolder, FolderContext } from '@/components/home/SidebarLayout';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from '@/components/ui/button';
@@ -296,20 +296,20 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   // UI: show login prompt if not signed in
   if (isSignedIn === false) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-[#f8fafc] p-6 text-center space-y-4">
-        <User className="w-12 h-12 text-gray-400" />
-        <p className="text-gray-700 text-lg font-medium">
+      <div className="flex flex-col items-center justify-center h-full bg-background p-6 text-center space-y-4">
+        <User className="w-12 h-12 text-muted-foreground" />
+        <p className="text-foreground text-lg font-medium">
           {t('signInDescription') || '로그인 후 이용 가능합니다'}
         </p>
         {inAppBrowser ? (
-          <div className="bg-red-100 text-red-700 p-4 rounded-md text-base font-semibold">
+          <div className="bg-destructive/10 text-destructive p-4 rounded-md text-base font-semibold">
             Google 로그인이 차단되었습니다. 크롬, 사파리 등 기본 브라우저로 열어주세요.
           </div>
         ) : (
           <div className="space-y-2">
             <button
               onClick={() => signIn('google')}
-              className="w-full px-4 py-2 bg-black hover:bg-zinc-800 text-white rounded-md"
+              className="w-full px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md"
             >
               {t('signIn') || '로그인하기'}
             </button>
@@ -320,7 +320,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                   password: "test123",
                   callbackUrl: "/" 
                 })}
-                className="w-full px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md text-sm"
+                className="w-full px-4 py-2 bg-orange-600 hover:bg-orange-700 text-primary-foreground rounded-md text-sm"
               >
                 🧪 Test Account
               </button>
@@ -332,12 +332,12 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc]">
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
       <div className="flex flex-col items-center justify-center px-4 py-[18px] border-b">
-        <span className="w-full flex justify-center">
-          <Link href={`/${locale}`} className="flex items-center w-full justify-center">
-            <Image src="/lumary.png" alt="Lumary Logo" width={110} height={110} className="w-full h-auto max-w-[100px]" />
+        <span className="w-full flex justify-start">
+          <Link href={`/${locale}`} className="flex items-center w-full justify-start">
+            <Logo width={110} height={110} className="w-full h-auto max-w-[100px]" />
           </Link>
         </span>
       </div>
@@ -347,7 +347,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
         <ul className="space-y-1">
           <li>
             <Link href={`/${locale}`}>
-              <div className="flex items-center gap-2 px-2 py-2 rounded hover:bg-gray-100 font-medium">
+              <div className="flex items-center gap-2 px-2 py-2 rounded hover:bg-accent font-medium">
                 <Home className="w-4 h-4" /> {t('Sidebar.home', { defaultValue: '홈' })}
               </div>
             </Link>
@@ -355,13 +355,13 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
           <li>
             <button 
               onClick={openSearchModal}
-              className="flex items-center justify-between w-full px-2 py-2 rounded hover:bg-gray-100 font-medium text-left"
+              className="flex items-center justify-between w-full px-2 py-2 rounded hover:bg-accent font-medium text-left"
               title="Search (Ctrl+K)"
             >
               <div className="flex items-center gap-2">
                 <Search className="w-4 h-4" /> {t('Sidebar.search', { defaultValue: '검색' })}
               </div>
-              <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded font-mono">
+              <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono">
                 {isMac ? '⌘K' : 'Ctrl+K'}
               </span>
             </button>
@@ -369,7 +369,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
           {/* Recent */}
           <li>
             <button
-              className="flex items-center gap-2 w-full px-2 py-2 rounded hover:bg-gray-100 font-medium"
+              className="flex items-center gap-2 w-full px-2 py-2 rounded hover:bg-accent font-medium"
               onClick={() => setRecentOpen(o => !o)}
             >
               {recentOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
@@ -377,10 +377,10 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
             </button>
             {recentOpen && (
               <ul className="ml-6 mt-1 space-y-1">
-                {recents.length === 0 && <li className="text-xs text-gray-400">최근 항목 없음</li>}
+                {recents.length === 0 && <li className="text-xs text-muted-foreground">최근 항목 없음</li>}
                 {recents.map(r => (
                   <li key={r.id}>
-                    <Link href={`/${locale}/summaries/${r.id}`} className="truncate text-sm text-gray-700 hover:underline cursor-pointer block">
+                    <Link href={`/${locale}/summaries/${r.id}`} className="truncate text-sm text-foreground hover:underline cursor-pointer block">
                       {r.name || r.video_id}
                     </Link>
                   </li>
@@ -390,7 +390,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
           </li>
           {/* My Knowledge */}
           <li>
-            <div className="flex items-center gap-2 w-full px-2 py-2 rounded hover:bg-gray-100 font-medium">
+            <div className="flex items-center gap-2 w-full px-2 py-2 rounded hover:bg-accent font-medium">
               <button
                 className="flex items-center gap-2 w-full"
                 onClick={() => setKnowledgeOpen(o => !o)}
@@ -400,7 +400,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                 {t('Sidebar.myKnowledge', { defaultValue: '내 지식' })}
               </button>
               <button
-                className="ml-1 text-xs text-gray-400 hover:text-black"
+                className="ml-1 text-xs text-muted-foreground hover:text-foreground"
                 title="새 폴더 만들기"
                 onClick={() => setShowNewFolderInput(true)}
               >
@@ -423,7 +423,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                                     <div 
                                       ref={folderDropProvided.innerRef}
                                       {...folderDropProvided.droppableProps}
-                                      className={`flex items-center gap-1 font-semibold text-gray-800 group ${activeFolder?.id===f.id || folderDropSnapshot.isDraggingOver ? 'bg-gray-200 rounded px-1' : 'px-1'}`}
+                                      className={`flex items-center gap-1 font-semibold text-foreground group ${activeFolder?.id===f.id || folderDropSnapshot.isDraggingOver ? 'bg-accent rounded px-1' : 'px-1'}`}
                                       onClick={() => setActiveFolder(f)}
                                       onMouseEnter={() => setHoveredFolderId(f.id)}
                                       onMouseLeave={() => setHoveredFolderId(null)}
@@ -441,14 +441,14 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                                         <div className="flex items-center ml-auto">
                                           <button
                                             onClick={e => { e.stopPropagation(); handleRenameFolder(f.id); }}
-                                            className="p-1 text-gray-500 hover:text-gray-700"
+                                            className="p-1 text-muted-foreground hover:text-foreground"
                                             title={t('Sidebar.renameFolder') || 'Rename folder'}
                                           >
                                             <Pencil className="w-3.5 h-3.5" />
                                           </button>
                                           <button
                                             onClick={e => { e.stopPropagation(); handleDeleteFolder(f.id); }}
-                                            className="p-1 text-gray-500 hover:text-red-500"
+                                            className="p-1 text-muted-foreground hover:text-destructive"
                                             title={t('Sidebar.deleteFolder') || 'Delete folder'}
                                           >
                                             <Trash2 className="w-3.5 h-3.5" />
@@ -461,9 +461,9 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                                     {folderOpen[f.id] && (
                                       <div className="ml-5 mt-1 space-y-1">
                                         {loadingSummaries[f.id] ? (
-                                          <div className="text-xs text-gray-400">{t('Sidebar.loadingSummaries') || 'Loading summaries...'}</div>
+                                          <div className="text-xs text-muted-foreground">{t('Sidebar.loadingSummaries') || 'Loading summaries...'}</div>
                                         ) : folderSummaries[f.id]?.length === 0 ? (
-                                          <div className="text-xs text-gray-400">{t('Sidebar.noSummaries') || 'No summaries'}</div>
+                                          <div className="text-xs text-muted-foreground">{t('Sidebar.noSummaries') || 'No summaries'}</div>
                                         ) : (
                                           folderSummaries[f.id].map((s, sIdx) => (
                                             <Draggable key={s.id} draggableId={s.id} index={sIdx}>
@@ -472,7 +472,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                                                   ref={summaryDragProvided.innerRef} 
                                                   {...summaryDragProvided.draggableProps} 
                                                   {...summaryDragProvided.dragHandleProps} 
-                                                  className="flex items-center justify-between text-sm text-gray-700 hover:bg-gray-100 rounded group"
+                                                  className="flex items-center justify-between text-sm text-foreground hover:bg-accent rounded group"
                                                   onMouseEnter={() => setHoveredSummaryId(s.id)}
                                                   onMouseLeave={() => setHoveredSummaryId(null)}
                                                 >
@@ -485,7 +485,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                                                         e.stopPropagation(); // Prevent navigation
                                                         handleDeleteSummary(f.id, s.id);
                                                       }}
-                                                      className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                      className="p-1 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                                                       title={t('Sidebar.deleteSummary', { defaultValue: 'Delete summary' })}
                                                     >
                                                       <Trash2 className="w-3 h-3" />
@@ -509,13 +509,13 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                       ))}
                       {provided.placeholder}
                       {isLoadingFolders && (
-                        <li className="ml-6 mt-1 space-y-1 text-xs text-gray-400">{t('Sidebar.loadingFolders') || '로딩중...'}</li>
+                        <li className="ml-6 mt-1 space-y-1 text-xs text-muted-foreground">{t('Sidebar.loadingFolders') || '로딩중...'}</li>
                       )}
                       {/* Add folder input */}
                       {showNewFolderInput && (
-                        <li className="flex items-center gap-1 bg-gray-200 rounded px-1 py-1 mt-2">
+                        <li className="flex items-center gap-1 bg-accent rounded px-1 py-1 mt-2">
                           <span className="flex items-center">
-                            <Folder className="w-4 h-4 text-gray-500 mr-1" />
+                            <Folder className="w-4 h-4 text-muted-foreground mr-1" />
                           </span>
                           <input
                             type="text"
@@ -529,14 +529,14 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
                           />
                           <button
                             onClick={handleAddFolder}
-                            className="px-1 py-1 bg-gray-300 text-black rounded text-xs shadow hover:bg-zinc-800 hover:text-white transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+                            className="px-1 py-1 bg-muted text-foreground rounded text-xs shadow hover:bg-primary hover:text-primary-foreground transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                             title="폴더 추가"
                           >
                             <Plus className="w-4 h-4 inline" />
                           </button>
                           <button
                             onClick={() => { setShowNewFolderInput(false); setNewFolderName(''); }}
-                            className="px-1 py-1 bg-gray-300 text-black rounded text-xs hover:bg-zinc-800 hover:text-white transition-colors duration-150"
+                            className="px-1 py-1 bg-muted text-foreground rounded text-xs hover:bg-primary hover:text-primary-foreground transition-colors duration-150"
                             title="취소"
                           >취소</button>
                         </li>
@@ -569,45 +569,45 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
       <div className="px-4 py-3 space-y-3 border-t">
         {/* Upgrade Section */}
         {session?.user?.plan === 'premium' ? (
-          <div className="bg-green-50 p-4 rounded-lg text-center">
+          <div className="bg-green-500/10 p-4 rounded-lg text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
-              <Crown className="w-5 h-5 text-green-600" />
-              <p className="text-sm font-semibold text-green-700">{t('Sidebar.premiumActive')}</p>
+              <Crown className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <p className="text-sm font-semibold text-green-700 dark:text-green-300">{t('Sidebar.premiumActive')}</p>
             </div>
-            <p className="text-xs text-green-500">{t('Sidebar.premiumActiveSubtitle')}</p>
+            <p className="text-xs text-green-600 dark:text-green-400">{t('Sidebar.premiumActiveSubtitle')}</p>
           </div>
         ) : (
           <div 
-            className="bg-gray-100 p-4 rounded-lg text-center cursor-pointer hover:bg-gray-200 transition-colors"
+            className="bg-muted p-4 rounded-lg text-center cursor-pointer hover:bg-accent transition-colors"
             onClick={openSubscriptionModal}
           >
             <button
-              className="w-full bg-gray-900 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-700 transition-colors duration-200 text-sm flex items-center justify-center gap-2 mb-2"
+              className="w-full bg-primary text-primary-foreground font-semibold py-2 px-4 rounded-md hover:bg-primary/90 transition-colors duration-200 text-sm flex items-center justify-center gap-2 mb-2"
             >
               <Crown className="w-4 h-4" />
               {t('Sidebar.upgrade')}
             </button>
-            <p className="text-xs text-gray-600">{t('Sidebar.upgradeSubtitle')}</p>
+            <p className="text-xs text-muted-foreground">{t('Sidebar.upgradeSubtitle')}</p>
           </div>
         )}
 
         {/* User Info Section */}
-        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
+        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent cursor-pointer">
           <Avatar className="h-8 w-8">
             <AvatarImage src={session?.user?.image ?? undefined} alt={session?.user?.name ?? 'User'} />
             <AvatarFallback>{getInitials(session?.user?.name ?? '')}</AvatarFallback>
           </Avatar>
           <div className="flex-1 overflow-hidden">
-            <p className="text-sm font-medium truncate text-gray-800">{session?.user?.name}</p>
-            <p className="text-xs truncate text-gray-500">{session?.user?.email}</p>
+            <p className="text-sm font-medium truncate text-foreground">{session?.user?.name}</p>
+            <p className="text-xs truncate text-muted-foreground">{session?.user?.email}</p>
           </div>
           <Link href={`/${locale}/settings`} className="flex items-center">
-            <button className="text-gray-400 hover:text-gray-700" title="Settings"> {/* Add functionality later */}
+            <button className="text-muted-foreground hover:text-foreground" title="Settings"> {/* Add functionality later */}
               <Settings className="w-5 h-5" />
             </button>
           </Link>
           {/* Add Sign Out Button Here? Or in a dropdown from Settings? */}
-           <button onClick={() => signOut()} className="text-gray-400 hover:text-red-600" title="Sign Out">
+           <button onClick={() => signOut()} className="text-muted-foreground hover:text-destructive" title="Sign Out">
              <LogOut className="w-5 h-5" />
            </button>
         </div>

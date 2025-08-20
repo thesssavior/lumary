@@ -28,10 +28,10 @@ export default function SignIn() {
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-      <div className="w-full max-w-md space-y-8 rounded-lg border border-zinc-200 bg-white p-8">
+      <div className="w-full max-w-md space-y-8 rounded-lg border border-border bg-card text-card-foreground p-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-black">{t('signIn')}</h1>
-          <p className="mt-2 text-zinc-600">{t('signInDescription')}</p>
+          <h1 className="text-2xl font-bold">{t('signIn')}</h1>
+          <p className="mt-2 text-muted-foreground">{t('signInDescription')}</p>
         </div>
         
         {/* Email Sign In Form */}
@@ -65,7 +65,7 @@ export default function SignIn() {
             <span className="w-full border-t border-gray-300" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-gray-500">Or continue with</span>
+            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
           </div>
         </div>
 
@@ -93,7 +93,7 @@ export default function SignIn() {
                 <span className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-gray-500">For Testing</span>
+            <span className="bg-background px-2 text-muted-foreground">For Testing</span>
               </div>
             </div>
             

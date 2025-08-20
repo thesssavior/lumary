@@ -10,8 +10,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Check, Loader2 } from 'lucide-react';
-import Image from 'next/image'; // Import Next.js Image component
 import { useSession } from 'next-auth/react';
+import { Logo } from '@/components/ui/logo';
 
 type Plan = {
   id: string; // Product ID
@@ -174,33 +174,31 @@ export default function SubscriptionPlans({ isOpen, onCloseAction }: Subscriptio
             <div>Plan not available for selected cycle.</div> // Handle case where plan isn't found
           ) : (
             // Display only the selected plan
-            <div key={currentPlan.variant_id} className="border border-gray-200 p-6 rounded-lg shadow-sm bg-white flex flex-col md:flex-row gap-6">
+            <div key={currentPlan.variant_id} className="border border-border p-6 rounded-lg shadow-sm bg-card text-card-foreground flex flex-col md:flex-row gap-6">
               {/* Left Column */}
               <div className="flex flex-col w-full md:w-1/3">
                  <div className="flex items-center mb-4">
-                   <Image
-                      src="/lumary.png" // Assuming logo2.png is in the /public directory
-                      alt="Lumary Logo"
+                   <Logo
                       width={48} // Adjust size as needed
                       height={48}
                       className="mr-3 rounded-md" // Add margin and potentially rounded corners
                     />
-                     <div>
-                        <h3 className="font-semibold text-xl text-gray-800">{currentPlan.name}</h3>
+                      <div>
+                        <h3 className="font-semibold text-xl">{currentPlan.name}</h3>
                      </div>
                  </div>
-                 <p className="text-sm text-gray-600 mb-4 flex-grow">
+                 <p className="text-sm text-muted-foreground mb-4 flex-grow">
                    Get access to all features and benefits of the app. No limits, no restrictions.
                  </p>
-                 <p className="text-3xl font-bold text-gray-900 mb-1">{currentPlan.price_formatted}
-                    <span className="text-sm font-normal text-gray-500">
+                  <p className="text-3xl font-bold mb-1">{currentPlan.price_formatted}
+                    <span className="text-sm font-normal text-muted-foreground">
                        {billingCycle === 'weekly' ? t('pricePerWeekVat') : t('pricePerMonthVat')}
                     </span>
                  </p>
-                 <button
+                  <button
                   onClick={() => handleCheckout(currentPlan.id, currentPlan.variant_id, userId ?? '')}
                   disabled={checkingOutId === currentPlan.variant_id}
-                  className="w-full bg-gray-900 text-white font-bold py-2 px-4 rounded hover:bg-gray-700 transition-colors duration-200 text-center mt-4 disabled:opacity-50 flex items-center justify-center gap-2"
+                   className="w-full bg-foreground text-background font-bold py-2 px-4 rounded hover:opacity-90 transition-colors duration-200 text-center mt-4 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {checkingOutId === currentPlan.variant_id ? t('loading') : t('subscribeButton')}
                     {checkingOutId !== currentPlan.variant_id && <span aria-hidden="true">→</span>}
@@ -209,11 +207,11 @@ export default function SubscriptionPlans({ isOpen, onCloseAction }: Subscriptio
 
               {/* Right Column (Feature List) */}
               <div className="w-full md:w-2/3">
-                <h4 className="font-medium text-gray-700 mb-3">{t('featureListTitle')}</h4>
+                <h4 className="font-medium mb-3">{t('featureListTitle')}</h4>
                 <ul className="space-y-2">
                    {/* Use translated features */}
                    {Array.isArray(planFeatures) ? planFeatures.map((feature: string, index: number) => (
-                    <li key={index} className="flex items-center text-sm text-gray-600">
+                    <li key={index} className="flex items-center text-sm text-muted-foreground">
                       <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
                       {feature}
                     </li>

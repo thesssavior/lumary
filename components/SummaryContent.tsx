@@ -69,7 +69,7 @@ export default function SummaryContent({
                 <ResizablePanel defaultSize={46} minSize={25}>
                   <ResizablePanelGroup ref={verticalPanelGroupRef} direction="vertical" className="h-full">
                     {/* Video Player - Top Left */}
-                    <ResizablePanel defaultSize={60} minSize={25} className="p-1 ml-2">
+                    <ResizablePanel defaultSize={54} minSize={25} className="p-1 ml-2">
                       <VideoPlayer videoId={summary.video_id} title={summary.name} />
                     </ResizablePanel>
 
@@ -87,7 +87,7 @@ export default function SummaryContent({
                 <ResizableHandle />
 
                 {/* Right Panel - Summary Content */}
-                <ResizablePanel defaultSize={60} minSize={30} className="p-1">
+                <ResizablePanel defaultSize={54} minSize={30} className="p-1">
                 <div className="h-full overflow-hidden">
                   <div className="h-full flex flex-col">
 
@@ -106,10 +106,10 @@ export default function SummaryContent({
                           {/* Reset layout button */}
                           <button
                             onClick={resetLayout}
-                            className="flex items-center gap-1 px-1 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+                            className="flex items-center gap-1 px-1 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
                             title="Reset layout to default sizes"
                           >
-                            <RotateCcw className="h-4 w-4 text-gray-500" />
+                            <RotateCcw className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                           </button>
                         </div>
 

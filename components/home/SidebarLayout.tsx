@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import Sidebar from './Sidebar';
 import SubscriptionPlans from './SubscriptionPlans';
+import { ChevronLeft, Menu } from 'lucide-react';
 
 export interface FolderType {
   id: string;
@@ -44,15 +45,15 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
         <div className="flex relative flex-1">
           <button
             onClick={() => setOpen((o) => !o)}
-            className={`fixed top-3 ${open ? 'left-72' : 'left-4'} z-20 flex items-center justify-center w-10 h-10 text-gray-700 bg-gray-100 rounded focus:outline-none border border-gray-300`}
+            className={`fixed top-3 ${open ? 'left-52' : 'left-4'} z-20 flex items-center justify-center w-10 h-10 text-foreground bg-background rounded focus:outline-none border border-border`}
             aria-label="Toggle sidebar"
           >
-            {open ? '×' : '☰'}
+            {open ? <ChevronLeft className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
 
           {/* Sidebar: open on desktop, toggled on mobile */}
           <aside
-            className={`fixed inset-y-0 left-0 w-64 bg-white border-r z-10 transform transition-transform duration-200
+            className={`fixed inset-y-0 left-0 w-64 bg-card text-card-foreground border-r z-10 transform transition-transform duration-200
               ${open ? 'translate-x-0' : '-translate-x-full'}`}
           >
             <Sidebar refreshKey={refreshKey} />

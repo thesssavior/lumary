@@ -209,12 +209,12 @@ export function VideoInputForm() {
       </div>
       {/* Login Modal/Overlay */}
       {showLoginPrompt && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-card text-card-foreground p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
               <h2 className="text-xl font-bold mb-4">{t('signIn')}</h2>
               <p className="mb-6">{t('trialUsedPrompt')}</p>
               <Button
-                className="w-full bg-black hover:bg-zinc-800 text-white mb-2"
+                className="w-full bg-foreground hover:opacity-90 text-background mb-2"
                 onClick={() => { setShowLoginPrompt(false); signIn("google"); }}
               >
                 {t('signInWithGoogle')}
@@ -253,7 +253,7 @@ export function VideoInputForm() {
               placeholder={t('videoUrl')}
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="border-zinc-200 bg-white text-black placeholder:text-zinc-400 ring-1 ring-ring ring-offset-2 focus-visible:ring-red-600 focus-visible:ring-offset-white transition-colors pr-10 w-full"
+              className="border-input bg-background text-foreground placeholder:text-muted-foreground ring-1 ring-ring ring-offset-2 focus-visible:ring-red-600 focus-visible:ring-offset-background transition-colors pr-10 w-full"
               required
               pattern="^https?://(www\.|m\.)?(youtube\.com/(watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/).+" // eslint-disable-line no-useless-escape
               // title={t('youtubeUrlHint')}
@@ -262,7 +262,7 @@ export function VideoInputForm() {
               <button
                 type="button"
                 onClick={() => setUrl("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-1 text-gray-400 hover:text-red-500 bg-white rounded-full"
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-1 text-gray-400 hover:text-red-500 bg-background rounded-full"
                 style={{ boxShadow: '0 0 2px rgba(0,0,0,0.05)' }}
               >
                 <X className="w-4 h-4" />
