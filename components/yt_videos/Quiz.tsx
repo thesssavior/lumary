@@ -84,13 +84,13 @@ const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData
       if (data.quiz && Array.isArray(data.quiz)) {
         setQuizItems(data.quiz);
         setIsGenerated(true);
-        // Attempt to save only if summaryId is present
-        if (summaryId) {
+        // Attempt to save only if summaryId is present and valid (not "new")
+        if (summaryId && summaryId !== 'new') {
           await saveQuiz(data.quiz, summaryId);
         } else {
-          // Quiz is generated but not saved yet as summaryId is missing
+          // Quiz is generated but not saved yet as summaryId is missing or invalid
           // It will be saved when the summary itself is saved, or if summaryId becomes available later
-          console.log("Quiz generated, waiting for summaryId to save.");
+          console.log("Quiz generated, waiting for valid summaryId to save.");
         }
       } else {
         throw new Error(t('Quiz.errorInvalidData'));
@@ -104,10 +104,10 @@ const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData
   };
 
   const saveQuiz = async (currentQuizItems: QuizItem[], currentSummaryId: string) => {
-    if (!currentSummaryId) {
+    if (!currentSummaryId || currentSummaryId === 'new') {
       // This case should ideally be handled before calling saveQuiz,
       // but as a safeguard:
-      console.warn("Attempted to save quiz without summaryId.");
+      console.warn("Attempted to save quiz without valid summaryId.");
       setError(t('Quiz.errorSavingNoId')); // Consider a specific translation
       return;
     }

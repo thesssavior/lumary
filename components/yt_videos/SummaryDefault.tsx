@@ -17,6 +17,7 @@ type SummaryDefaultProps = {
   videoId?: string
   locale?: string
   folderId: string
+  onSummaryGenerated?: (summary: string) => void
 }
 
 export default function SummaryDefault({
@@ -29,6 +30,7 @@ export default function SummaryDefault({
   videoId,
   locale,
   folderId,
+  onSummaryGenerated,
 }: SummaryDefaultProps) {
   const t = useTranslations('')
   const [copied, setCopied] = useState(false)
@@ -160,6 +162,11 @@ export default function SummaryDefault({
       }
 
       setIsGenerated(true)
+
+      // Call the callback to share generated content with parent
+      if (onSummaryGenerated && fullSummary) {
+        onSummaryGenerated(fullSummary)
+      }
 
       if (fullSummary) {
         try {

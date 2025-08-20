@@ -12,6 +12,7 @@ import { TranscriptPanel } from './yt_videos/TranscriptPanel';
 import Chapters from './yt_videos/Chapters';
 import SummaryDefault from './yt_videos/SummaryDefault';
 import SummarySplit from './yt_videos/SummarySplit';
+import Chat from './yt_videos/Chat';
 import { VideoPlayerProvider } from '@/contexts/VideoPlayerContext';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
@@ -44,6 +45,7 @@ export default function SummaryContent({
     const [activetab, setActivetab] = useState(layoutMode === 'split' ? 'chapters' : 'summary');
     const [generatedChapters, setGeneratedChapters] = useState<any[] | null>(null);
     const [generatedSummary, setGeneratedSummary] = useState('');
+    const [generatedSummaryDefault, setGeneratedSummaryDefault] = useState('');
     
     // Refs for resizable panels
     const horizontalPanelGroupRef = useRef<any>(null);
@@ -96,11 +98,12 @@ export default function SummaryContent({
                       <Tabs defaultValue="chapters" value={activetab} onValueChange={setActivetab} className="h-full flex flex-col">
                         <div className="flex items-center gap-2 mx-2 mt-2 mb-0 flex-shrink-0">
                           {/* Tabs */}
-                          <TabsList className="grid grid-cols-4 flex-1">
+                          <TabsList className="grid grid-cols-5 flex-1">
                             <TabsTrigger value="chapters">{t('chaptersTab')}</TabsTrigger>
                             <TabsTrigger value="summary">{t('summaryTab')}</TabsTrigger>
                             <TabsTrigger value="mindmap">{t('mindmapTab')}</TabsTrigger>
                             <TabsTrigger value="quiz">{t('quizTab')}</TabsTrigger>
+                            <TabsTrigger value="chat">{t('chatTab')}</TabsTrigger>
                           </TabsList>
                           
                           {/* Reset layout button */}
@@ -196,6 +199,26 @@ export default function SummaryContent({
                               />
                             </div>
                           </TabsContent>
+
+                          <TabsContent 
+                            value="chat" 
+                            forceMount={true} 
+                            className="data-[state=active]:block hidden m-0 h-full"
+                          >
+                            <div className="h-full">
+                              <Chat 
+                                summary={generatedSummary || summary.summary}
+                                chapters={generatedChapters || summary.chapters}
+                                transcript={summary.transcript}
+                                locale={locale} 
+                                contentLanguage={contentLanguage}
+                                summaryId={summaryId || null}
+                                title={summary.name}
+                                videoId={summary.video_id}
+                                layout="split"
+                              />
+                            </div>
+                          </TabsContent>
                         </div>
                       </Tabs>
                     </div>
@@ -232,7 +255,10 @@ export default function SummaryContent({
             <TabsTrigger value="transcript" >{t('transcriptTab')}</TabsTrigger>
           </TabsList>
   
-          <TabsContent value="summary" className="mt-4 p-0 border rounded-lg">
+          <TabsContent value="summary" 
+            forceMount={true} 
+            className="data-[state=active]:block hidden m-0 h-full border rounded-lg p-4 mt-2"
+          >
             <SummaryDefault
               summary={summary.summary}
               contentLanguage={contentLanguage}
@@ -243,17 +269,18 @@ export default function SummaryContent({
               videoId={summary.video_id}
               locale={locale}
               folderId={folder?.id}
+              onSummaryGenerated={setGeneratedSummaryDefault}
             />
           </TabsContent>
 
           <TabsContent 
             value="mindmap" 
             forceMount={true} 
-            className="data-[state=active]:block hidden p-0"
+            className="p-0 data-[state=inactive]:h-1 data-[state=active]:h-[50vh] data-[state=inactive]:opacity-0 data-[state=inactive]:pointer-events-none data-[state=active]:opacity-100 transition-opacity mt-[-10%]"
             >
-            {(summary.summary || generatedChapters || summary.chapters) ? (
+            <div className="h-full min-h-[600px]">
               <Mindmap 
-                summary={summary.summary} 
+                summary={generatedSummaryDefault || summary.summary} 
                 chapters={generatedChapters || summary.chapters}
                 locale={locale} 
                 contentLanguage={contentLanguage}
@@ -261,9 +288,7 @@ export default function SummaryContent({
                 summaryId={summaryId || null}
                 isActive={activetab === "mindmap"}
               />
-            ) : (
-              <p className="text-gray-500">Summary or chapters not available for mindmap generation.</p>
-            )}
+            </div>
           </TabsContent>
   
           <TabsContent 
@@ -272,7 +297,7 @@ export default function SummaryContent({
             className="data-[state=active]:block hidden p-0"
           >
             <Quiz 
-              summary={summary.summary} 
+              summary={generatedSummaryDefault || summary.summary} 
               chapters={generatedChapters || summary.chapters}
               quizData={quiz} 
               locale={locale} 

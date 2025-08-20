@@ -19,6 +19,8 @@ import { Button } from '@/components/ui/button';
 import { useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 
+// No custom nodeTypes or edgeTypes needed - removing empty objects to prevent React Flow warnings
+
 interface MindmapProps {
   summary?: string;
   chapters?: { title: string; summary: string }[];
@@ -51,9 +53,11 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, co
 
   useEffect(() => {
     if (mindmap) {
-      setNodes(mindmap.nodes);
-      setEdges(mindmap.edges);
-      setIsGenerated(true);
+      if (mindmap.nodes && Array.isArray(mindmap.nodes) && mindmap.nodes.length > 0) {
+        setNodes(mindmap.nodes);
+        setEdges(mindmap.edges || []);
+        setIsGenerated(true);
+      }
     }
   }, [mindmap]);
   
@@ -106,8 +110,15 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, co
         setIsGenerated(true);
         setIsLoading(false);
 
-        // Save only when the user is logged in
+        // Save only when the user is logged in and we have a valid summaryId
         if (!session) {
+          setIsSaving(false);
+          return;
+        }
+
+        // Only save if we have a valid summaryId (not "new" or undefined)
+        if (!summaryId || summaryId === 'new') {
+          console.log("Mindmap generated but not saved - no valid summaryId yet");
           setIsSaving(false);
           return;
         }
@@ -116,16 +127,18 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, co
         setIsSaving(true);
 
         try {
-          const saveResponse = await fetch(`/api/summaries/${summaryId}/mindmap`, {
+          const saveResponse = await fetch('/api/summaries/mindmap', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mindmap: { nodes: validatedNodes, edges: data.edges } }),
+            body: JSON.stringify({ summaryId, mindmap: { nodes: validatedNodes, edges: data.edges } }),
           });
 
           if (!saveResponse.ok) {
             const saveErrData = await saveResponse.json();
             console.error("Failed to save mindmap:", saveErrData.error || 'Failed to save mindmap to database');
             setError(saveErrData.error || 'Failed to save mindmap to database');
+          } else {
+            console.log("Mindmap saved successfully");
           }
         } finally {
           setIsSaving(false);
@@ -185,13 +198,13 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, co
 
   if (isLoading) {
     return (
-      <div className="h-full w-full flex items-center justify-center rounded-md">
+      <div className="h-full w-full flex items-center justify-center rounded-md mt-20">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
 
-  if (error || nodes.length === 0) {
+  if (error || (nodes.length === 0 && !isLoading && !isSaving)) {
     return (
       <div className="h-full w-full flex flex-col items-center justify-center rounded-md p-4">
         <AlertTriangle className="h-10 w-10 text-red-500 mb-4" />
@@ -210,25 +223,25 @@ const MindmapComponent: React.FC<MindmapProps> = ({ summary, mindmap, locale, co
   }
 
   return (
-    <div className="h-full w-full">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onInit={() => setReactFlowReady(true)}
-        fitView
-        attributionPosition="bottom-left"
-      >
-        {/* <MiniMap nodeStrokeWidth={3} zoomable pannable /> */}
-        <Controls />
-        <Background color="#f0f0f0" gap={16} />
-      </ReactFlow>
+    <div className="relative h-full min-h-[500px]">
+      <div className="absolute inset-0">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onInit={() => setReactFlowReady(true)}
+          fitView
+          attributionPosition="bottom-left"
+        >
+          <Controls />
+          <Background gap={16} />
+        </ReactFlow>
+      </div>
     </div>
   );
 };
-
 const Mindmap: React.FC<MindmapProps> = (props) => (
   <ReactFlowProvider>
     <MindmapComponent {...props} />
