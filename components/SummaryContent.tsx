@@ -167,7 +167,7 @@ export default function SummaryContent({
                             forceMount={true} 
                             className="data-[state=active]:block hidden m-0 h-full"
                           >
-                            <div className="p-2 h-full">
+                            <div className="p-2 h-full relative z-0">
                                 <Mindmap 
                                   summary={summary.summary} 
                                   chapters={generatedChapters || summary.chapters}
@@ -233,7 +233,7 @@ export default function SummaryContent({
 
     // Default layout mode (original)
     return (
-      <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 h-full overflow-auto">
+      <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 h-full">
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
           <Folder className="w-4 h-4" />
           <span>{folder.name}</span>
@@ -276,9 +276,9 @@ export default function SummaryContent({
           <TabsContent 
             value="mindmap" 
             forceMount={true} 
-            className="p-0 data-[state=inactive]:h-1 data-[state=active]:h-[50vh] data-[state=inactive]:opacity-0 data-[state=inactive]:pointer-events-none data-[state=active]:opacity-100 transition-opacity mt-[-10%]"
+            className="p-0 data-[state=inactive]:h-1 data-[state=active]:h-[50vh] data-[state=inactive]:opacity-0 data-[state=inactive]:pointer-events-none data-[state=active]:opacity-100 transition-opacity mt-2"
             >
-            <div className="h-full min-h-[600px]">
+            <div className="h-full min-h-[600px] relative z-0">
               <Mindmap 
                 summary={generatedSummaryDefault || summary.summary} 
                 chapters={generatedChapters || summary.chapters}
@@ -294,7 +294,7 @@ export default function SummaryContent({
           <TabsContent 
             value="quiz" 
             forceMount={true} 
-            className="data-[state=active]:block hidden p-0"
+            className="data-[state=active]:block hidden p-0 mt-2"
           >
             <Quiz 
               summary={generatedSummaryDefault || summary.summary} 
