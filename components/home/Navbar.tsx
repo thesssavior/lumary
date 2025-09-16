@@ -16,7 +16,7 @@ export function Navbar() {
   const locale = params.locale as string;
   return (
     <>
-      <nav className="border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex h-16 items-center justify-between px-4 sm:px-12">
           <Link href={`/${locale}`} className="flex items-center space-x-2 ml-12 sm:ml-6">
             <Logo width={100} height={100} small={true} />
