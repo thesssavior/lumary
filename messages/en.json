@@ -1,5 +1,5 @@
 {
-  "title": "YouTube Summary AI",
+  "title": "What do you want to learn?",
   "subtitle": "Get instant AI-powered summaries of any YouTube video",
   "videoUrl": "Enter YouTube URL",
   "getSummary": "Get Summary",
@@ -227,8 +227,10 @@
     "preferencesSection": {
       "title": "Preferences",
       "description": "Customize your experience.",
-      "languageLabel": "Language",
+      "languageLabel": "System Language",
       "selectLanguagePlaceholder": "Select language",
+      "contentLanguageLabel": "Content Language",
+      "selectContentLanguagePlaceholder": "Select content language",
       "english": "English",
       "korean": "Korean",
       "modeLabel": "Mode",

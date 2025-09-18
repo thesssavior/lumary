@@ -1,5 +1,5 @@
 {
-  "title": "유튜브 요약 AI",
+  "title": "무엇을 알고 싶으세요?",
   "subtitle": "유튜브 동영상의 AI 기반 요약을 받아보세요",
   "videoUrl": "YouTube URL을 입력하세요",
   "getSummary": "요약하기",
@@ -234,8 +234,10 @@
     "preferencesSection": {
       "title": "환경설정",
       "description": "사용자 경험을 맞춤화합니다.",
-      "languageLabel": "언어",
+      "languageLabel": "시스템 언어",
       "selectLanguagePlaceholder": "언어 선택",
+      "contentLanguageLabel": "콘텐츠 언어",
+      "selectContentLanguagePlaceholder": "콘텐츠 언어 선택",
       "english": "English",
       "korean": "한국어",
       "modeLabel": "모드",

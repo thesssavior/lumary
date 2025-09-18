@@ -11,6 +11,7 @@ import { Loader2, Crown, Layout, Grid, Moon, Sun, Monitor } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useFolder } from '@/components/home/SidebarLayout';
 import { getLayoutPreference, setLayoutPreference } from '@/lib/utils';
+import { LanguageSwitcher } from '@/components/home/LanguageSwitcher';
 
 const SettingsPage = () => {
   const t = useTranslations('SettingsPage');
@@ -85,7 +86,7 @@ const SettingsPage = () => {
 
   return (
     <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
-    <div className="space-y-8 max-w-2xl mx-auto py-8">
+    <div className="space-y-8 max-w-2xl mx-auto py-8 px-4">
       <h1 className="text-3xl font-semibold mb-6">{t('title')}</h1>
 
       {/* Account Section */}
@@ -105,7 +106,7 @@ const SettingsPage = () => {
             <p className="text-foreground break-all">{session.user?.email || t('accountSection.noEmail')}</p>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col sm:flex-row gap-2">
+        <CardFooter className="flex flex-row gap-2">
           <Button onClick={handleSignOut} variant="outline">
             {t('accountSection.signOutButton')}
           </Button>
@@ -127,7 +128,7 @@ const SettingsPage = () => {
           <CardDescription>{t('preferencesSection.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Language Preference */}
+          {/* Language Preference for UI */}
           <div>
             <label htmlFor="language-select" className="text-sm font-medium text-muted-foreground">
               {t('preferencesSection.languageLabel')}
@@ -141,6 +142,15 @@ const SettingsPage = () => {
                 <SelectItem value="ko">{t('preferencesSection.korean')}</SelectItem>
               </SelectContent>
             </Select>
+            {isPending && <Loader2 className="mt-2 h-4 w-4 animate-spin" />}
+          </div>
+
+          {/* Language Preference for Content */}
+          <div>
+            <div className="text-sm font-medium text-muted-foreground mb-1">
+              {t('preferencesSection.contentLanguageLabel')}
+            </div>
+            <LanguageSwitcher />
             {isPending && <Loader2 className="mt-2 h-4 w-4 animate-spin" />}
           </div>
 

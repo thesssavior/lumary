@@ -1,22 +1,27 @@
 'use client';
 
 import { useSearchParams, useParams } from 'next/navigation';
-import { HomeHeader } from "@/components/home/home-header";
 import { Suspense } from "react";
 import { VideoInputForm } from '@/components/yt_videos/VideoInputForm';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function HomePageContent() {
   const searchParams = useSearchParams();
   const params = useParams();
   const locale = params.locale as string || 'ko'; // Get locale from client-side params
   const isDevMode = searchParams.get('dev') === 'true';
-
+  const t = useTranslations();
   // if (isDevMode) {
   //   // Render the original page content for developers
     return (
-        <div className="container mx-auto px-4 max-w-3xl mt-24">
-          <HomeHeader locale={locale} />
+        <div className="container mx-auto px-4 max-w-3xl mt-24 space-y-12">
+          <h1 className="text-4xl font-semibold text-center mb-2">
+            {t('title')}
+          </h1>
+          {/* <p className="text-muted-foreground text-center mb-12">
+            {t('subtitle')}
+          </p> */}
           <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
             <VideoInputForm />
           </Suspense>

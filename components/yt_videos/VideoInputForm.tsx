@@ -204,9 +204,9 @@ export function VideoInputForm() {
 
   return (
     <div className="w-full max-w-4xl mx-auto py-2 space-y-2">
-      <div className="flex justify-end mb-6">
+      {/* <div className="flex justify-end mb-6">
         <LanguageSwitcher />
-      </div>
+      </div> */}
       {/* Login Modal/Overlay */}
       {showLoginPrompt && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -253,7 +253,7 @@ export function VideoInputForm() {
               placeholder={t('videoUrl')}
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="border-input bg-background text-foreground placeholder:text-muted-foreground ring-1 ring-ring ring-offset-2 focus-visible:ring-red-600 focus-visible:ring-offset-background transition-colors pr-10 w-full"
+              className="border-input bg-background text-foreground placeholder:text-muted-foreground ring-1 ring-ring focus-visible:ring-red-600 focus-visible:ring-offset-background transition-colors pr-10 w-full"
               required
               pattern="^https?://(www\.|m\.)?(youtube\.com/(watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/).+" // eslint-disable-line no-useless-escape
               // title={t('youtubeUrlHint')}
