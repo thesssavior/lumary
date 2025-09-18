@@ -241,10 +241,10 @@ export default function SummaryContent({
         </div>
   
         <h1 className="text-4xl font-bold mb-4">{summary.name}</h1>
-        <div>
-          <div className="text-gray-500 text-xs">Video ID: {summary.video_id}</div>
-          <div className="text-gray-500 text-xs">Created: {new Date(summary.created_at).toLocaleString()}</div>
-        </div>
+        {/* <div>
+          <div className="text-gray-500 text-xs">{t('videoId')}: {summary.video_id}</div>
+          <div className="text-gray-500 text-xs">{t('createdAt')}: {new Date(summary.created_at).toLocaleString()}</div>
+        </div> */}
         
         <Tabs defaultValue="summary" value={activetab} onValueChange={setActivetab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
@@ -276,7 +276,7 @@ export default function SummaryContent({
           <TabsContent 
             value="mindmap" 
             forceMount={true} 
-            className="p-0 data-[state=inactive]:h-1 data-[state=active]:h-[50vh] data-[state=inactive]:opacity-0 data-[state=inactive]:pointer-events-none data-[state=active]:opacity-100 transition-opacity mt-2"
+            className="p-0 data-[state=inactive]:h-[0.01rem] data-[state=active]:h-[50vh] data-[state=inactive]:opacity-0 data-[state=inactive]:pointer-events-none data-[state=active]:opacity-100 transition-opacity data-[state=inactive]:mt-0 data-[state=active]:mt-2"
             >
             <div className="h-full min-h-[600px] relative z-0">
               <Mindmap 
@@ -294,7 +294,7 @@ export default function SummaryContent({
           <TabsContent 
             value="quiz" 
             forceMount={true} 
-            className="data-[state=active]:block hidden p-0 mt-2"
+            className="data-[state=active]:block hidden p-0"
           >
             <Quiz 
               summary={generatedSummaryDefault || summary.summary} 
@@ -307,7 +307,7 @@ export default function SummaryContent({
             />
           </TabsContent>
   
-          <TabsContent value="transcript" className="mt-4 p-0 border-0">
+          <TabsContent value="transcript" className="p-0 border-0">
             <div className="p-4 border rounded-md">
               {summary.transcript ? (
                 <FullTranscriptViewer transcript={summary.transcript} />

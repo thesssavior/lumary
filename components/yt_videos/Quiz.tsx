@@ -170,7 +170,7 @@ const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData
   
   if (!isGenerated) {
     return (
-      <div className={`flex flex-col items-center justify-center h-full min-h-[300px] p-10 rounded-md text-center ${layout === 'split' ? 'mt-[-20%]' : ''}`}>
+      <div className={`flex flex-col items-center justify-center h-full min-h-[60vh] p-10 rounded-md text-center`}>
         <Lightbulb className="h-12 w-12 mb-6" />
         <h3 className="text-xl font-semibold mb-2">{t('Quiz.title')}</h3>
         <p className="text-sm text-gray-500 mb-6 max-w-md">
@@ -190,7 +190,7 @@ const QuizComponent: React.FC<QuizProps> = ({ summary, quizData: initialQuizData
 
   // Quiz is generated or loaded
   return (
-    <div className="space-y-2 mt-2">
+    <div className="space-y-2">
       {error && ( // Show error if one occurred during generation/saving, even if quiz is displayed
         <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">
           <p><span className="font-semibold">{t('Quiz.errorEncountered')}:</span> {error}</p>

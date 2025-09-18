@@ -34,7 +34,9 @@
   "startForFree": "Start for free",
   "getHelp": "Support",
   "helpAndCommunity": "Support & Community",
+  "createdAt": "Created At",
   "transcriptRequiredError": "This video does not have a transcript. Please try another video.",
+  "videoLink": "Video Link",
   "Sidebar": {
     "newNote": "New Note",
     "home": "Home",
