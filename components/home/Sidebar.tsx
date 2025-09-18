@@ -550,7 +550,7 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
         </ul>
       </nav>
 
-      <div className="px-4 space-y-3 border-t text-center">
+      <div className="px-4 space-y-3 border-t text-center hidden sm:block">
         <Link href={`/${locale}/community`}>
           <Button 
             variant="ghost" 
@@ -606,10 +606,6 @@ export default function Sidebar({ refreshKey }: { refreshKey?: number }) {
               <Settings className="w-5 h-5" />
             </button>
           </Link>
-          {/* Add Sign Out Button Here? Or in a dropdown from Settings? */}
-           <button onClick={() => signOut()} className="text-muted-foreground hover:text-destructive" title="Sign Out">
-             <LogOut className="w-5 h-5" />
-           </button>
         </div>
       </div>
       {/* --- End Footer Area Redesign --- */}

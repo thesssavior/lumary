@@ -22,7 +22,7 @@ export function Navbar() {
             <Logo width={100} height={100} small={true} />
           </Link>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-6">
             <Link href={`/${locale}/community`}>
               <Button 
                 variant="ghost" 

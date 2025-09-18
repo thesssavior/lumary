@@ -16,7 +16,7 @@ export default function HomePageContent() {
   //   // Render the original page content for developers
     return (
         <div className="container mx-auto px-4 max-w-3xl mt-24 space-y-12">
-          <h1 className="text-4xl font-semibold text-center mb-2">
+          <h1 className="text-4xl font-normal text-center mb-2">
             {t('title')}
           </h1>
           {/* <p className="text-muted-foreground text-center mb-12">
