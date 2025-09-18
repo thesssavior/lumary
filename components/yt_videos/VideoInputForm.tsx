@@ -253,7 +253,7 @@ export function VideoInputForm() {
               placeholder={t('videoUrl')}
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="border-input bg-background text-foreground placeholder:text-muted-foreground ring-1 ring-ring focus-visible:ring-red-600 focus-visible:ring-offset-background transition-colors pr-10 w-full"
+              className="border-input bg-background text-foreground placeholder:text-muted-foreground border pr-10 w-full"
               required
               pattern="^https?://(www\.|m\.)?(youtube\.com/(watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/).+" // eslint-disable-line no-useless-escape
               // title={t('youtubeUrlHint')}
