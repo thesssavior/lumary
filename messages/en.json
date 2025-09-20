@@ -37,6 +37,7 @@
   "createdAt": "Created At",
   "transcriptRequiredError": "This video does not have a transcript. Please try another video.",
   "videoLink": "Video Link",
+  "videoId": "Video ID",
   "Sidebar": {
     "newNote": "New Note",
     "home": "Home",

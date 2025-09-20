@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { YoutubeIcon, AlertCircle, X, Loader2 } from "lucide-react";
+import { YoutubeIcon, AlertCircle, X, Loader2, ArrowUp } from "lucide-react";
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { signIn, useSession } from "next-auth/react";
@@ -269,19 +269,20 @@ export function VideoInputForm() {
               </button>
             )}
           </div>
-          <Button 
+          <button 
             type="submit" 
             disabled={isLoading}
-            className="bg-red-600 hover:bg-red-700 text-white whitespace-nowrap"
+            className="bg-foreground hover:bg-foreground/90 text-background whitespace-nowrap rounded-full p-3"
           >
             {isLoading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <YoutubeIcon className="mr-2 h-4 w-4" />
+              <ArrowUp className="h-4 w-4" />
+              // <YoutubeIcon className="mr-2 h-4 w-4" />
             )}
-            <span className="block sm:hidden">{isLoading ? t('loadingShort') : t('getSummaryShort')}</span>
-            <span className="hidden sm:block">{isLoading ? t('loading') : t('getSummary')}</span>
-          </Button>
+            <span className="block sm:hidden">{isLoading ?? t('loadingShort')}</span>
+            <span className="hidden sm:block">{isLoading ?? t('loading')}</span>
+          </button>
         </div>
       </form>
 
